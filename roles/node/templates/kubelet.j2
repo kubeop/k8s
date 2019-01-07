@@ -1,0 +1,28 @@
+## The address for the info server to serve on (set to 0.0.0.0 or "" for all interfaces)
+KUBELET_ADDRESS="--address={{ ansible_default_ipv4.address }}"
+#
+## The port for the info server to serve on
+#KUBELET_PORT="--port=10250"
+#
+## You may leave this blank to use the actual hostname
+KUBELET_HOSTNAME="--hostname-override={{ ansible_default_ipv4.address }}"
+#
+## location of the api-server
+## COMMENT THIS ON KUBERNETES 1.8+
+#KUBELET_API_SERVER="--api-servers=https://{{ harbor }}:6443"
+#
+## pod infrastructure container
+KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image={{ harbor }}/library/pause-amd64:3.1"
+#
+## Add your own!
+##open gpu 
+##--feature-gates=DevicePlugins=true
+KUBELET_ARGS="--cgroup-driver=systemd \
+              --cluster-dns={{ cluster_dns }} \
+              --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+              --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
+              --cert-dir=/etc/kubernetes/ssl \
+              --cluster-domain=cluster.local \
+              --hairpin-mode promiscuous-bridge \
+              --root-dir={{ data_dir }}/data/kubelet \
+              --serialize-image-pulls=false"

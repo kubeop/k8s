@@ -1,0 +1,56 @@
+    - name: "创建k8s目录"
+      file:
+         path: "/etc/kubernetes/ssl/"
+         state: directory
+    - name: "分发ca证书文件"
+      copy:
+         src: "{{ ssl_dir }}/ca.pem"
+         dest: "/etc/kubernetes/ssl/"
+      tags: dis_certs
+    - name: "创建flannel目录"
+      file:
+         path: "/usr/libexec/flannel"
+         state: directory
+    - name: "安装flannel"
+      get_url:
+         url: "{{ download_url }}/soft/flannel/{{ flannel_version }}/flanneld"
+         dest: "/usr/bin/flanneld"
+    - name: "安装flannel"
+      get_url:
+         url: "{{ download_url }}/soft/flannel/{{ flannel_version }}/mk-docker-opts.sh"
+         dest: "/usr/libexec/flannel/mk-docker-opts.sh"
+    - name: "配置flanneld启动脚步"
+      template:
+         src: "flanneld-start.j2"
+         dest: "/usr/bin/flanneld-start"
+    - name: "添加执行权限"
+      file:
+         dest: "{{ item.line }}"
+         mode: 0755
+      with_items:
+         - {line: '/usr/bin/flanneld'}
+         - {line: '/usr/libexec/flannel/mk-docker-opts.sh'}
+         - {line: '/usr/bin/flanneld-start'}
+    - name: "分发flannel证书文件"
+      copy:
+         src: "{{ item.line }}"
+         dest: "/etc/kubernetes/ssl/"
+      with_items:
+         - {line: '{{ ssl_dir }}/flannel/flannel_{{ ansible_default_ipv4.address }}.key'}
+         - {line: '{{ ssl_dir }}/flannel/flannel_{{ ansible_default_ipv4.address }}.pem'}
+      tags: dis_certs
+    - name: "修改flanneld配置"
+      template:
+         src: "flanneld.j2"
+         dest: "/etc/kubernetes/flanneld"
+    - name: "修改flanneld 启动配置文件"
+      template:
+         src: "flanneld.service.j2"
+         dest: "/usr/lib/systemd/system/flanneld.service"
+    - name: "启动flanneld"
+      systemd:
+         name: flanneld
+         enabled: yes
+         daemon_reload: yes
+         state: restarted
+      tags: restart_flannel

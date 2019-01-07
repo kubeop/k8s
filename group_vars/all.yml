@@ -1,0 +1,23 @@
+#init
+disk: /dev/vdb
+data_dir: /data
+zbx_server_ip: 172.16.9.9
+#阿里云内网机器使用
+#gpgkey: http://mirrors.cloud.aliyuncs.com
+#非阿里云以及其他能访问公网的机器使用
+gpgkey: https://mirrors.aliyun.com
+
+#k8s
+download_url: https://dl.anymb.com
+#k8s版本支持：1.10.11、1.11.5、1.12.3
+k8s_version: 1.11.5
+flannel_version: v0.10.0
+docker_version: docker-ce-18.06.1.ce
+ssl_dir: /etc/ssl/k8s
+ssl_days: 1825
+ssl_size: 4096
+apiserver_domain_name: apiserver.anymb.com
+service_cluster_ip_range: 10.64.0.0/12
+pod_cluster_cidr: 10.80.0.0/12
+cluster_dns: 10.64.0.2
+harbor: registry.anymb.com

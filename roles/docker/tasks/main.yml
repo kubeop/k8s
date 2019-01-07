@@ -1,0 +1,50 @@
+    - name: "添加Docker软件源"
+      yum_repository:
+         file: docker-ce
+         name: '{{ item.name }}'
+         description: '{{ item.description}}'
+         baseurl: '{{ item.baseurl }}'
+         gpgkey: "{{ gpgkey }}/docker-ce/linux/centos/gpg"
+         gpgcheck: yes
+         enabled: yes
+      with_items:
+         - { name: "docker-ce-stable",description: "Docker CE Stable - $basearch",baseurl: "http://mirrors.cloud.aliyuncs.com/docker-ce/linux/centos/7/$basearch/stable \n https://mirrors.aliyun.com/docker-ce/linux/centos/7/$basearch/stable" }
+         - { name: "docker-ce-stable-debuginfo",description: "Docker CE Stable - Debuginfo $basearch",baseurl: "http://mirrors.cloud.aliyuncs.com/docker-ce/linux/centos/7/debug-$basearch/stable \n https://mirrors.aliyun.com/docker-ce/linux/centos/7/debug-$basearch/stable" }
+         - { name: "docker-ce-stable-source",description: "Docker CE Stable - Sources",baseurl: "http://mirrors.cloud.aliyuncs.com/docker-ce/linux/centos/7/source/stable \n https://mirrors.aliyun.com/docker-ce/linux/centos/7/source/stable" }
+      tags: docker_repo
+    - name: "安装Docker-ce"
+      yum:
+         update_cache: yes
+         enablerepo: docker-ce-stable
+         name: "{{ docker_version }}"
+         state: installed
+    - name: "启动Docker"
+      systemd:
+         name: docker
+         state: started
+    - name: "修改配置文件"
+      template:
+         src: daemon.json.j2
+         dest: /etc/docker/daemon.json
+    - name: "创建docker数据目录"
+      file:
+         path: "{{ data_dir }}/data/docker"
+         state: directory
+    - name: "添加flannel变量"
+      lineinfile:
+         dest: "/usr/lib/systemd/system/docker.service"
+         insertafter: "^Type=notify"
+         line: "EnvironmentFile=-/run/flannel/docker"
+         state: present
+    - name: "添加docker相关变量"
+      lineinfile:
+         dest: "/usr/lib/systemd/system/docker.service"
+         regexp: "^ExecStart="
+         line: "ExecStart=/usr/bin/dockerd $DOCKER_OPT_BIP $DOCKER_OPT_IPMASQ $DOCKER_OPT_MTU"
+         state: present
+    - name: "重新加载并重启Docker"
+      systemd:
+         daemon_reload: yes
+         name: docker
+         enabled: yes
+         state: restarted

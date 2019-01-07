@@ -1,0 +1,53 @@
+# kubernetes system config
+#
+# The following values are used to configure the kube-apiserver
+#
+
+# The address on the local server to listen to.
+KUBE_API_ADDRESS="--bind-address={{ ansible_default_ipv4.address }}"
+
+# The port on the local server to listen on.
+KUBE_API_PORT="--secure-port=6443 --insecure-port=0"
+
+# Port minions listen on
+# KUBELET_PORT="--kubelet-port=10250"
+
+# Comma separated list of nodes in the etcd cluster
+KUBE_ETCD_SERVERS="--etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
+
+# Address range to use for services
+KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range={{ service_cluster_ip_range }}"
+
+# default admission control policies
+KUBE_ADMISSION_CONTROL="--enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
+
+# Add your own!
+KUBE_API_ARGS="--allow-privileged=true \
+               --service-account-key-file=/etc/kubernetes/ssl/apiserver.key \
+               --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
+               --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
+               --client-ca-file=/etc/kubernetes/ssl/ca.pem \
+               --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
+               --etcd-certfile=/etc/kubernetes/ssl/flannel_{{ ansible_default_ipv4.address }}.pem \
+               --etcd-keyfile=/etc/kubernetes/ssl/flannel_{{ ansible_default_ipv4.address }}.key \
+               --token-auth-file=/etc/kubernetes/token.csv \
+               --authorization-mode=RBAC \
+               --kubelet-https=true \
+               --apiserver-count=5 \
+               --default-not-ready-toleration-seconds=10 \
+               --default-unreachable-toleration-seconds=10 \
+               --delete-collection-workers=3 \
+               --audit-log-maxage=7 \
+               --audit-log-maxbackup=10 \
+               --audit-log-maxsize=100 \
+               --event-ttl=1h \
+               --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem \
+               --proxy-client-cert-file=/etc/kubernetes/ssl/kubelet_{{ ansible_default_ipv4.address }}.pem \
+               --proxy-client-key-file=/etc/kubernetes/ssl/kubelet_{{ ansible_default_ipv4.address }}.key \
+               --requestheader-allowed-names=admin \
+               --requestheader-extra-headers-prefix=X-Remote-Extra- \
+               --requestheader-group-headers=X-Remote-Group \
+               --requestheader-username-headers=X-Remote-User \
+               --enable-aggregator-routing=true \
+               --max-requests-inflight=3000 \
+               --enable-bootstrap-token-auth"
