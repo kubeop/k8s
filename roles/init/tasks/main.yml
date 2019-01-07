@@ -63,9 +63,9 @@
          gpgcheck: no
          enabled: yes
       tags: epel
-    - name: "添加跳板机lcsuper用户"
+    - name: "添加跳板机super用户"
       user:
-         name: lcsuper
+         name: super
          shell: /bin/bash
          state: present
       tags: jump
@@ -75,7 +75,7 @@
          line: "{{ item.line }}"
          state: present
       with_items:
-         - { line: 'lcsuper ALL=(ALL) NOPASSWD: /sbin/ifconfig,/usr/bin/bash,/usr/bin/su,/bin/bash,/bin/su,/usr/bin/sudo'}
+         - { line: 'super ALL=(ALL) NOPASSWD: /sbin/ifconfig,/usr/bin/bash,/usr/bin/su,/bin/bash,/bin/su,/usr/bin/sudo'}
       tags: jump
 #    - name: "添加root用户公钥"
 #      authorized_key:
@@ -84,11 +84,11 @@
 #         key: "{{ lookup('file', 'root_id_rsa.pub') }}"
 #         manage_dir: yes
 #      tags: jump
-#    - name: "添加lcsuper用户公钥"
+#    - name: "添加super用户公钥"
 #      authorized_key:
-#         user: lcsuper
+#         user: super
 #         state: present
-#         key: "{{ lookup('file', 'lcsuper_id_rsa.pub') }}"
+#         key: "{{ lookup('file', 'super_id_rsa.pub') }}"
 #         manage_dir: yes
 #      tags: jump
     - name: "限制ssh登录的用户"
@@ -100,7 +100,7 @@
       with_items:
          - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
          - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
-         - { regexp: "AllowUsers", line: "AllowUsers root lcsuper" }
+         - { regexp: "AllowUsers", line: "AllowUsers root super" }
       tags: sshd
     - name: "重启ssh服务"
       systemd:
