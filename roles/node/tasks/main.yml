@@ -24,12 +24,12 @@
          state: directory
     - name: "安装kubelet"
       get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kubelet"
+         url: "{{ download_url }}/k8s/{{ k8s_version }}/kubelet"
          dest: /usr/bin/
       tags: install_kubelet
     - name: "安装kube-proxy"
       get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-proxy"
+         url: "{{ download_url }}/k8s/{{ k8s_version }}/kube-proxy"
          dest: /usr/bin/
       tags: install_proxy
     - name: "添加执行权限"

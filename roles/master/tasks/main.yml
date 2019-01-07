@@ -15,22 +15,22 @@
          state: present
     - name: "安装kube-apiserver"
       get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-apiserver"
+         url: "{{ download_url }}/k8s/{{ k8s_version }}/kube-apiserver"
          dest: /usr/bin/
       tags: install_kube-apiserver
     - name: "安装kube-controller-manager"
       get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-controller-manager"
+         url: "{{ download_url }}/k8s/{{ k8s_version }}/kube-controller-manager"
          dest: /usr/bin/
       tags: install_kube-controller-manager
     - name: "安装kube-scheduler"
       get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-scheduler"
+         url: "{{ download_url }}/k8s/{{ k8s_version }}/kube-scheduler"
          dest: /usr/bin/
       tags: install_kube-scheduler
     - name: "安装kube-aggregator"
       get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-aggregator"
+         url: "{{ download_url }}/k8s/{{ k8s_version }}/kube-aggregator"
          dest: /usr/bin/
       tags: install_kube-aggregator
     - name: "添加执行权限"

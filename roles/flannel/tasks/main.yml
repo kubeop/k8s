@@ -13,11 +13,11 @@
          state: directory
     - name: "安装flannel"
       get_url:
-         url: "{{ download_url }}/soft/flannel/{{ flannel_version }}/flanneld"
+         url: "{{ download_url }}/flannel/{{ flannel_version }}/flanneld"
          dest: "/usr/bin/flanneld"
     - name: "安装flannel"
       get_url:
-         url: "{{ download_url }}/soft/flannel/{{ flannel_version }}/mk-docker-opts.sh"
+         url: "{{ download_url }}/flannel/{{ flannel_version }}/mk-docker-opts.sh"
          dest: "/usr/libexec/flannel/mk-docker-opts.sh"
     - name: "配置flanneld启动脚步"
       template:

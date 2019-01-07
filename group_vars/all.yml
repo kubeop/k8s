@@ -8,6 +8,8 @@ zbx_server_ip: 172.16.9.9
 gpgkey: https://mirrors.aliyun.com
 
 #k8s
+#上海阿里云内网
+#download_url: http://inner-dl.anymb.com
 download_url: https://dl.anymb.com
 #k8s版本支持：1.10.11、1.11.5、1.12.3
 k8s_version: 1.11.5
