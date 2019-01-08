@@ -48,6 +48,7 @@
          - {line: 'libnetfilter_conntrack-devel'}
          - {line: 'libnetfilter_conntrack'}
          - {line: 'conntrack-tools'}
+         - {line: 'socat'}
     - name: "分发node证书文件"
       copy:
          src: "{{ item.line }}"
