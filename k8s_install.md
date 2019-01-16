@@ -53,11 +53,11 @@
 
 | 系统               | 参数               |
 | ------------------ | ------------------ |
-| 系统               | CentOS 7.5  x86_64 |
-| 内核版本           | 4.4                |
+| 系统               | CentOS 7.6  x86_64 |
+| 内核版本           | 3.10               |
 | docker-data数据盘  | xfs                |
 | docker-ce          | 18.06.1            |
-| kubernetes         | 1.11.5             |
+| kubernetes         | 1.13.2             |
 | Storage Driver     | overlay2           |
 | Backing Filesystem | extfs              |
 | Logging Driver     | json-file          |
@@ -101,17 +101,17 @@ systemctl daemon-reload && systemctl start docker
 #### 1.3、配置安装kubernetes
 
 ```
-#master
-wget http://dl.anymb.com/k8s/bin/1.11.5/kube-apiserver -P /usr/bin/
-wget http://dl.anymb.com/k8s/bin/1.11.5/kube-controller-manager -P /usr/bin/
-wget http://dl.anymb.com/k8s/bin/1.11.5/kube-scheduler -P /usr/bin/
-wget http://dl.anymb.com/k8s/bin/1.11.5/kube-aggregator -P /usr/bin/
+#master节点
+wget http://dl.anymb.com/k8s/1.13.2/kube-apiserver -P /usr/bin/
+wget http://dl.anymb.com/k8s/1.13.2/kube-controller-manager -P /usr/bin/
+wget http://dl.anymb.com/k8s/1.13.2/kube-scheduler -P /usr/bin/
+wget http://dl.anymb.com/k8s/1.13.2/kube-aggregator -P /usr/bin/
 #管理集群使用
-wget http://dl.anymb.com/k8s/bin/1.11.5/kubectl -P /usr/bin/
+wget http://dl.anymb.com/k8s/1.13.2/kubectl -P /usr/bin/
 chmod +x /usr/bin/kube*
-#node
-wget http://dl.anymb.com/k8s/bin/1.11.5/kubelet -P /usr/bin/
-wget http://dl.anymb.com/k8s/bin/1.11.5/kube-proxy -P /usr/bin/
+#node节点
+wget http://dl.anymb.com/k8s/1.13.2/kubelet -P /usr/bin/
+wget http://dl.anymb.com/k8s/1.13.2/kube-proxy -P /usr/bin/
 chmod +x /usr/bin/kube*
 
 #创建k8s运行用户
