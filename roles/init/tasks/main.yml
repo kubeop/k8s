@@ -91,6 +91,16 @@
 #         key: "{{ lookup('file', 'super_id_rsa.pub') }}"
 #         manage_dir: yes
 #      tags: jump
+#    - name: "配置chrony服务"
+#      copy:
+#         src: "chrony.conf"
+#         dest: "/etc/chrony.conf"
+#      tags: ntp
+#    - name: "重启chrony服务"
+#      systemd:
+#         name: chronyd
+#         state: restarted
+#      tags: ntp
     - name: "限制ssh登录的用户"
       lineinfile:
          dest: "/etc/ssh/sshd_config"
