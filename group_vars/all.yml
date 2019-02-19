@@ -11,8 +11,8 @@ gpgkey: https://mirrors.aliyun.com
 #上海阿里云内网
 #download_url: http://inner-dl.anymb.com
 download_url: https://dl.anymb.com
-#k8s版本支持：1.11.5、1.12.5、1.13.2
-k8s_version: 1.13.2
+#k8s版本支持：1.11.5、1.11.7、1.12.5、1.13.3
+k8s_version: 1.13.3
 flannel_version: v0.10.0
 docker_version: docker-ce-18.06.1.ce
 ssl_dir: /etc/ssl/k8s
