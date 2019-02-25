@@ -1,0 +1,48 @@
+    - name: "配置ceph软件源"
+      yum_repository:
+         file: ceph
+         name: '{{ item.name }}'
+         description: '{{ item.description}}'
+         baseurl: '{{ item.baseurl }}'
+         gpgkey: "{{ gpgkey }}/ceph/keys/release.asc"
+         gpgcheck: yes
+         enabled: yes
+      with_items:
+         - { name: "Ceph",description: "Ceph packages for $basearch",baseurl: "http://mirrors.cloud.aliyuncs.com/ceph/rpm-luminous/el7/$basearch \n https://mirrors.aliyun.com/ceph/rpm-luminous/el7/$basearch" }
+         - { name: "Ceph-noarch",description: "Ceph noarch packages",baseurl: "http://mirrors.cloud.aliyuncs.com/ceph/rpm-luminous/el7/noarch \n https://mirrors.aliyun.com/ceph/rpm-luminous/el7/noarch" }
+         - { name: "ceph-source",description: "Ceph source packages",baseurl: "http://mirrors.cloud.aliyuncs.com/ceph/rpm-luminous/el7/SRPMS \n https://mirrors.aliyun.com/ceph/rpm-luminous/el7/SRPMS" }
+      tags: ceph
+    - name: "卸载pip安装urllib3包"
+      pip:
+         name: urllib3
+         state: absent
+      tags: ceph
+    - name: "安装ceph客户端"
+      yum:
+         update_cache: yes
+         name: "{{ item.line }}"
+         state: latest
+      with_items:
+         - {line: 'leveldb'}
+         - {line: 'libaio'}
+         - {line: 'libbabeltrace'}
+         - {line: 'libcephfs2'}
+         - {line: 'librados2'}
+         - {line: 'libradosstriper1'}
+         - {line: 'librbd1'}
+         - {line: 'librgw2'}
+         - {line: 'lttng-ust'}
+         - {line: 'python-cephfs'}
+         - {line: 'python-chardet'}
+         - {line: 'python-ipaddress'}
+         - {line: 'python-prettytable'}
+         - {line: 'python-rados'}
+         - {line: 'python-rbd'}
+         - {line: 'python-requests'}
+         - {line: 'python-rgw'}
+         - {line: 'python-six'}
+         - {line: 'python-urllib3'}
+         - {line: 'userspace-rcu'}
+         - {line: 'ceph-fuse'}
+         - {line: 'ceph-common'}
+      tags: ceph
