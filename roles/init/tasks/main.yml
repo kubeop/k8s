@@ -154,6 +154,7 @@
     - name: "更新系统"
       yum:
          name: "*"
+         exclude: "kernel*"
          state: latest
       tags: update_os
     - name: "关闭selinux"
@@ -269,6 +270,13 @@
       sysctl:
          name: net.ipv4.tcp_max_orphans
          value: 655360
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "修改net.ipv4.ip_local_port_range"
+      sysctl:
+         name: net.ipv4.ip_local_port_range
+         value: 20000 60999
          state: present
          reload: yes
       tags: sysctl
