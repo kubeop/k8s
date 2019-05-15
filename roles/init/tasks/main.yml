@@ -63,20 +63,20 @@
          gpgcheck: no
          enabled: yes
       tags: epel
-    - name: "添加跳板机super用户"
-      user:
-         name: super
-         shell: /bin/bash
-         state: present
-      tags: jump
-    - name: "添加跳板机用户sudo权限"
-      lineinfile:
-         dest: "/etc/sudoers"
-         line: "{{ item.line }}"
-         state: present
-      with_items:
-         - { line: 'super ALL=(ALL) NOPASSWD: /sbin/ifconfig,/usr/bin/bash,/usr/bin/su,/bin/bash,/bin/su,/usr/bin/sudo'}
-      tags: jump
+#    - name: "添加跳板机super用户"
+#      user:
+#         name: super
+#         shell: /bin/bash
+#         state: present
+#      tags: jump
+#    - name: "添加跳板机用户sudo权限"
+#      lineinfile:
+#         dest: "/etc/sudoers"
+#         line: "{{ item.line }}"
+#         state: present
+#      with_items:
+#         - { line: 'super ALL=(ALL) NOPASSWD: /sbin/ifconfig,/usr/bin/bash,/usr/bin/su,/bin/bash,/bin/su,/usr/bin/sudo'}
+#      tags: jump
 #    - name: "添加root用户公钥"
 #      authorized_key:
 #         user: root
@@ -110,7 +110,7 @@
       with_items:
          - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
          - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
-         - { regexp: "AllowUsers", line: "AllowUsers root super" }
+         - { regexp: "AllowUsers", line: "AllowUsers root" }
       tags: sshd
     - name: "重启ssh服务"
       systemd:
