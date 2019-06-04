@@ -7,6 +7,9 @@
          src: "ipenv.sh"
          dest: "/etc/profile.d/"
       tags: os_env
+    - name: "设置时区"
+      timezone:
+         name: Asia/Shanghai
 #    - name: "获取JumpServer Token"
 #      uri:
 #         url: https://j.anymb.com/api/users/v1/auth/
@@ -157,6 +160,8 @@
          exclude: "kernel*"
          state: latest
       tags: update_os
+    - name: "关闭交换分区"
+      shell: swapoff -a
     - name: "关闭selinux"
       selinux:
          state: disabled
