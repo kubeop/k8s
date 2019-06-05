@@ -8,14 +8,11 @@ zbx_server_ip: 172.16.9.9
 gpgkey: https://mirrors.aliyun.com
 
 #k8s
-#上海阿里云内网
-#download_url: http://inner-dl.anymb.com
-download_url: https://dl.anymb.com
-#k8s版本支持: 1.11.8、1.12.6、1.13.4
-k8s_version: 1.13.4
-#flannel版本支持: v0.10.0、v0.11.0
-flannel_version: v0.11.0
-docker_version: docker-ce-18.06.1.ce
+#k8s组件下载地址(官方下载地址，可能会很慢或下载失败，建议更换为自己文件服务器)。如需指定版本，将下面url中版本好修改为对应版本即可
+download_url: https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64
+#flannel下载地址(官方下载地址，可能会很慢或下载失败，建议更换为自己文件服务器)。如需指定版本，将下面url中版本好修改为对应版本即可
+flannel_url: https://github.com/coreos/flannel/releases/download/v0.11.0/flanneld-amd64
+docker_version: 18.09.6-3
 ssl_dir: /etc/ssl/k8s
 ssl_days: 1825
 ssl_size: 4096

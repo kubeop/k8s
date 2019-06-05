@@ -8,7 +8,7 @@
          dest: "/root/.kube/config"
     - name: "安装kubectl"
       get_url:
-         url: "{{ download_url }}/k8s/{{ k8s_version }}/kubectl"
+         url: "{{ download_url }}/kubectl"
          dest: /usr/bin/
       tags: install_kubectl
     - name: "添加执行权限"
