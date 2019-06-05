@@ -50,26 +50,18 @@
          dest: "{{ ssl_dir }}/etcd/etcd_{{ item }}.cnf"
       with_items:
          - "{{ groups['etcd'] }}"
-         - "{{ groups['master'] }}"
-         - "{{ groups['node'] }}"
     - name: "签发etcd证书"
       command: 'openssl genrsa -out {{ ssl_dir }}/etcd/etcd_{{ item }}.key {{ ssl_size }}'
       with_items:
          - "{{ groups['etcd'] }}"
-         - "{{ groups['master'] }}"
-         - "{{ groups['node'] }}"
     - name: "签发etcd证书"
       command: 'openssl req -new -key {{ ssl_dir }}/etcd/etcd_{{ item }}.key -out {{ ssl_dir }}/etcd/etcd_{{ item }}.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd/etcd_{{ item }}.cnf'
       with_items:
          - "{{ groups['etcd'] }}"
-         - "{{ groups['master'] }}"
-         - "{{ groups['node'] }}"
     - name: "签发etcd证书"
       command: 'openssl x509 -req -in {{ ssl_dir }}/etcd/etcd_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd/etcd_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd/etcd_{{ item }}.cnf -extensions v3_req'
       with_items:
          - "{{ groups['etcd'] }}"
-         - "{{ groups['master'] }}"
-         - "{{ groups['node'] }}"
 
     - name: "创建kubelet证书保存目录"
       file:
@@ -130,3 +122,35 @@
       with_items:
          - "{{ groups['node'] }}"
       tags: kube-proxy
+
+    - name: "创建flannel证书目录"
+        file:
+           path: "{{ ssl_dir }}/flannel"
+           state: directory
+        tags: flannel
+      - name: "拷贝flannel证书配置文件"
+        template:
+           src: flannel.cnf.j2
+           dest: "{{ ssl_dir }}/flannel/flannel_{{ item }}.cnf"
+        with_items:
+           - "{{ groups['master'] }}"
+           - "{{ groups['node'] }}"
+        tags: flannel
+      - name: "签发flannel证书"
+        command: 'openssl genrsa -out {{ ssl_dir }}/flannel/flannel_{{ item }}.key {{ ssl_size }}'
+        with_items:
+           - "{{ groups['master'] }}"
+           - "{{ groups['node'] }}"
+        tags: flannel
+      - name: "签发flannel证书"
+        command: 'openssl req -new -key {{ ssl_dir }}/flannel/flannel_{{ item }}.key -out {{ ssl_dir }}/flannel/flannel_{{ item }}.csr -subj "/CN=flannel/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/flannel/flannel_{{ item }}.cnf'
+        with_items:
+           - "{{ groups['master'] }}"
+           - "{{ groups['node'] }}"
+        tags: flannel
+      - name: "签发flannel证书"
+        command: 'openssl x509 -req -in {{ ssl_dir }}/flannel/flannel_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/flannel/flannel_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/flannel/flannel_{{ item }}.cnf -extensions v3_req'
+        with_items:
+           - "{{ groups['master'] }}"
+           - "{{ groups['node'] }}"
+        tags: flannel

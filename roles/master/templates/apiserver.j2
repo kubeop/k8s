@@ -28,8 +28,8 @@ KUBE_API_ARGS="--allow-privileged=true \
                --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
                --client-ca-file=/etc/kubernetes/ssl/ca.pem \
                --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
-               --etcd-certfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.pem \
-               --etcd-keyfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.key \
+               --etcd-certfile=/etc/kubernetes/ssl/flannel_{{ ansible_default_ipv4.address }}.pem \
+               --etcd-keyfile=/etc/kubernetes/ssl/flannel_{{ ansible_default_ipv4.address }}.key \
                --token-auth-file=/etc/kubernetes/token.csv \
                --authorization-mode=RBAC \
                --kubelet-https=true \
