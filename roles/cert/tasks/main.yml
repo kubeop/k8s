@@ -50,18 +50,26 @@
          dest: "{{ ssl_dir }}/etcd/etcd_{{ item }}.cnf"
       with_items:
          - "{{ groups['etcd'] }}"
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
     - name: "签发etcd证书"
       command: 'openssl genrsa -out {{ ssl_dir }}/etcd/etcd_{{ item }}.key {{ ssl_size }}'
       with_items:
          - "{{ groups['etcd'] }}"
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
     - name: "签发etcd证书"
       command: 'openssl req -new -key {{ ssl_dir }}/etcd/etcd_{{ item }}.key -out {{ ssl_dir }}/etcd/etcd_{{ item }}.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd/etcd_{{ item }}.cnf'
       with_items:
          - "{{ groups['etcd'] }}"
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
     - name: "签发etcd证书"
       command: 'openssl x509 -req -in {{ ssl_dir }}/etcd/etcd_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd/etcd_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd/etcd_{{ item }}.cnf -extensions v3_req'
       with_items:
          - "{{ groups['etcd'] }}"
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
 
     - name: "创建kubelet证书保存目录"
       file:
