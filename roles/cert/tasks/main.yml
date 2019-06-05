@@ -124,10 +124,10 @@
       tags: kube-proxy
 
     - name: "创建flannel证书目录"
-        file:
-           path: "{{ ssl_dir }}/flannel"
-           state: directory
-        tags: flannel
+      file:
+         path: "{{ ssl_dir }}/flannel"
+         state: directory
+      tags: flannel
     - name: "拷贝flannel证书配置文件"
       template:
          src: flannel.cnf.j2
