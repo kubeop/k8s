@@ -28,11 +28,6 @@
          url: "{{ download_url }}/kube-scheduler"
          dest: /usr/bin/
       tags: install_kube-scheduler
-    - name: "安装kube-aggregator"
-      get_url:
-         url: "{{ download_url }}/kube-aggregator"
-         dest: /usr/bin/
-      tags: install_kube-aggregator
     - name: "添加执行权限"
       file:
          dest: "{{ item.line }}"
@@ -41,7 +36,6 @@
          - {line: '/usr/bin/kube-apiserver'}
          - {line: '/usr/bin/kube-controller-manager'}
          - {line: '/usr/bin/kube-scheduler'}
-         - {line: '/usr/bin/kube-aggregator'}
       tags: install_kube-apiserver
     - name: "分发master证书文件"
       copy:

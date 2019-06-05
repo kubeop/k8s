@@ -31,13 +31,13 @@
          - {line: '/usr/bin/flanneld'}
          - {line: '/usr/libexec/flannel/mk-docker-opts.sh'}
          - {line: '/usr/bin/flanneld-start'}
-    - name: "分发flannel证书文件"
+    - name: "分发flannel客户端证书文件"
       copy:
          src: "{{ item.line }}"
          dest: "/etc/kubernetes/ssl/"
       with_items:
-         - {line: '{{ ssl_dir }}/flannel/flannel_{{ ansible_default_ipv4.address }}.key'}
-         - {line: '{{ ssl_dir }}/flannel/flannel_{{ ansible_default_ipv4.address }}.pem'}
+         - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.key'}
+         - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.pem'}
       tags: dis_certs
     - name: "修改flanneld配置"
       template:
