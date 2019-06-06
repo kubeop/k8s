@@ -7,6 +7,5 @@ KUBE_PROXY_ARGS="--bind-address={{ ansible_default_ipv4.address }} \
                  --ipvs-min-sync-period=2s \
                  --ipvs-sync-period=3s \
                  --ipvs-scheduler=wlc \
-                 --allow-privileged=true \
                  --logtostderr=true \
                  --v=4"
