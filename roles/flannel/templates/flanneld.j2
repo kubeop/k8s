@@ -8,4 +8,4 @@ FLANNEL_ETCD_ENDPOINTS="{% set pk = groups['etcd'] %}{% for host in pk %}https:/
 FLANNEL_ETCD_PREFIX="/k8s/network"
 
 # Any additional options that you want to pass
-FLANNEL_OPTIONS="-etcd-cafile=/etc/kubernetes/ssl/ca.pem -etcd-certfile=/etc/kubernetes/ssl/flannel_{{ ansible_default_ipv4.address }}.pem -etcd-keyfile=/etc/kubernetes/ssl/flannel_{{ ansible_default_ipv4.address }}.key"
+FLANNEL_OPTIONS="-etcd-cafile=/etc/kubernetes/ssl/ca.pem -etcd-certfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.pem -etcd-keyfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.key"
