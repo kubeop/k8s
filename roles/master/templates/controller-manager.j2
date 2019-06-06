@@ -1,8 +1,4 @@
-# The following values are used to configure the kubernetes controller-manager
-
-# defaults from config and apiserver should be adequate
-
-# Add your own!
+# kubernetes controller-manager
 KUBE_CONTROLLER_MANAGER_ARGS="\
     --master=https://{{ ansible_default_ipv4.address }}:6443 \
     --service-account-private-key-file=/etc/kubernetes/ssl/apiserver.key \
@@ -18,4 +14,7 @@ KUBE_CONTROLLER_MANAGER_ARGS="\
     --node-monitor-period=2s \
     --node-monitor-grace-period=16s \
     --pod-eviction-timeout=30s \
-    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig"
+    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+    --logtostderr=true \
+    --allow-privileged=true \
+    --v=4"

@@ -1,13 +1,12 @@
 # kubernetes proxy config
-
-# default config should be adequate
-
-# Add your own!
 KUBE_PROXY_ARGS="--bind-address={{ ansible_default_ipv4.address }} \
                  --hostname-override={{ ansible_default_ipv4.address }} \
+                 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig \
                  --cluster-cidr={{ service_cluster_ip_range }} \
                  --proxy-mode=ipvs \
                  --ipvs-min-sync-period=2s \
                  --ipvs-sync-period=3s \
-                 --ipvs-scheduler=rr \
-                 --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig"
+                 --ipvs-scheduler=wlc \
+                 --allow-privileged=true \
+                 --logtostderr=true \
+                 --v=4"

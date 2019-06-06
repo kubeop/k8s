@@ -1,28 +1,9 @@
-# kubernetes system config
-#
-# The following values are used to configure the kube-apiserver
-#
-
-# The address on the local server to listen to.
-KUBE_API_ADDRESS="--bind-address={{ ansible_default_ipv4.address }}"
-
-# The port on the local server to listen on.
-KUBE_API_PORT="--secure-port=6443 --insecure-port=0"
-
-# Port minions listen on
-# KUBELET_PORT="--kubelet-port=10250"
-
-# Comma separated list of nodes in the etcd cluster
-KUBE_ETCD_SERVERS="--etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
-
-# Address range to use for services
-KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range={{ service_cluster_ip_range }}"
-
-# default admission control policies
-KUBE_ADMISSION_CONTROL="--enable-admission-plugins=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction"
-
-# Add your own!
+# kubernetes apiserver config
 KUBE_API_ARGS="--allow-privileged=true \
+               --bind-address={{ ansible_default_ipv4.address }} \
+               --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %} \
+               --secure-port=6443 \
+               --insecure-port=0 \
                --service-account-key-file=/etc/kubernetes/ssl/apiserver.key \
                --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
                --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
@@ -31,6 +12,7 @@ KUBE_API_ARGS="--allow-privileged=true \
                --etcd-certfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.pem \
                --etcd-keyfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.key \
                --token-auth-file=/etc/kubernetes/token.csv \
+               --enable-admission-plugins=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction \
                --authorization-mode=RBAC,Node \
                --kubelet-https=true \
                --apiserver-count=5 \
@@ -41,6 +23,7 @@ KUBE_API_ARGS="--allow-privileged=true \
                --audit-log-maxbackup=10 \
                --audit-log-maxsize=100 \
                --event-ttl=1h \
+               --service-cluster-ip-range={{ service_cluster_ip_range }} \
                --service-node-port-range=30000-50000 \
                --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem \
                --proxy-client-cert-file=/etc/kubernetes/ssl/kubelet_{{ ansible_default_ipv4.address }}.pem \
@@ -51,4 +34,7 @@ KUBE_API_ARGS="--allow-privileged=true \
                --requestheader-username-headers=X-Remote-User \
                --enable-aggregator-routing=true \
                --max-requests-inflight=3000 \
-               --enable-bootstrap-token-auth"
+               --enable-bootstrap-token-auth \
+               --logtostderr=true \
+               --allow-privileged=true \
+               --v=4"

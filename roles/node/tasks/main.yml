@@ -75,10 +75,6 @@
       template:
          src: "proxy.j2"
          dest: "/etc/kubernetes/proxy"
-    - name: "配置config"
-      template:
-         src: "config.j2"
-         dest: "/etc/kubernetes/config"
     - name: "获取bootstrap.kubeconfig token"
       shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
       register: kubeconfig
