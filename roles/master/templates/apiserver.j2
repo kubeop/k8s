@@ -15,7 +15,7 @@ KUBE_API_ARGS="--allow-privileged=true \
                --enable-admission-plugins=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction \
                --authorization-mode=RBAC,Node \
                --kubelet-https=true \
-               --apiserver-count=5 \
+               --apiserver-count=3 \
                --default-not-ready-toleration-seconds=10 \
                --default-unreachable-toleration-seconds=10 \
                --delete-collection-workers=3 \
