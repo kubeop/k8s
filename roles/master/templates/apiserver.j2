@@ -19,7 +19,7 @@ KUBE_ETCD_SERVERS="--etcd-servers={% set pk = groups['etcd'] %}{% for host in pk
 KUBE_SERVICE_ADDRESSES="--service-cluster-ip-range={{ service_cluster_ip_range }}"
 
 # default admission control policies
-KUBE_ADMISSION_CONTROL="--enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota"
+KUBE_ADMISSION_CONTROL="--enable-admission-plugins=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction"
 
 # Add your own!
 KUBE_API_ARGS="--allow-privileged=true \
@@ -31,7 +31,7 @@ KUBE_API_ARGS="--allow-privileged=true \
                --etcd-certfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.pem \
                --etcd-keyfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.key \
                --token-auth-file=/etc/kubernetes/token.csv \
-               --authorization-mode=RBAC \
+               --authorization-mode=RBAC,Node \
                --kubelet-https=true \
                --apiserver-count=5 \
                --default-not-ready-toleration-seconds=10 \
@@ -41,6 +41,7 @@ KUBE_API_ARGS="--allow-privileged=true \
                --audit-log-maxbackup=10 \
                --audit-log-maxsize=100 \
                --event-ttl=1h \
+               --service-node-port-range=30000-50000 \
                --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem \
                --proxy-client-cert-file=/etc/kubernetes/ssl/kubelet_{{ ansible_default_ipv4.address }}.pem \
                --proxy-client-key-file=/etc/kubernetes/ssl/kubelet_{{ ansible_default_ipv4.address }}.key \

@@ -18,6 +18,7 @@ KUBELET_POD_INFRA_CONTAINER="--pod-infra-container-image={{ pause_image }}"
 ##open gpu 
 ##--feature-gates=DevicePlugins=true
 KUBELET_ARGS="--cgroup-driver=systemd \
+              --hostname-override={{ ansible_default_ipv4.address }} \
               --cluster-dns={{ cluster_dns }} \
               --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
               --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
