@@ -23,9 +23,9 @@ Kubernetes是容器集群管理系统，是一个开源的平台，可以实现�
 
 
 
-##使用方法：
+## 使用方法：
 
-###一、准备资源
+### 一、准备资源
 
 1.1、准备机器资源，机器需要使用一块数据盘用来存放数据
 
@@ -63,7 +63,7 @@ Kubernetes是容器集群管理系统，是一个开源的平台，可以实现�
 
 
 
-### 二、修改相关配置
+###  二、修改相关配置
 
 编辑group_vars/all文件，填入自己的参数
 
@@ -99,7 +99,7 @@ Kubernetes是容器集群管理系统，是一个开源的平台，可以实现�
 
   注：自行去https://github.com/kubernetes/kubernetes下载对应版本，将二进制文件解压至下载服务器对应目录
 
-###三、使用方法
+### 三、使用方法
 
 #### 3.1、安装ansible
 
@@ -109,7 +109,7 @@ Kubernetes是容器集群管理系统，是一个开源的平台，可以实现�
 pip install ansible
 ```
 
-####3.2、部署集群
+#### 3.2、部署集群
 
 以下步骤都可单独执行，除系统初始化外，其他都可重复执行。也可单独指定tag执行部分模块
 
@@ -163,7 +163,7 @@ ansible-playbook k8s.yml -i inventory -t init -l node
 ansible-playbook k8s.yml -i inventory -t cert,install_node
 ```
 
-####3.3、替换集群证书
+#### 3.3、替换集群证书
 
 先删除ca、apiserver证书，然后执行以下步骤
 
