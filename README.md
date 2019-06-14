@@ -177,3 +177,9 @@ ansible-playbook k8s.yml -i inventory -t dis_certs,restart_flannel,restart_maste
 ### kubernetes HA架构
 
 ![k8s](kubernetes.png)
+
+
+
+### 容器云平台架构
+
+![business](business.jpeg)
