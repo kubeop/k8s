@@ -13,11 +13,11 @@
     uid: 200
     home: /var/kube
     state: present
- - name: "安装kube-master"
-   get_url:
+- name: "安装kube-master"
+  get_url:
     url: "{{ item.line }}"
     dest: /usr/bin/
-   with_items:
+  with_items:
     - {line: "{{ download_url }}/kube-apiserver"}
     - {line: "{{ download_url }}/kube-controller-manager"}
     - {line: "{{ download_url }}/kube-scheduler"}
