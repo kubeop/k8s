@@ -1,109 +1,81 @@
-    - name: "创建k8s目录"
-      file:
-         path: "/etc/kubernetes/ssl/"
-         state: directory
-    - name: "拷贝token文件"
-      copy:
-         src: "{{ ssl_dir }}//token.csv"
-         dest: "/etc/kubernetes/token.csv"
-    - name: "添加k8s运行用户kube"
-      user:
-         name: kube
-         shell: /sbin/nologin
-         uid: 200
-         home: /var/kube
-         state: present
-    - name: "安装kube-apiserver"
-      get_url:
-         url: "{{ download_url }}/kube-apiserver"
-         dest: /usr/bin/
-      tags: install_kube-apiserver
-    - name: "安装kube-controller-manager"
-      get_url:
-         url: "{{ download_url }}/kube-controller-manager"
-         dest: /usr/bin/
-      tags: install_kube-controller-manager
-    - name: "安装kube-scheduler"
-      get_url:
-         url: "{{ download_url }}/kube-scheduler"
-         dest: /usr/bin/
-      tags: install_kube-scheduler
-    - name: "添加执行权限"
-      file:
-         dest: "{{ item.line }}"
-         mode: 0755
-      with_items:
-         - {line: '/usr/bin/kube-apiserver'}
-         - {line: '/usr/bin/kube-controller-manager'}
-         - {line: '/usr/bin/kube-scheduler'}
-      tags: install_kube-apiserver
-    - name: "分发master证书文件"
-      copy:
-         src: "{{ item.line }}"
-         dest: "/etc/kubernetes/ssl/"
-      with_items:
-         - {line: '{{ ssl_dir }}/apiserver.key'}
-         - {line: '{{ ssl_dir }}/apiserver.pem'}
-         - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.key'}
-         - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.pem'}
-      tags: dis_certs
-    - name: "配置kube-apiserver systemd文件"
-      template:
-         src: "kube-apiserver.service.j2"
-         dest: "/usr/lib/systemd/system/kube-apiserver.service"
-    - name: "配置kube-controller-manager systemd文件"
-      template:
-         src: "kube-controller-manager.service.j2"
-         dest: "/usr/lib/systemd/system/kube-controller-manager.service"
-    - name: "配置kube-scheduler systemd文件"
-      template:
-         src: "kube-scheduler.service.j2"
-         dest: "/usr/lib/systemd/system/kube-scheduler.service"
-    - name: "配置apiserver"
-      template:
-         src: "apiserver.j2"
-         dest: "/etc/kubernetes/apiserver"
-    - name: "配置controller-manager"
-      template:
-         src: "controller-manager.j2"
-         dest: "/etc/kubernetes/controller-manager"
-    - name: "配置scheduler"
-      template:
-         src: "scheduler.j2"
-         dest: "/etc/kubernetes/scheduler"
-    - name: "获取bootstrap.kubeconfig token"
-      shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
-      register: kubeconfig
-    - name: "配置bootstrap.kubeconfig"
-      template:
-         src: "bootstrap.kubeconfig.j2"
-         dest: "/etc/kubernetes/bootstrap.kubeconfig"
-    - name: "配置kubelet.kubeconfig"
-      template:
-         src: "kubelet.kubeconfig.j2"
-         dest: "/etc/kubernetes/kubelet.kubeconfig"
-    - name: "添加acl"
-      acl:
-         path: "{{ item.line }}"
-         entity: kube
-         etype: user
-         permissions: r
-         state: present
-      with_items:
-         - {line: '/etc/kubernetes/bootstrap.kubeconfig'}
-         - {line: '/etc/kubernetes/kubelet.kubeconfig'}
-    - name: "启动服务"
-      systemd:
-         name: "{{ item.line }}"
-         enabled: yes
-         daemon_reload: yes
-         state: restarted
-      with_items:
-         - {line: 'kube-apiserver'}
-         - {line: 'kube-controller-manager'}
-         - {line: 'kube-scheduler'}
-      tags: restart_master
-
-
-
-
+- name: "创建k8s目录"
+  file:
+    path: "/etc/kubernetes/ssl/"
+    state: directory
+- name: "拷贝token文件"
+  copy:
+    src: "{{ ssl_dir }}//token.csv"
+    dest: "/etc/kubernetes/token.csv"
+- name: "添加k8s运行用户kube"
+  user:
+    name: kube
+    shell: /sbin/nologin
+    uid: 200
+    home: /var/kube
+    state: present
+ - name: "安装kube-master"
+  get_url:
+    url: "{{ item.line }}"
+    dest: /usr/bin/
+  with_items:
+    - {line: "{{ download_url }}/kube-apiserver"}
+    - {line: "{{ download_url }}/kube-controller-manager"}
+    - {line: "{{ download_url }}/kube-scheduler"}
+  tags: instll_kube-master
+- name: "添加执行权限"
+  file:
+    dest: "{{ item.line }}"
+    mode: 0755
+  with_items:
+    - {line: '/usr/bin/kube-apiserver'}
+    - {line: '/usr/bin/kube-controller-manager'}
+    - {line: '/usr/bin/kube-scheduler'}
+  tags: instll_kube-master
+- name: "分发master证书文件"
+  copy:
+    src: "{{ item.line }}"
+    dest: "/etc/kubernetes/ssl/"
+  with_items:
+    - {line: '{{ ssl_dir }}/apiserver.key'}
+    - {line: '{{ ssl_dir }}/apiserver.pem'}
+    - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.key'}
+    - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.pem'}
+  tags: dis_certs
+- name: "获取bootstrap.kubeconfig token"
+  shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
+  register: kubeconfig
+- name: "配置systemd和kubeconfig"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
+    - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
+    - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
+    - {src: "apiserver.j2",dest: "/etc/kubernetes/apiserver" }
+    - {src: "controller-manager.j2",dest: "/etc/kubernetes/controller-manager" }
+    - {src: "scheduler.j2",dest: "/etc/kubernetes/scheduler" }
+    - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
+    - {src: "kubelet.kubeconfig.j2",dest: "/etc/kubernetes/kubelet.kubeconfig" }
+  tags: kube-master-service
+- name: "添加acl"
+  acl:
+    path: "{{ item.line }}"
+    entity: kube
+    etype: user
+    permissions: r
+    state: present
+  with_items:
+    - {line: '/etc/kubernetes/bootstrap.kubeconfig'}
+    - {line: '/etc/kubernetes/kubelet.kubeconfig'}
+- name: "启动服务"
+  systemd:
+    name: "{{ item.line }}"
+    enabled: yes
+    daemon_reload: yes
+    state: restarted
+  with_items:
+    - {line: 'kube-apiserver'}
+    - {line: 'kube-controller-manager'}
+    - {line: 'kube-scheduler'}
+  tags: restart_master
