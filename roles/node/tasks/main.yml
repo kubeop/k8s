@@ -47,6 +47,11 @@
     - {line: 'libnetfilter_conntrack'}
     - {line: 'conntrack-tools'}
     - {line: 'socat'}
+- name: "分发ca证书文件"
+  copy:
+    src: "{{ ssl_dir }}/ca.pem"
+    dest: "/etc/kubernetes/ssl/"
+  tags: dis_certs
 - name: "分发node证书文件"
   copy:
     src: "{{ item.line }}"
@@ -56,6 +61,8 @@
     - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.pem'}
     - {line: '{{ ssl_dir }}/kube-proxy/kube-proxy_{{ ansible_default_ipv4.address }}.key'}
     - {line: '{{ ssl_dir }}/kube-proxy/kube-proxy_{{ ansible_default_ipv4.address }}.pem'}
+    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.key'}
+    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.pem'}
   tags: dis_certs
 - name: "获取bootstrap.kubeconfig token"
   shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"

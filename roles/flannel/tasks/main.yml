@@ -2,11 +2,6 @@
   file:
     path: "/etc/kubernetes/ssl/"
     state: directory
-- name: "分发ca证书文件"
-  copy:
-    src: "{{ ssl_dir }}/ca.pem"
-    dest: "/etc/kubernetes/ssl/"
-  tags: dis_certs
 - name: "创建flannel目录"
   file:
     path: "/usr/libexec/flannel"
@@ -31,14 +26,6 @@
     - {line: '/usr/bin/flanneld'}
     - {line: '/usr/libexec/flannel/mk-docker-opts.sh'}
     - {line: '/usr/bin/flanneld-start'}
-- name: "分发flannel客户端证书文件"
-  copy:
-    src: "{{ item.line }}"
-    dest: "/etc/kubernetes/ssl/"
-  with_items:
-    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.key'}
-    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.pem'}
-  tags: dis_certs
 - name: "修改flanneld配置"
   template:
     src: "flanneld.j2"
