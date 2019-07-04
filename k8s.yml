@@ -18,10 +18,10 @@
 - name: "安装网络组件"
   hosts: master node
   vars: 
-    net_type: flannel
+    net: flannel
   roles:
-    - { role: 'flannel', tags: "install_flannel", when: "net_type == 'flannel' "}
-    - { role: 'calico', tags: "install_calico", when: "net_type == 'calico' "}
+    - { role: 'flannel', tags: "install_flannel", when: "net == 'flannel' "}
+    - { role: 'calico', tags: "install_calico", when: "net == 'calico' "}
 
 - name: "配置master"
   hosts: master
