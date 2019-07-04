@@ -1,6 +1,6 @@
 ---
 - name: "Creating Kubernetes High Availability Cluster with Ansible Playbook"
-  hosts: etcd master node
+  hosts: etcd master node haproxy
   roles:
     - { role: 'init', tags: "init",when: "ansible_os_family == 'RedHat'" }
 
@@ -14,6 +14,12 @@
   hosts: etcd
   roles:
     - { role: 'etcd', tags: "install_etcd" }
+
+- name: "配置haproxy"
+  hosts: haproxy
+  roles:
+    - { role: 'haproxy', tags: "install_haproxy" }
+    - { role: 'keepalived', tags: "install_keepalived" }
 
 - name: "安装Flannel"
   hosts: master node

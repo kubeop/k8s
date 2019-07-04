@@ -23,6 +23,17 @@
 10.64.0.1        #shoule be k8s servcie first ip
 172.17.15.246    #shoule be k8s apiserver slb ip
 
+[vip]
+172.17.15.246
+
+[haproxy]
+172.17.15.247 hostname=haproxy-01
+172.17.15.248 hostname=haproxy-02
+
+[nginx]
+172.17.15.249 hostname=nginx-01
+172.17.15.250 hostname=nginx-02
+
 #本组内填写node服务器及主机名
 [node]
 172.17.15.243 hostname=node-01
