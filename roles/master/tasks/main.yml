@@ -40,6 +40,8 @@
     - {line: '{{ ssl_dir }}/apiserver.pem'}
     - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.key'}
     - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.pem'}
+    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.key'}
+    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.pem'}
   tags: dis_certs
 - name: "获取bootstrap.kubeconfig token"
   shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
