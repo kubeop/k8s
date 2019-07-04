@@ -16,3 +16,8 @@
     dest: "/usr/bin/kubectl"
     mode: 0755
   tags: install_kubectl
+- name: "添加命令自动补全"
+  lineinfile:
+    dest: "/etc/profile"
+    line: "source <(kubectl completion bash)"
+    state: present
