@@ -66,27 +66,27 @@
     gpgcheck: no
     enabled: yes
   tags: epel
-- name: "添加跳板机super用户"
-  user:
-    name: super
-    shell: /bin/bash
-    state: present
-  tags: jump
-- name: "添加跳板机用户sudo权限"
-  lineinfile:
-    dest: "/etc/sudoers"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - { line: 'super ALL=(ALL) NOPASSWD: /sbin/ifconfig,/usr/bin/bash,/usr/bin/su,/bin/bash,/bin/su,/usr/bin/sudo'}
-  tags: jump
-#- name: "添加root用户公钥"
-#  authorized_key:
-#    user: root
+#- name: "添加跳板机super用户"
+#  user:
+#    name: super
+#    shell: /bin/bash
 #    state: present
-#    key: "{{ lookup('file', 'root_id_rsa.pub') }}"
-#    manage_dir: yes
 #  tags: jump
+#- name: "添加跳板机用户sudo权限"
+#  lineinfile:
+#    dest: "/etc/sudoers"
+#    line: "{{ item.line }}"
+#    state: present
+#  with_items:
+#    - { line: 'super ALL=(ALL) NOPASSWD: /sbin/ifconfig,/usr/bin/bash,/usr/bin/su,/bin/bash,/bin/su,/usr/bin/sudo'}
+#  tags: jump
+- name: "添加root用户公钥"
+  authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', 'root_id_rsa.pub') }}"
+    manage_dir: yes
+  tags: jump
 #- name: "添加super用户公钥"
 #  authorized_key:
 #    user: super
@@ -94,16 +94,16 @@
 #    key: "{{ lookup('file', 'super_id_rsa.pub') }}"
 #    manage_dir: yes
 #  tags: jump
-#- name: "配置chrony服务"
-#  copy:
-#    src: "chrony.conf"
-#    dest: "/etc/chrony.conf"
-#  tags: ntp
-#- name: "重启chrony服务"
-#  systemd:
-#    name: chronyd
-#    state: restarted
-#  tags: ntp
+- name: "配置chrony服务"
+  copy:
+    src: "chrony.conf"
+    dest: "/etc/chrony.conf"
+  tags: ntp
+- name: "重启chrony服务"
+  systemd:
+    name: chronyd
+    state: restarted
+  tags: ntp
 - name: "限制ssh登录的用户"
   lineinfile:
     dest: "/etc/ssh/sshd_config"
