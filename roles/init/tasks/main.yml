@@ -216,9 +216,6 @@
     - {line: 'ip_vs_sh' }
     - {line: 'nf_conntrack_ipv4' }
     - {line: 'br_netfilter' }
-    - {line: 'br_netfilter' }
-    - {line: 'br_netfilter' }
-    - {line: 'br_netfilter' }
   tags: mod
 - name: "修改内核参数"
   sysctl:
