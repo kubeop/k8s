@@ -11,11 +11,11 @@
   k8s:
     state: present
     definition: 
-    apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: calico-controllers
-      namespace: kube-system
+      apiVersion: v1
+      kind: ServiceAccount
+      metadata:
+        name: calico-controllers
+        namespace: kube-system
 - name: "创建Secret"
   k8s:
     state: present
