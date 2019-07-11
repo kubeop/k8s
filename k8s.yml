@@ -38,4 +38,7 @@
     - { role: 'docker', tags: "install_node" }
     - { role: 'ceph', tags: "install_ceph" }
 
-
+- name: "安装calico"
+  hosts: kubectl
+  roles:
+    - { role: 'calico', tags: "install_calico" }

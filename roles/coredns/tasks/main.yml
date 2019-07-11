@@ -21,18 +21,3 @@
     dest: "/etc/profile"
     line: "source <(kubectl completion bash)"
     state: present
-- name: "安装pip"
-  yum:
-    name: python-pip
-    state: present
-- name: "配置pip源"
-  copy:
-    src: "pip.conf"
-    dest: "/root/.pip/"
-- name: "安装python k8s模块"
-  pip:
-    name: {{ item }}
-    state: present
-  with_items: 
-    - kubernetes
-    - openshift
