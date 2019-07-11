@@ -46,7 +46,7 @@
 - name: "获取bootstrap.kubeconfig token"
   shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
   register: kubeconfig
-- name: "配置systemd和kubeconfig"
+- name: "创建master节点配置文件"
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -70,7 +70,7 @@
   with_items:
     - {line: '/etc/kubernetes/bootstrap.kubeconfig'}
     - {line: '/etc/kubernetes/kubelet.kubeconfig'}
-- name: "启动服务"
+- name: "启动master节点服务"
   systemd:
     name: "{{ item.line }}"
     enabled: yes

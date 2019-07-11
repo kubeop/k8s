@@ -67,7 +67,7 @@
 - name: "获取bootstrap.kubeconfig token"
   shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
   register: kubeconfig
-- name: "配置kubelet systemd文件"
+- name: "创建node节点配置文件"
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -96,7 +96,7 @@
   file:
     path: "/etc/kubernetes/token.csv"
     state: absent
-- name: "启动服务"
+- name: "启动node节点服务"
   systemd:
     name: "{{ item.line }}"
     enabled: yes

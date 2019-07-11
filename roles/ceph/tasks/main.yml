@@ -12,11 +12,6 @@
          - { name: "Ceph-noarch",description: "Ceph noarch packages",baseurl: "http://mirrors.cloud.aliyuncs.com/ceph/rpm-nautilus/el7/noarch \n https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/noarch" }
          - { name: "ceph-source",description: "Ceph source packages",baseurl: "http://mirrors.cloud.aliyuncs.com/ceph/rpm-nautilus/el7/SRPMS \n https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/SRPMS" }
       tags: ceph
-    - name: "卸载pip安装urllib3包"
-      pip:
-         name: urllib3
-         state: absent
-      tags: ceph
     - name: "安装ceph客户端"
       yum:
          update_cache: yes
