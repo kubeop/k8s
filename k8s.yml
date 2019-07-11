@@ -38,7 +38,10 @@
     - { role: 'docker', tags: "install_node" }
     - { role: 'ceph', tags: "install_ceph" }
 
-- name: "安装calico"
+- name: "安装网络组件"
   hosts: kubectl
+  vars: 
+    net: calico
   roles:
-    - { role: 'calico', tags: "install_calico" }
+    - { role: 'calico', tags: "install_calico", when: "net == 'calico' "}
+    ##- { role: 'flannel', tags: "install_flannel", when: "net == 'flannel' "}

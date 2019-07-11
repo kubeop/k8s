@@ -1,12 +1,12 @@
 - name: "加密etcd-ca证书"
   shell: base64 -w 0 /etc/kubernetes/ssl/ca.pem
-  register: etcd-ca
+  register: etcdca
 - name: "加密etcd-cert证书"
   shell: base64 -w 0 /etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.pem
-  register: etcd-cert
+  register: etcdcert
 - name: "加密etcd-key证书"
   shell: base64 -w 0 /etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.key
-  register: etcd-key
+  register: etcdkey
 - name: "创建ServiceAccount"
   k8s:
     state: present
@@ -27,9 +27,9 @@
         name: calico-etcd-secrets
         namespace: kube-system
       data:
-        etcd-key: "{{ etcd-key }}"
-        etcd-cert: "{{ etcd-cert }}"
-        etcd-ca: "{{ etcd-ca }}"
+        etcd-key: "{{ etcdkey.stdout }}"
+        etcd-cert: "{{ etcdcert.stdout }}"
+        etcd-ca: "{{ etcdca.stdout }}"
 - name: "创建ConfigMap"
   k8s:
     state: present
