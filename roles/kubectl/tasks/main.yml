@@ -31,7 +31,7 @@
     dest: "/root/.pip/"
 - name: "安装python k8s模块"
   pip:
-    name: {{ item }}
+    name: "{{ item }}"
     state: present
   with_items: 
     - kubernetes
