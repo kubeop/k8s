@@ -15,14 +15,6 @@
   roles:
     - { role: 'etcd', tags: "install_etcd" }
 
-- name: "安装网络组件"
-  hosts: master node
-  vars: 
-    net: flannel
-  roles:
-    - { role: 'flannel', tags: "install_flannel", when: "net == 'flannel' "}
-    - { role: 'calico', tags: "install_calico", when: "net == 'calico' "}
-
 - name: "配置master"
   hosts: master
   roles:
@@ -42,6 +34,8 @@
 - name: "配置node"
   hosts: node
   roles:
-    - { role: 'docker', tags: "install_node" }
     - { role: 'node', tags: "install_node" }
+    - { role: 'docker', tags: "install_node" }
+    - { role: 'ceph', tags: "install_ceph" }
+
 

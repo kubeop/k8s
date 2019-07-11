@@ -10,6 +10,7 @@ KUBELET_ARGS="--cgroup-driver=systemd \
               --cluster-domain=cluster.local \
               --hairpin-mode promiscuous-bridge \
               --root-dir={{ data_dir }}/data/kubelet \
+              --network-plugin=cni \
               --serialize-image-pulls=false \
               --logtostderr=true \
               --allow-privileged=true \
