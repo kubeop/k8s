@@ -2,7 +2,7 @@
 ##--feature-gates=DevicePlugins=true
 KUBELET_ARGS="--cgroup-driver=systemd \
               --hostname-override={{ ansible_default_ipv4.address }} \
-              --pod-infra-container-image={{ pause_image }} \
+              --pod-infra-container-image={{ harbor_url }}/{{ pause_image }} \
               --cluster-dns={{ cluster_dns }} \
               --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
               --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \

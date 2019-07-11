@@ -8,9 +8,7 @@ gpgkey: https://mirrors.aliyun.com
 
 #k8s
 #k8s组件下载地址(建议更换为自己文件服务器)
-download_url: https://dl.k8sre.com/k8s/v1.14.2
-#flannel下载地址(建议更换为自己文件服务器)
-flannel_url: https://dl.k8sre.com/flannel/v0.11.0/flanneld
+download_url: https://storage.googleapis.com/kubernetes-release/release/v1.14.2/bin/linux/amd64/
 docker_version: docker-ce-18.09.6-3.el7
 ssl_dir: /etc/ssl/k8s
 ssl_days: 1825
@@ -19,4 +17,11 @@ apiserver_domain_name: apiserver.k8sre.com
 service_cluster_ip_range: 10.64.0.0/12
 pod_cluster_cidr: 10.80.0.0/12
 cluster_dns: 10.64.0.2
-pause_image: k8sre/pause-amd64:3.1
+harbor_url: k8sre
+
+#docker images
+pause_image: pause-amd64:3.1
+calico_cni_image: cni:v3.6.2
+calico_node_image: node:v3.6.2
+calico_controllers_image: kube-controllers:v3.6.2
+

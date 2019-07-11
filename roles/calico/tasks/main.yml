@@ -203,7 +203,7 @@
             terminationGracePeriodSeconds: 0
             initContainers:
               - name: install-cni
-                image: nat-harbor.daocloud.io/k8s/cni:v3.6.2
+                image: "{{ harbor_url }}/{{ calico_cni_image }}"
                 command: ["/install-cni.sh"]
                 env:
                   - name: CNI_CONF_NAME
@@ -234,7 +234,7 @@
                     name: etcd-certs
             containers:
               - name: calico-node
-                image: nat-harbor.daocloud.io/k8s/node:v3.6.2
+                image: "{{ harbor_url }}/{{ calico_node_image }}"
                 env:
                   - name: ETCD_ENDPOINTS
                     valueFrom:
@@ -393,7 +393,7 @@
             serviceAccountName: calico-controllers
             containers:
               - name: calico-controllers
-                image: nat-harbor.daocloud.io/k8s/kube-controllers:v3.6.2
+                image: "{{ harbor_url }}/{{ calico_controllers_image }}"
                 env:
                   - name: ETCD_ENDPOINTS
                     valueFrom:

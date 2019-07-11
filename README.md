@@ -95,7 +95,11 @@ vip=172.17.15.10
 | service_cluster_ip_range | 指定k8s集群service的网段                                     |
 | pod_cluster_cidr         | 指定k8s集群pod的网段                                         |
 | cluster_dns              | 指定集群dns服务IP                                            |
-| pause_image              | 指定pause镜像仓库地址                                        |
+| harbor_url               | 镜像仓库地址(包含group)，例如：registry.k8sre.com/library    |
+| pause_image              | 指定pause镜像名称及tag，与harbor_url拼接成完整镜像地址       |
+| calico_cni_image         | 指定calico cni镜像名称及tag，与harbor_url拼接成完整镜像地址  |
+| calico_node_image        | 指定calico node镜像名称及tag，与harbor_url拼接成完整镜像地址 |
+| calico_controllers_image | 指定calico controllers镜像名称及tag，与harbor_url拼接成完整镜像地址 |
 
 - 注：以下程序默认数据目录
 
@@ -120,6 +124,7 @@ vip=172.17.15.10
 在控制端机器执行以下命令安装ansible
 
 ```
+yum -y install python-devel python-pip
 pip install ansible
 ```
 
