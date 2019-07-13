@@ -209,13 +209,12 @@
     state: present
   with_items:
     - {line: 'br_netfilter' }
+    - {line: 'nf_conntrack_ipv4' }
     - {line: 'bridge' }
     - {line: 'ip_vs' }
     - {line: 'ip_vs_rr' }
     - {line: 'ip_vs_wrr' }
     - {line: 'ip_vs_sh' }
-    - {line: 'nf_conntrack_ipv4' }
-    - {line: 'br_netfilter' }
   tags: mod
 - name: "修改内核参数"
   sysctl:
