@@ -111,6 +111,7 @@
     line: "{{ item.line }}"
     state: present
   with_items:
+    - { regexp: "UseDNS", line: "UseDNS no" }
     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
     - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
     - { regexp: "AllowUsers", line: "AllowUsers root" }
