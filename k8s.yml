@@ -40,11 +40,8 @@
 
 - name: "安装网络组件"
   hosts: kubectl
-  vars: 
-    net: calico
   roles:
-    - { role: 'calico', tags: "install_calico", when: "net == 'calico' "}
-    - { role: 'flannel', tags: "install_flannel", when: "net == 'flannel' "}
+    - { role: 'calico', tags: "install_calico" }
     - { role: 'coredns', tags: "install_coredns" }
 
 

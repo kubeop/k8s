@@ -14,7 +14,7 @@
       apiVersion: v1
       kind: ServiceAccount
       metadata:
-        name: calico-controllers
+        name: calico-kube-controllers
         namespace: kube-system
 - name: "创建Secret"
   k8s:
@@ -85,7 +85,7 @@
       kind: ClusterRole
       apiVersion: rbac.authorization.k8s.io/v1beta1
       metadata:
-        name: calico-controllers
+        name: calico-kube-controllers
       rules:
         - apiGroups: [""]
           resources:
@@ -109,14 +109,14 @@
       kind: ClusterRoleBinding
       apiVersion: rbac.authorization.k8s.io/v1beta1
       metadata:
-        name: calico-controllers
+        name: calico-kube-controllers
       roleRef:
         apiGroup: rbac.authorization.k8s.io
         kind: ClusterRole
-        name: calico-controllers
+        name: calico-kube-controllers
       subjects:
       - kind: ServiceAccount
-        name: calico-controllers
+        name: calico-kube-controllers
         namespace: kube-system
 - name: "创建Calico Node ClusterRole"
   k8s:
@@ -365,10 +365,10 @@
       apiVersion: extensions/v1beta1
       kind: Deployment
       metadata:
-        name: calico-controllers
+        name: calico-kube-controllers
         namespace: kube-system
         labels:
-          k8s-app: calico-controllers
+          k8s-app: calico-kube-controllers
         annotations:
           scheduler.alpha.kubernetes.io/critical-pod: ''
       spec:
@@ -377,10 +377,10 @@
           type: Recreate
         template:
           metadata:
-            name: calico-controllers
+            name: calico-kube-controllers
             namespace: kube-system
             labels:
-              k8s-app: calico-controllers
+              k8s-app: calico-kube-controllers
           spec:
             nodeSelector:
               beta.kubernetes.io/os: linux
@@ -390,9 +390,9 @@
                 operator: Exists
               - key: node-role.kubernetes.io/master
                 effect: NoSchedule
-            serviceAccountName: calico-controllers
+            serviceAccountName: calico-kube-controllers
             containers:
-              - name: calico-controllers
+              - name: calico-kube-controllers
                 image: "{{ harbor_url }}/{{ calico_controllers_image }}"
                 env:
                   - name: ETCD_ENDPOINTS

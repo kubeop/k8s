@@ -22,7 +22,6 @@ harbor_url: k8sre
 #docker images
 pause_image: pause-amd64:3.1
 coredns_image: coredns:1.5.0
-flannel_image: flannel:v0.11.0
 calico_cni_image: cni:v3.6.2
 calico_node_image: node:v3.6.2
 calico_controllers_image: kube-controllers:v3.6.2

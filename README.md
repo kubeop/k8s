@@ -98,7 +98,6 @@ vip=172.17.15.10
 | harbor_url               | 镜像仓库地址(包含group)，例如：registry.k8sre.com/library    |
 | pause_image              | 指定pause镜像名称及tag，与harbor_url拼接成完整镜像地址       |
 | coredns_image            | 指定coredns镜像名称及tag，与harbor_url拼接成完整镜像地址     |
-| flannel_image            | 指定flannel镜像名称及tag，与harbor_url拼接成完整镜像地址     |
 | calico_cni_image         | 指定calico cni镜像名称及tag，与harbor_url拼接成完整镜像地址  |
 | calico_node_image        | 指定calico node镜像名称及tag，与harbor_url拼接成完整镜像地址 |
 | calico_controllers_image | 指定calico controllers镜像名称及tag，与harbor_url拼接成完整镜像地址 |
@@ -170,11 +169,7 @@ ansible-playbook k8s.yml -i inventory -t install_node
 ansible-playbook k8s.yml -i inventory
 ```
 
-⚠️：默认使用calico网络插件，可通过以下安装方式使用flannel网络插件
-
-```
-ansible-playbook k8s.yml -i inventory -e net=flannel
-```
+⚠️：默认使用calico网络插件，可自行下载flannel yaml安装flannel网络插件
 
 7、扩容mater节点
 
