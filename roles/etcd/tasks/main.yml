@@ -40,9 +40,9 @@
     enabled: yes
     state: restarted
   tags: restart_etcd
-- name: "拷贝创建网络脚本"
-  template:
-    src: "network.j2"
-    dest: /tmp/network.sh
-- name: "创建并设置网络"
-  shell: bash /tmp/network.sh
+#- name: "拷贝创建网络脚本"
+#  template:
+#    src: "network.j2"
+#    dest: /tmp/network.sh
+#- name: "创建并设置网络"
+#  shell: bash /tmp/network.sh

@@ -114,7 +114,6 @@
     - { regexp: "UseDNS", line: "UseDNS no" }
     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
     - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
-    - { regexp: "AllowUsers", line: "AllowUsers root" }
   tags: sshd
 - name: "重启ssh服务"
   systemd:
