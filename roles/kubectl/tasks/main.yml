@@ -29,10 +29,17 @@
   copy:
     src: "pip.conf"
     dest: "/root/.pip/"
+- name: "update pip"
+  pip:
+    name:
+      - pip
+      - setuptools
+    state: latest
+- name: "安装ipaddress模块"
+  pip:
+    name: ipaddress
+    extra_args: --ignore-installed
 - name: "安装python k8s模块"
   pip:
-    name: "{{ item }}"
+    name: ["kubernetes", "openshift"]
     state: present
-  with_items: 
-    - kubernetes
-    - openshift
