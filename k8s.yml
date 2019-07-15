@@ -34,8 +34,8 @@
 - name: "配置node"
   hosts: node
   roles:
-    - { role: 'node', tags: "install_node" }
     - { role: 'docker', tags: "install_node" }
+    - { role: 'node', tags: "install_node" }
     - { role: 'ceph', tags: "install_ceph" }
 
 - name: "安装网络组件"
