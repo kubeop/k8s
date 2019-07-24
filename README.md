@@ -169,6 +169,12 @@ ansible-playbook k8s.yml -i inventory -t install_node
 ansible-playbook k8s.yml -i inventory
 ```
 
+如是公有云环境，则执行：
+
+```
+ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepalived
+```
+
 ⚠️：默认使用calico网络插件，可自行下载flannel yaml安装flannel网络插件
 
 7、扩容mater节点

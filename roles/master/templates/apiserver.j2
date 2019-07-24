@@ -12,7 +12,7 @@ KUBE_API_ARGS="--allow-privileged=true \
                --etcd-certfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.pem \
                --etcd-keyfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.key \
                --token-auth-file=/etc/kubernetes/token.csv \
-               --enable-admission-plugins=NamespaceLifecycle,LimitRanger,SecurityContextDeny,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction \
+               --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction \
                --authorization-mode=RBAC,Node \
                --kubelet-https=true \
                --apiserver-count=3 \

@@ -111,9 +111,13 @@
     line: "{{ item.line }}"
     state: present
   with_items:
+    - { regexp: "Protocol", line: "Protocol 2" }
+    - { regexp: "MaxAuthTries", line: "MaxAuthTries 6" }
     - { regexp: "UseDNS", line: "UseDNS no" }
     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
     - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
+    - { regexp: "ClientAliveInterval", line: "ClientAliveInterval 900" }
+    - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }
   tags: sshd
 - name: "重启ssh服务"
   systemd:
