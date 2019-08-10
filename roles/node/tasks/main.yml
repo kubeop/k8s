@@ -75,7 +75,6 @@
     - {src: "kubelet.service.j2",dest: "/usr/lib/systemd/system/kubelet.service" }
     - {src: "kube-proxy.service.j2",dest: "/usr/lib/systemd/system/kube-proxy.service" }
     - {src: "kubelet.j2",dest: "/etc/kubernetes/kubelet" }
-    - {src: "kubelet.j2",dest: "/etc/kubernetes/kubelet" }
     - {src: "proxy.j2",dest: "/etc/kubernetes/proxy" }
     - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
     - {src: "kubelet.kubeconfig.j2",dest: "/etc/kubernetes/kubelet.kubeconfig" }
