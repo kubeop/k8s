@@ -29,10 +29,6 @@
 [haproxy:vars]
 vip=10.15.1.200
 
-[nginx]
-172.17.15.249 hostname=nginx-01
-172.17.15.250 hostname=nginx-02
-
 #本组内填写node服务器及主机名
 [node]
 172.17.15.243 hostname=node-01

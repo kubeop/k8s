@@ -67,9 +67,9 @@
     dest: "{{ ssl_dir }}/proxy-client.cnf"
 - stat:
     path: "{{ ssl_dir }}/proxy-client.key"
-  register: proxy-client_key_stat
+  register: proxy_client_key_stat
 - name: "签发proxy-client证书"
-  when: not proxy-client_key_stat.stat.exists
+  when: not proxy_client_key_stat.stat.exists
   command: "{{ item.line }}"
   with_items:
     - {line: 'openssl genrsa -out {{ ssl_dir }}/proxy-client.key {{ ssl_size }}'}
@@ -82,9 +82,9 @@
     dest: "{{ ssl_dir }}/kube-controller-manager.cnf"
 - stat:
     path: "{{ ssl_dir }}/kube-controller-manager.key"
-  register: kube-controller-manager_key_stat
+  register: kube_controller_manager_key_stat
 - name: "签发kube-controller-manager证书"
-  when: not kube-controller-manager_key_stat.stat.exists
+  when: not kube_controller_manager_key_stat.stat.exists
   command: "{{ item.line }}"
   with_items:
     - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-controller-manager.key {{ ssl_size }}'}
@@ -97,9 +97,9 @@
     dest: "{{ ssl_dir }}/kube-scheduler.cnf"
 - stat:
     path: "{{ ssl_dir }}/kube-scheduler.key"
-  register: kube-scheduler_key_stat
+  register: kube_scheduler_key_stat
 - name: "签发kube-scheduler证书"
-  when: not kube-scheduler_key_stat.stat.exists
+  when: not kube_scheduler_key_stat.stat.exists
   command: "{{ item.line }}"
   with_items:
     - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-scheduler.key {{ ssl_size }}'}
@@ -112,9 +112,9 @@
     dest: "{{ ssl_dir }}/kube-proxy.cnf"
 - stat:
     path: "{{ ssl_dir }}/kube-proxy.key"
-  register: kube-proxy_key_stat
+  register: kube_proxy_key_stat
 - name: "签发kube-proxy证书"
-  when: not kube-proxy_key_stat.stat.exists
+  when: not kube_proxy_key_stat.stat.exists
   command: "{{ item.line }}"
   with_items:
     - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-proxy.key {{ ssl_size }}'}
@@ -127,9 +127,9 @@
     dest: "{{ ssl_dir }}/etcd-calico.cnf"
 - stat:
     path: "{{ ssl_dir }}/etcd-calico.key"
-  register: etcd-calico_key_stat
+  register: etcd_calico_key_stat
 - name: "etcd-calico"
-  when: not etcd-calico_key_stat.stat.exists
+  when: not etcd_calico_key_stat.stat.exists
   command: "{{ item.line }}"
   with_items:
     - {line: 'openssl genrsa -out {{ ssl_dir }}/etcd-calico.key {{ ssl_size }}'}
