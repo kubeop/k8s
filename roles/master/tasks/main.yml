@@ -5,6 +5,10 @@
     uid: 200
     home: /var/kube
     state: present
+- name: "创建kubectl目录"
+  file:
+    path: "/root/.kube"
+    state: directory
 - name: "安装kube-master"
   get_url:
     url: "{{ item.line }}"
