@@ -15,21 +15,22 @@
   roles:
     - { role: 'etcd', tags: "install_etcd" }
 
-- name: "配置master"
-  hosts: master
-  roles:
-    - { role: 'master', tags: "install_master" }
-
 - name: "配置haproxy"
   hosts: haproxy
   roles:
     - { role: 'haproxy', tags: "install_haproxy" }
     - { role: 'keepalived', tags: "install_keepalived" }
 
-- name: "安装kubectl"
+- name: "配置master"
+  hosts: master
+  roles:
+    - { role: 'master', tags: "install_master" }
+
+- name: "安装网络组件"
   hosts: kubectl
   roles:
-    - { role: 'kubectl', tags: "install_kubectl" }
+    - { role: 'calico', tags: "install_calico" }
+    - { role: 'coredns', tags: "install_coredns" }
 
 - name: "配置node"
   hosts: node
@@ -38,10 +39,6 @@
     - { role: 'node', tags: "install_node" }
     - { role: 'ceph', tags: "install_ceph" }
 
-- name: "安装网络组件"
-  hosts: kubectl
-  roles:
-    - { role: 'calico', tags: "install_calico" }
-    - { role: 'coredns', tags: "install_coredns" }
+
 
 

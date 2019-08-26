@@ -5,8 +5,8 @@ After=docker.service
 Requires=docker.service
 
 [Service]
-WorkingDirectory={{ data_dir }}/data/kubelet
-EnvironmentFile=-/etc/kubernetes/kubelet
+WorkingDirectory={{ kube_data_dir }}/kubelet
+EnvironmentFile=-{{ kube_dir }}/kubelet
 ExecStart=/usr/bin/kubelet $KUBELET_ARGS
 Restart=on-failure
 

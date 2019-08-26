@@ -1,19 +1,24 @@
-# kubernetes controller-manager
 KUBE_CONTROLLER_MANAGER_ARGS="\
-    --master=https://{{ ansible_default_ipv4.address }}:6443 \
-    --service-account-private-key-file=/etc/kubernetes/ssl/apiserver.key \
-    --root-ca-file=/etc/kubernetes/ssl/ca.pem \
+    --service-account-private-key-file={{ kube_dir }}/ssl/ca.key \
+    --root-ca-file={{ kube_dir }}/ssl/ca.pem \
+    --requestheader-client-ca-file={{ kube_dir }}/ssl/ca.pem \
     --allocate-node-cidrs=true \
     --cluster-name=kubernetes \
-    --cluster-signing-cert-file=/etc/kubernetes/ssl/apiserver.pem \
-    --cluster-signing-key-file=/etc/kubernetes/ssl/apiserver.key \
+    --cluster-signing-cert-file={{ kube_dir }}/ssl/ca.pem \
+    --cluster-signing-key-file={{ kube_dir }}/ssl/ca.key \
     --leader-elect=true \
     --cluster-cidr={{ pod_cluster_cidr }} \
     --service-cluster-ip-range={{ service_cluster_ip_range }} \
-    --secure-port=10253 \
+    --secure-port=10257 \
     --node-monitor-period=2s \
     --node-monitor-grace-period=16s \
     --pod-eviction-timeout=30s \
-    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+    --use-service-account-credentials=true \
+    --controllers=*,bootstrapsigner,tokencleaner \
+    --horizontal-pod-autoscaler-sync-period=10s \
+    --kubeconfig={{ kube_dir }}/kube-controller-manager.kubeconfig \
+    --authentication-kubeconfig={{ kube_dir }}/kube-controller-manager.kubeconfig \
+    --authorization-kubeconfig={{ kube_dir }}/kube-controller-manager.kubeconfig \
+    --feature-gates=RotateKubeletServerCertificate=true \
     --logtostderr=true \
     --v=4"

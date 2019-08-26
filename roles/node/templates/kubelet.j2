@@ -1,17 +1,23 @@
-##open gpu 
-##--feature-gates=DevicePlugins=true
-KUBELET_ARGS="--cgroup-driver=systemd \
-              --hostname-override={{ ansible_default_ipv4.address }} \
-              --pod-infra-container-image={{ harbor_url }}/{{ pause_image }} \
-              --cluster-dns={{ cluster_dns }} \
-              --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
-              --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
-              --cert-dir=/etc/kubernetes/ssl \
-              --cluster-domain=cluster.local \
-              --hairpin-mode promiscuous-bridge \
-              --root-dir={{ data_dir }}/data/kubelet \
-              --network-plugin=cni \
-              --serialize-image-pulls=false \
-              --logtostderr=true \
-              --allow-privileged=true \
-              --v=4"
+KUBELET_ARGS="\
+    --hostname-override={{ ansible_default_ipv4.address }} \
+    --config={{ kube_dir }}/kubeletconfig.yaml \
+    --cgroup-driver=systemd \
+    --authentication-token-webhook=true \
+    --authorization-mode=Webhook \
+    --anonymous-auth=false \
+    --pod-infra-container-image={{ harbor_url }}/google-containers/{{ pause_image }} \
+    --cluster-dns={{ cluster_dns }} \
+    --bootstrap-kubeconfig={{ kube_dir }}/bootstrap.kubeconfig \
+    --kubeconfig={{ kube_dir }}/kubelet.kubeconfig  \
+    --feature-gates=RotateKubeletClientCertificate=true,RotateKubeletServerCertificate=true \
+    --client-ca-file={{ kube_dir }}/ssl/ca.pem \
+    --cert-dir={{ kube_dir }}/ssl \
+    --cluster-domain=cluster.local \
+    --hairpin-mode promiscuous-bridge \
+    --root-dir={{ kube_data_dir }}/kubelet \
+    --network-plugin=cni \
+    --serialize-image-pulls=false \
+    --allow-privileged=true \
+    --rotate-certificates \
+    --logtostderr=true \
+    --v=4"

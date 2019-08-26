@@ -1,7 +1,7 @@
-# kubernetes scheduler config
 KUBE_SCHEDULER_ARGS="\
-    --master=https://{{ ansible_default_ipv4.address }}:6443 \
-    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+    --kubeconfig={{ kube_dir }}/kube-scheduler.kubeconfig \
+    --authorization-kubeconfig={{ kube_dir }}/kube-scheduler.kubeconfig \
+    --authentication-kubeconfig={{ kube_dir }}/kube-scheduler.kubeconfig \
     --leader-elect=true \
     --logtostderr=true \
-    --v=4"
+    --v=5"

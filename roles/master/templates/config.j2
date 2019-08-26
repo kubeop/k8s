@@ -7,12 +7,13 @@ clusters:
 contexts:
 - context:
     cluster: kubernetes
-    user: kubelet-bootstrap
-  name: default
-current-context: default
+    user: admin
+  name: kubernetes
+current-context: kubernetes
 kind: Config
 preferences: {}
 users:
-- name: kubelet-bootstrap
+- name: admin
   user:
-    token: {{ token_id }}.{{ token_secret }}
+    client-certificate: {{ kube_dir }}/ssl/admin.pem
+    client-key:{{ kube_dir }}/admin.key

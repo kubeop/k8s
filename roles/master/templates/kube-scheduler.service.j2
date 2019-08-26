@@ -5,7 +5,7 @@ After=kube-apiserver.service
 Requires=kube-apiserver.service
 
 [Service]
-EnvironmentFile=-/etc/kubernetes/scheduler
+EnvironmentFile=-{{ kube_dir }}/scheduler
 User=kube
 ExecStart=/usr/bin/kube-scheduler $KUBE_SCHEDULER_ARGS
 Restart=on-failure

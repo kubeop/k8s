@@ -271,11 +271,11 @@
   systemd:
     name: nscd
     state: started
-- name: "创建app目录"
+- name: "创建kube目录"
   file:
     path: "{{ item.line }}"
     state: directory
   with_items:
-    - {line: "{{ data_dir }}/data"}
-    - {line: "{{ data_dir }}/logs"}
+    - {line: "{{ kube_dir }}/ssl"}
+    - {line: "{{ kube_data_dir }}"}
   tags: dir

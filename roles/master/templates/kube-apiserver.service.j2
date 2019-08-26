@@ -5,7 +5,7 @@ After=network.target
 After=etcd.service
 
 [Service]
-EnvironmentFile=-/etc/kubernetes/apiserver
+EnvironmentFile=-{{ kube_dir }}/apiserver
 User=kube
 ExecStart=/usr/bin/kube-apiserver $KUBE_API_ARGS
 Restart=on-failure

@@ -15,6 +15,37 @@
   with_items:
     - {line: 'openssl genrsa -out {{ ssl_dir }}/ca.key {{ ssl_size }}'}
     - {line: 'openssl req -x509 -new -nodes -key {{ ssl_dir }}/ca.key -days {{ ssl_days }} -out {{ ssl_dir }}/ca.pem -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/ca.cnf -extensions v3_req'}
+
+- name: "拷贝etcd证书配置文件"
+  template:
+    src: "etcd.cnf.j2"
+    dest: "{{ ssl_dir }}/etcd.cnf"
+- stat:
+    path: "{{ ssl_dir }}/etcd.key"
+  register: etcd_key_stat
+- name: "etcd"
+  when: not etcd_key_stat.stat.exists
+  command: "{{ item.line }}"
+  with_items:
+    - {line: 'openssl genrsa -out {{ ssl_dir }}/etcd.key {{ ssl_size }}'}
+    - {line: 'openssl req -new -key {{ ssl_dir }}/etcd.key -out {{ ssl_dir }}/etcd.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd.cnf'}
+    - {line: 'openssl x509 -req -in {{ ssl_dir }}/etcd.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd.cnf -extensions v3_req'}
+
+- name: "拷贝admin证书配置文件"
+  template:
+    src: "admin.cnf.j2"
+    dest: "{{ ssl_dir }}/admin.cnf"
+- stat:
+    path: "{{ ssl_dir }}/admin.key"
+  register: admin_key_stat
+- name: "签发admin证书"
+  when: not admin_key_stat.stat.exists
+  command: "{{ item.line }}"
+  with_items:
+    - {line: 'openssl genrsa -out {{ ssl_dir }}/admin.key {{ ssl_size }}'}
+    - {line: 'openssl req -new -key {{ ssl_dir }}/admin.key -out {{ ssl_dir }}/admin.csr -subj "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" -config {{ ssl_dir }}/admin.cnf'}
+    - {line: 'openssl x509 -req -in {{ ssl_dir }}/admin.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/admin.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/admin.cnf -extensions v3_req'}
+
 - name: "拷贝apiserver证书配置文件"
   template:
     src: "apiserver.cnf.j2"
@@ -29,104 +60,79 @@
     - {line: 'openssl genrsa -out {{ ssl_dir }}/apiserver.key {{ ssl_size }}'}
     - {line: 'openssl req -new -key {{ ssl_dir }}/apiserver.key -out {{ ssl_dir }}/apiserver.csr -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/apiserver.cnf'}
     - {line: 'openssl x509 -req -in {{ ssl_dir }}/apiserver.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/apiserver.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/apiserver.cnf -extensions v3_req'}
-- name: "获取token"
-  shell: "head -c 16 /dev/urandom | od -An -t x | tr -d ' '"
-  register: bootstrap_token
+
+- name: "拷贝metrics-server证书配置文件"
+  template:
+    src: "proxy-client.cnf.j2"
+    dest: "{{ ssl_dir }}/proxy-client.cnf"
 - stat:
-    path: "{{ ssl_dir }}/token.csv"
-  register: token_stat
-- name: "生成token文件"
-  when: not token_stat.stat.exists
-  template:
-    src: "token.csv.j2"
-    dest: "{{ ssl_dir }}/token.csv"
-- name: "创建etcd证书保存目录"
-  file:
-    path: "{{ ssl_dir }}/etcd"
-    state: directory
-- name: "拷贝etcd证书配置文件"
-  template:
-    src: etcd.cnf.j2
-    dest: "{{ ssl_dir }}/etcd/etcd_{{ item }}.cnf"
+    path: "{{ ssl_dir }}/proxy-client.key"
+  register: proxy-client_key_stat
+- name: "签发proxy-client证书"
+  when: not proxy-client_key_stat.stat.exists
+  command: "{{ item.line }}"
   with_items:
-    - "{{ groups['etcd'] }}"
-    - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
-- name: "签发etcd证书"
-  command: 'openssl genrsa -out {{ ssl_dir }}/etcd/etcd_{{ item }}.key {{ ssl_size }}'
-  with_items:
-    - "{{ groups['etcd'] }}"
-    - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
-- name: "签发etcd证书"
-  command: 'openssl req -new -key {{ ssl_dir }}/etcd/etcd_{{ item }}.key -out {{ ssl_dir }}/etcd/etcd_{{ item }}.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd/etcd_{{ item }}.cnf'
-  with_items:
-    - "{{ groups['etcd'] }}"
-    - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
-- name: "签发etcd证书"
-  command: 'openssl x509 -req -in {{ ssl_dir }}/etcd/etcd_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd/etcd_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd/etcd_{{ item }}.cnf -extensions v3_req'
-  with_items:
-    - "{{ groups['etcd'] }}"
-    - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
+    - {line: 'openssl genrsa -out {{ ssl_dir }}/proxy-client.key {{ ssl_size }}'}
+    - {line: 'openssl req -new -key {{ ssl_dir }}/proxy-client.key -out {{ ssl_dir }}/proxy-client.csr -subj "/CN=aggregator/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/proxy-client.cnf'}
+    - {line: 'openssl x509 -req -in {{ ssl_dir }}/proxy-client.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/proxy-client.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/proxy-client.cnf -extensions v3_req'}
 
-- name: "创建kubelet证书保存目录"
-  file:
-    path: "{{ ssl_dir }}/kubelet"
-    state: directory
-  tags: kubelet
-- name: "拷贝kubelet证书配置文件"
+- name: "拷贝kube-controller-manager证书配置文件"
   template:
-    src: client.cnf.j2
-    dest: "{{ ssl_dir }}/kubelet/kubelet_{{ item }}.cnf"
+    src: "kube-controller-manager.cnf.j2"
+    dest: "{{ ssl_dir }}/kube-controller-manager.cnf"
+- stat:
+    path: "{{ ssl_dir }}/kube-controller-manager.key"
+  register: kube-controller-manager_key_stat
+- name: "签发kube-controller-manager证书"
+  when: not kube-controller-manager_key_stat.stat.exists
+  command: "{{ item.line }}"
   with_items:
-    - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
-  tags: kubelet
-- name: "签发kubelet证书"
-  command: 'openssl genrsa -out {{ ssl_dir }}/kubelet/kubelet_{{ item }}.key {{ ssl_size }}'
-  with_items:
-    - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
-  tags: kubelet
-- name: "签发kubelet证书"
-  command: 'openssl req -new -key {{ ssl_dir }}/kubelet/kubelet_{{ item }}.key -out {{ ssl_dir }}/kubelet/kubelet_{{ item }}.csr -subj "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" -config {{ ssl_dir }}/kubelet/kubelet_{{ item }}.cnf'
-  with_items:
-    - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
-  tags: kubelet
-- name: "签发kubelet证书"
-  command: 'openssl x509 -req -in {{ ssl_dir }}/kubelet/kubelet_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kubelet/kubelet_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kubelet/kubelet_{{ item }}.cnf -extensions v3_req'
-  with_items:
-    - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
-  tags: kubelet
+    - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-controller-manager.key {{ ssl_size }}'}
+    - {line: 'openssl req -new -key {{ ssl_dir }}/kube-controller-manager.key -out {{ ssl_dir }}/kube-controller-manager.csr -subj "/CN=system:kube-controller-manager/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:kube-controller-manager" -config {{ ssl_dir }}/kube-controller-manager.cnf'}
+    - {line: 'openssl x509 -req -in {{ ssl_dir }}/kube-controller-manager.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kube-controller-manager.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kube-controller-manager.cnf -extensions v3_req'}
 
-- name: "创建kube-proxy证书目录"
-  file:
-    path: "{{ ssl_dir }}/kube-proxy"
-    state: directory
-  tags: kube-proxy
+- name: "拷贝kube-scheduler证书配置文件"
+  template:
+    src: "kube-scheduler.cnf.j2"
+    dest: "{{ ssl_dir }}/kube-scheduler.cnf"
+- stat:
+    path: "{{ ssl_dir }}/kube-scheduler.key"
+  register: kube-scheduler_key_stat
+- name: "签发kube-scheduler证书"
+  when: not kube-scheduler_key_stat.stat.exists
+  command: "{{ item.line }}"
+  with_items:
+    - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-scheduler.key {{ ssl_size }}'}
+    - {line: 'openssl req -new -key {{ ssl_dir }}/kube-scheduler.key -out {{ ssl_dir }}/kube-scheduler.csr -subj "/CN=system:kube-scheduler/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:kube-scheduler" -config {{ ssl_dir }}/kube-scheduler.cnf'}
+    - {line: 'openssl x509 -req -in {{ ssl_dir }}/kube-scheduler.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kube-scheduler.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kube-scheduler.cnf -extensions v3_req'}
+
 - name: "拷贝kube-proxy证书配置文件"
   template:
-    src: client.cnf.j2
-    dest: "{{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.cnf"
-  with_items:
-    - "{{ groups['node'] }}"
-  tags: kube-proxy
+    src: "kube-proxy.cnf.j2"
+    dest: "{{ ssl_dir }}/kube-proxy.cnf"
+- stat:
+    path: "{{ ssl_dir }}/kube-proxy.key"
+  register: kube-proxy_key_stat
 - name: "签发kube-proxy证书"
-  command: 'openssl genrsa -out {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.key {{ ssl_size }}'
+  when: not kube-proxy_key_stat.stat.exists
+  command: "{{ item.line }}"
   with_items:
-    - "{{ groups['node'] }}"
-  tags: kube-proxy
-- name: "签发kube-proxy证书"
-  command: 'openssl req -new -key {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.key -out {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.csr -subj "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.cnf'
+    - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-proxy.key {{ ssl_size }}'}
+    - {line: 'openssl req -new -key {{ ssl_dir }}/kube-proxy.key -out {{ ssl_dir }}/kube-proxy.csr -subj "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/kube-proxy.cnf'}
+    - {line: 'openssl x509 -req -in {{ ssl_dir }}/kube-proxy.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kube-proxy.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kube-proxy.cnf -extensions v3_req'}
+
+- name: "拷贝calico证书配置文件"
+  template:
+    src: "etcd-calico.cnf.j2"
+    dest: "{{ ssl_dir }}/etcd-calico.cnf"
+- stat:
+    path: "{{ ssl_dir }}/etcd-calico.key"
+  register: etcd-calico_key_stat
+- name: "etcd-calico"
+  when: not etcd-calico_key_stat.stat.exists
+  command: "{{ item.line }}"
   with_items:
-    - "{{ groups['node'] }}"
-  tags: kube-proxy
-- name: "签发kube-proxy证书"
-  command: 'openssl x509 -req -in {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.cnf -extensions v3_req'
-  with_items:
-    - "{{ groups['node'] }}"
-  tags: kube-proxy
+    - {line: 'openssl genrsa -out {{ ssl_dir }}/etcd-calico.key {{ ssl_size }}'}
+    - {line: 'openssl req -new -key {{ ssl_dir }}/etcd-calico.key -out {{ ssl_dir }}/etcd-calico.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd-calico.cnf'}
+    - {line: 'openssl x509 -req -in {{ ssl_dir }}/etcd-calico.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd-calico.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd-calico.cnf -extensions v3_req'}
+

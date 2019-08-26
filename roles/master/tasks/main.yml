@@ -1,11 +1,3 @@
-- name: "创建k8s目录"
-  file:
-    path: "/etc/kubernetes/ssl/"
-    state: directory
-- name: "拷贝token文件"
-  copy:
-    src: "{{ ssl_dir }}//token.csv"
-    dest: "/etc/kubernetes/token.csv"
 - name: "添加k8s运行用户kube"
   user:
     name: kube
@@ -21,6 +13,7 @@
     - {line: "{{ download_url }}/kube-apiserver"}
     - {line: "{{ download_url }}/kube-controller-manager"}
     - {line: "{{ download_url }}/kube-scheduler"}
+    - {line: "{{ download_url }}/kubectl"}
   tags: instll_kube-master
 - name: "添加执行权限"
   file:
@@ -30,23 +23,50 @@
     - {line: '/usr/bin/kube-apiserver'}
     - {line: '/usr/bin/kube-controller-manager'}
     - {line: '/usr/bin/kube-scheduler'}
+    - {line: '/usr/bin/kubectl'}
   tags: instll_kube-master
+- name: "添加命令自动补全"
+  lineinfile:
+    dest: "/etc/profile"
+    line: "source <(kubectl completion bash)"
+    state: present
 - name: "分发master证书文件"
   copy:
     src: "{{ item.line }}"
-    dest: "/etc/kubernetes/ssl/"
+    dest: "{{ kube_dir }}/ssl/"
   with_items:
+    - {line: '{{ ssl_dir }}/ca.key'}
+    - {line: '{{ ssl_dir }}/ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd.key'}
+    - {line: '{{ ssl_dir }}/etcd.pem'}
     - {line: '{{ ssl_dir }}/apiserver.key'}
     - {line: '{{ ssl_dir }}/apiserver.pem'}
-    - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.key'}
-    - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.pem'}
-    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.key'}
-    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.pem'}
+    - {line: '{{ ssl_dir }}/kube-controller-manager.key'}
+    - {line: '{{ ssl_dir }}/kube-controller-manager.pem'}
+    - {line: '{{ ssl_dir }}/kube-scheduler.key'}
+    - {line: '{{ ssl_dir }}/kube-scheduler.pem'}
+    - {line: '{{ ssl_dir }}/proxy-client.key'}
+    - {line: '{{ ssl_dir }}/proxy-client.pem'}
+    - {line: '{{ ssl_dir }}/admin.key'}
+    - {line: '{{ ssl_dir }}/admin.pem'}
   tags: dis_certs
-- name: "获取bootstrap.kubeconfig token"
-  shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
-  register: kubeconfig
+- name: "分发kubeconfig"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "config.j2",dest: "/root/.kube/config" }
+    - {src: "kube-controller-manager.kubeconfig.j2",dest: "{{ kube_dir }}/kube-controller-manager.kubeconfig" }
+    - {src: "kube-scheduler.kubeconfig.j2",dest: "{{ kube_dir }}/kube-scheduler.kubeconfig" }
 - name: "创建master节点配置文件"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "apiserver.j2",dest: "{{ kube_dir }}/apiserver" }
+    - {src: "controller-manager.j2",dest: "{{ kube_dir }}/controller-manager" }
+    - {src: "scheduler.j2",dest: "{{ kube_dir }}/scheduler" }
+- name: "创建master节点systemd文件"
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
@@ -54,11 +74,6 @@
     - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
     - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
     - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
-    - {src: "apiserver.j2",dest: "/etc/kubernetes/apiserver" }
-    - {src: "controller-manager.j2",dest: "/etc/kubernetes/controller-manager" }
-    - {src: "scheduler.j2",dest: "/etc/kubernetes/scheduler" }
-    - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
-    - {src: "kubelet.kubeconfig.j2",dest: "/etc/kubernetes/kubelet.kubeconfig" }
   tags: kube-master-service
 - name: "添加acl"
   acl:
@@ -68,8 +83,8 @@
     permissions: r
     state: present
   with_items:
-    - {line: '/etc/kubernetes/bootstrap.kubeconfig'}
-    - {line: '/etc/kubernetes/kubelet.kubeconfig'}
+    - {line: "{{ kube_dir }}/kube-controller-manager.kubeconfig"}
+    - {line: "{{ kube_dir }}/kube-scheduler.kubeconfig"}
 - name: "启动master节点服务"
   systemd:
     name: "{{ item.line }}"

@@ -1,20 +1,22 @@
-# kubernetes apiserver config
 KUBE_API_ARGS="--allow-privileged=true \
                --bind-address={{ ansible_default_ipv4.address }} \
                --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %} \
                --secure-port=6443 \
                --insecure-port=0 \
-               --service-account-key-file=/etc/kubernetes/ssl/apiserver.key \
-               --tls-cert-file=/etc/kubernetes/ssl/apiserver.pem \
-               --tls-private-key-file=/etc/kubernetes/ssl/apiserver.key \
-               --client-ca-file=/etc/kubernetes/ssl/ca.pem \
-               --etcd-cafile=/etc/kubernetes/ssl/ca.pem \
-               --etcd-certfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.pem \
-               --etcd-keyfile=/etc/kubernetes/ssl/etcd_{{ ansible_default_ipv4.address }}.key \
-               --token-auth-file=/etc/kubernetes/token.csv \
+               --service-account-key-file={{ kube_dir }}/ssl/ca.key \
+               --tls-cert-file={{ kube_dir }}/ssl/apiserver.pem \
+               --tls-private-key-file={{ kube_dir }}/ssl/apiserver.key \
+               --client-ca-file={{ kube_dir }}/ssl/ca.pem \
+               --etcd-cafile={{ kube_dir }}/ssl/ca.pem \
+               --etcd-certfile={{ kube_dir }}/ssl/etcd.pem \
+               --etcd-keyfile={{ kube_dir }}/ssl/etcd.key \
+               --kubelet-certificate-authority={{ kube_dir }}/ssl/ca.pem \
+               --kubelet-client-certificate={{ kube_dir }}/ssl/apiserver.pem \
+               --kubelet-client-key={{ kube_dir }}/ssl/apiserver.key \
                --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction \
                --authorization-mode=RBAC,Node \
                --kubelet-https=true \
+               --anonymous-auth=false \
                --apiserver-count=3 \
                --default-not-ready-toleration-seconds=10 \
                --default-unreachable-toleration-seconds=10 \
@@ -25,10 +27,10 @@ KUBE_API_ARGS="--allow-privileged=true \
                --event-ttl=1h \
                --service-cluster-ip-range={{ service_cluster_ip_range }} \
                --service-node-port-range=30000-50000 \
-               --requestheader-client-ca-file=/etc/kubernetes/ssl/ca.pem \
-               --proxy-client-cert-file=/etc/kubernetes/ssl/kubelet_{{ ansible_default_ipv4.address }}.pem \
-               --proxy-client-key-file=/etc/kubernetes/ssl/kubelet_{{ ansible_default_ipv4.address }}.key \
-               --requestheader-allowed-names=admin \
+               --requestheader-client-ca-file={{ kube_dir }}/ssl/ca.pem \
+               --proxy-client-cert-file={{ kube_dir }}/ssl/proxy-client.pem \
+               --proxy-client-key-file={{ kube_dir }}/ssl/proxy-client.key \
+               --requestheader-allowed-names=aggregator \
                --requestheader-extra-headers-prefix=X-Remote-Extra- \
                --requestheader-group-headers=X-Remote-Group \
                --requestheader-username-headers=X-Remote-User \
