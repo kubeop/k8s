@@ -136,3 +136,19 @@
     - {line: 'openssl req -new -key {{ ssl_dir }}/etcd-calico.key -out {{ ssl_dir }}/etcd-calico.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd-calico.cnf'}
     - {line: 'openssl x509 -req -in {{ ssl_dir }}/etcd-calico.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd-calico.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd-calico.cnf -extensions v3_req'}
 
+- stat:
+    path: "{{ ssl_dir }}/bootstrap-token"
+  register: bootstrap-token
+- name: "生成bootstrap-token-id"
+  when: not bootstrap-token.stat.exists
+  shell: openssl rand -hex 3
+  register: token_id
+- name: "生成bootstrap-token-secret"
+  when: not bootstrap-token.stat.exists
+  shell: openssl rand -hex 8
+  register: token_secret
+- name: "创建bootstrap-token文件"
+  when: not bootstrap-token.stat.exists
+  blockinfile:
+    path: "{{ ssl_dir }}/bootstrap-token"
+    block: "{{ token_id.stdout }}.{{ token_secret.stdout }}"
