@@ -26,11 +26,6 @@
   roles:
     - { role: 'master', tags: "install_master" }
 
-- name: "安装kubectl"
-  hosts: kubectl
-  roles:
-    - { role: 'bootstrap', tags: "bootstrap" }
-
 - name: "配置node"
   hosts: node
   roles:
@@ -41,6 +36,7 @@
 - name: "安装kubectl"
   hosts: kubectl
   roles:
-    - { role: 'approve', tags: "approve" }
+    - { role: 'bootstrap', tags: "bootstrap" }
+
 
 

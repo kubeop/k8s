@@ -67,7 +67,10 @@
     - {src: "kubelet.service.j2",dest: "/usr/lib/systemd/system/kubelet.service" }
     - {src: "kube-proxy.service.j2",dest: "/usr/lib/systemd/system/kube-proxy.service" }
   tags: kube-node-service
-
+- name: "删除bootstrap-token文件"
+  file:
+    path: "{{ kube_dir }}/ssl/bootstrap-token"
+    state: absent
 - name: "启动node节点服务"
   systemd:
     name: "{{ item.line }}"
