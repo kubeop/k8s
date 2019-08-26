@@ -1,0 +1,20 @@
+- name: "授予kube-apiserver访问kubelet API权限"
+  shell: kubectl create clusterrolebinding kube-apiserver:kubelet-apis --clusterrole=system:kubelet-api-admin --user kubernetes
+- name: "读取当前bootstrap-token-id"
+  shell: cat {{ kube_dir }}/ssl/bootstrap-token | grep -v "^#" | awk -F '.' '{print $1}'
+  register: bootstrap-token-id
+- name: "读取当前bootstrap-token-secret"
+  shell: cat {{ kube_dir }}/ssl/bootstrap-token | grep -v "^#" | awk -F '.' '{print $2}'
+  register: bootstrap-token-secret
+- name: "创建bootstrap-token secret"
+  shell: kubectl -n kube-system create secret generic bootstrap-token-{{ bootstrap-token-id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ bootstrap-token-id.stdout }} --from-literal token-secret={{ bootstrap-token-secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true
+- name: "绑定group system:bootstrappers 和 clusterrole system:node-bootstrapper"
+  shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers
+- name: "自动批准 system:bootstrappers 组用户 TLS bootstrapping 首次申请证书的 CSR 请求"
+  shell: kubectl create clusterrolebinding auto-approve-csrs-for-group --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers 
+- name: "自动批准 system:nodes 组用户更新 kubelet 自身与 apiserver 通讯证书的 CSR 请求"
+  shell: kubectl create clusterrolebinding node-client-cert-renewal --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient --group=system:nodes
+- name: "创建自动批准相关 CSR 请求的 ClusterRole"
+  shell: kubectl create clusterrole approve-node-server-renewal-csr --verb=create --resource=certificatesigningrequests/selfnodeserver --resource-name=certificates.k8s.io
+- name: "自动批准 system:nodes 组用户更新 kubelet 10250 api 端口证书的 CSR 请求"
+  shell: kubectl create clusterrolebinding node-server-cert-renewal --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeserver --group=system:nodes

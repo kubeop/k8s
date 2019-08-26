@@ -32,13 +32,16 @@
 - name: "分发node证书文件"
   copy:
     src: "{{ item.line }}"
-    dest: "/etc/kubernetes/ssl/"
+    dest: "{{ kube_dir }}/ssl/"
   with_items:
     - {line: "{{ ssl_dir }}/ca.pem"}
     - {line: "{{ ssl_dir }}/ca.key"}
     - {line: "{{ ssl_dir }}/kube-proxy.pem"}
     - {line: "{{ ssl_dir }}/kube-proxy.key"}
-    
+    - {line: "{{ ssl_dir }}/bootstrap-token"}
+- name: "获取token"
+  shell: cat {{ kube_dir }}/ssl/bootstrap-token | grep -v "^#"
+  register: bootstrap-token
 - name: "分发kubeconfig"
   template:
     src: "{{ item.src }}"

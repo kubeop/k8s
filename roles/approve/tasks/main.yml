@@ -1,0 +1,5 @@
+- name: "获取Pending状态的csr"
+  shell: kubectl get csr| grep Pending | awk '{print $1}'|tr '\n' ' '
+  register: approve_csr
+- name: "approve csr"
+  shell: kubectl certificate approve {{ approve_csr.stdout }}
