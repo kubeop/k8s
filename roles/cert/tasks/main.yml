@@ -138,17 +138,18 @@
 
 - stat:
     path: "{{ ssl_dir }}/bootstrap-token"
-  register: bootstrap-token
+  register: token
 - name: "生成bootstrap-token-id"
-  when: not bootstrap-token.stat.exists
+  when: not token.stat.exists
   shell: openssl rand -hex 3
   register: token_id
 - name: "生成bootstrap-token-secret"
-  when: not bootstrap-token.stat.exists
+  when: not token.stat.exists
   shell: openssl rand -hex 8
   register: token_secret
 - name: "创建bootstrap-token文件"
-  when: not bootstrap-token.stat.exists
+  when: not token.stat.exists
   blockinfile:
     path: "{{ ssl_dir }}/bootstrap-token"
     block: "{{ token_id.stdout }}.{{ token_secret.stdout }}"
+    create: true
