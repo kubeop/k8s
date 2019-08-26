@@ -9,7 +9,7 @@
   with_items:
     - {line: '{{ ssl_dir }}/ca.pem'}
     - {line: '{{ ssl_dir }}/etcd.pem'}
-    - {line: '{{ ssl_dir }}/etcd.pem'}
+    - {line: '{{ ssl_dir }}/etcd.key'}
   tags: dis_certs
 - name: "拷贝etcd配置文件"
   template:
