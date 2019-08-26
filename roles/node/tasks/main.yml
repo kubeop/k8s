@@ -54,6 +54,7 @@
     dest: "{{ item.dest }}"
   with_items:
     - {src: "bootstrap.kubeconfig.j2",dest: "{{ kube_dir }}/bootstrap.kubeconfig" }
+    - {src: "kube-proxy.kubeconfig.j2",dest: "{{ kube_dir }}/kube-proxy.kubeconfig" }
   tags: kubeconfig
 - name: "创建node节点配置文件"
   template:
