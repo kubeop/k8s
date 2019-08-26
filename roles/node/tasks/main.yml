@@ -39,12 +39,12 @@
     - {line: "{{ ssl_dir }}/kube-proxy.pem"}
     - {line: "{{ ssl_dir }}/kube-proxy.key"}
 - name: "生成bootstrap token id"
-  shell: openssl rand -hex 6
+  shell: openssl rand -hex 3
   register: token_id
 - debug:
     msg: "{{ token_id.stdout }}"
 - name: "生成bootstrap token secret"
-  shell: openssl rand -hex 16
+  shell: openssl rand -hex 8
   register: token_secret
 - debug:
     msg: "{{ token_secret.stdout }}"

@@ -17,7 +17,6 @@ KUBELET_ARGS="\
     --root-dir={{ kube_data_dir }}/kubelet \
     --network-plugin=cni \
     --serialize-image-pulls=false \
-    --allow-privileged=true \
     --rotate-certificates \
     --logtostderr=true \
     --v=4"
