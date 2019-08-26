@@ -6,8 +6,8 @@
  "log-driver": "json-file",
  "log-opts": {
      "max-size": "100m",
-     "max-file": "10"
+     "max-file": "3"
  },
  "oom-score-adjust": -1000,
- "data-root": "{{ data_dir }}/data/docker"
+ "data-root": "{{ kube_data_dir }}/docker"
 }

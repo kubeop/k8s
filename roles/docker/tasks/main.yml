@@ -28,20 +28,8 @@
     dest: /etc/docker/daemon.json
 - name: "创建docker数据目录"
   file:
-    path: "{{ data_dir }}/data/docker"
+    path: "{{ kube_data_dir }}/docker"
     state: directory
-#- name: "添加flannel变量"
-#  lineinfile:
-#    dest: "/usr/lib/systemd/system/docker.service"
-#    insertafter: "^Type=notify"
-#    line: "EnvironmentFile=-/run/flannel/docker"
-#    state: present
-#- name: "添加docker相关变量"
-#  lineinfile:
-#    dest: "/usr/lib/systemd/system/docker.service"
-#    regexp: "^ExecStart="
-#    line: "ExecStart=/usr/bin/dockerd $DOCKER_OPT_BIP $DOCKER_OPT_IPMASQ $DOCKER_OPT_MTU"
-#    state: present
 - name: "重新加载并重启Docker"
   systemd:
     daemon_reload: yes

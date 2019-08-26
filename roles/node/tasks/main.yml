@@ -38,6 +38,16 @@
     - {line: "{{ ssl_dir }}/ca.key"}
     - {line: "{{ ssl_dir }}/kube-proxy.pem"}
     - {line: "{{ ssl_dir }}/kube-proxy.key"}
+- name: "生成bootstrap token id"
+  shell: openssl rand -hex 6
+  register: token_id
+- debug:
+    msg: "{{ token_id }}"
+- name: "生成bootstrap token secret"
+  shell: openssl rand -hex 16
+  register: token_secret
+- debug:
+    msg: "{{ token_secret }}"
 - name: "分发kubeconfig"
   template:
     src: "{{ item.src }}"
