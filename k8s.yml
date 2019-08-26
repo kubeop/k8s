@@ -26,12 +26,6 @@
   roles:
     - { role: 'master', tags: "install_master" }
 
-- name: "安装网络组件"
-  hosts: kubectl
-  roles:
-    - { role: 'calico', tags: "install_calico" }
-    - { role: 'coredns', tags: "install_coredns" }
-
 - name: "配置node"
   hosts: node
   roles:

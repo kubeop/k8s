@@ -42,12 +42,12 @@
   shell: openssl rand -hex 6
   register: token_id
 - debug:
-    msg: "{{ token_id }}"
+    msg: "{{ token_id.stdout }}"
 - name: "生成bootstrap token secret"
   shell: openssl rand -hex 16
   register: token_secret
 - debug:
-    msg: "{{ token_secret }}"
+    msg: "{{ token_secret.stdout }}"
 - name: "分发kubeconfig"
   template:
     src: "{{ item.src }}"
@@ -60,7 +60,7 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "kubelet.j2",dest: "{{ kube_dir }}/apiserver" }
+    - {src: "kubelet.j2",dest: "{{ kube_dir }}/kubelet" }
     - {src: "kubeletconfig.yaml.j2",dest: "{{ kube_dir }}/kubeletconfig.yaml" }
     - {src: "proxy.j2",dest: "{{ kube_dir }}/proxy" }
   tags: kube-node-config
