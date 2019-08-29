@@ -38,6 +38,13 @@
     - {line: "{{ ssl_dir }}/ca.key"}
     - {line: "{{ ssl_dir }}/kube-proxy.pem"}
     - {line: "{{ ssl_dir }}/kube-proxy.key"}
+    - {line: "{{ ssl_dir }}/token"}
+- name: "读取当前bootstrap-token-id"
+  shell: cat {{ kube_dir }}/ssl/token | grep -v "^#" | awk -F '.' '{print $1}'
+  register: token_id
+- name: "读取当前bootstrap-token-secret"
+  shell: cat {{ kube_dir }}/ssl/token | grep -v "^#" | awk -F '.' '{print $2}'
+  register: token_secret
 - name: "分发kubeconfig"
   template:
     src: "{{ item.src }}"
@@ -63,6 +70,10 @@
     - {src: "kubelet.service.j2",dest: "/usr/lib/systemd/system/kubelet.service" }
     - {src: "kube-proxy.service.j2",dest: "/usr/lib/systemd/system/kube-proxy.service" }
   tags: kube-node-service
+- name: "删除bootstrap-token文件"
+  file:
+    path: "{{ kube_dir }}/ssl/token"
+    state: absent
 - name: "启动node节点服务"
   systemd:
     name: "{{ item.line }}"

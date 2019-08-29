@@ -153,11 +153,4 @@
     path: "{{ ssl_dir }}/token"
     block: "{{ token_id.stdout }}.{{ token_secret.stdout }}"
     create: true
-- name: "读取当前bootstrap-token-id"
-  when: token.stat.exists
-  shell: cat {{ ssl_dir }}/token | grep -v "^#" | awk -F '.' '{print $1}'
-  register: token_id
-- name: "读取当前bootstrap-token-secret"
-  when: token.stat.exists
-  shell: cat {{ ssl_dir }}/token | grep -v "^#" | awk -F '.' '{print $2}'
-  register: token_secret
+
