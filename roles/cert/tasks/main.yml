@@ -137,7 +137,7 @@
     - {line: 'openssl x509 -req -in {{ ssl_dir }}/etcd-calico.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd-calico.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd-calico.cnf -extensions v3_req'}
 
 - stat:
-    path: "{{ ssl_dir }}/bootstrap-token"
+    path: "{{ ssl_dir }}/token"
   register: token
 - name: "生成bootstrap-token-id"
   when: not token.stat.exists
@@ -150,6 +150,14 @@
 - name: "创建bootstrap-token文件"
   when: not token.stat.exists
   blockinfile:
-    path: "{{ ssl_dir }}/bootstrap-token"
+    path: "{{ ssl_dir }}/token"
     block: "{{ token_id.stdout }}.{{ token_secret.stdout }}"
     create: true
+- name: "读取当前bootstrap-token-id"
+  when: token.stat.exists
+  shell: cat {{ ssl_dir }}/token | grep -v "^#" | awk -F '.' '{print $1}'
+  register: token_id
+- name: "读取当前bootstrap-token-secret"
+  when: token.stat.exists
+  shell: cat {{ ssl_dir }}/token | grep -v "^#" | awk -F '.' '{print $2}'
+  register: token_secret

@@ -1,17 +1,7 @@
 - name: "授予kube-apiserver访问kubelet API权限"
   shell: kubectl create clusterrolebinding kube-apiserver:kubelet-apis --clusterrole=system:kubelet-api-admin --user kubernetes
-- name: "拷贝bootstrap-token文件"
-  copy:
-    src: "{{ ssl_dir }}/bootstrap-token"
-    dest: "{{ kube_dir }}/ssl/bootstrap-token"
-- name: "读取当前bootstrap-token-id"
-  shell: cat {{ kube_dir }}/ssl/bootstrap-token | grep -v "^#" | awk -F '.' '{print $1}'
-  register: bootstrap-token-id
-- name: "读取当前bootstrap-token-secret"
-  shell: cat {{ kube_dir }}/ssl/bootstrap-token | grep -v "^#" | awk -F '.' '{print $2}'
-  register: bootstrap-token-secret
 - name: "创建bootstrap-token secret"
-  shell: kubectl -n kube-system create secret generic bootstrap-token-{{ bootstrap-token-id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ bootstrap-token-id.stdout }} --from-literal token-secret={{ bootstrap-token-secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true
+  shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true
 - name: "绑定group system:bootstrappers 和 clusterrole system:node-bootstrapper"
   shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers
 - name: "自动批准 system:bootstrappers 组用户 TLS bootstrapping 首次申请证书的 CSR 请求"
@@ -27,7 +17,3 @@
   register: approve_csr
 - name: "approve csr"
   shell: kubectl certificate approve {{ approve_csr.stdout }}
-- name: "删除bootstrap-token文件"
-  file:
-    path: "{{ kube_dir }}/ssl/bootstrap-token"
-    state: absent
