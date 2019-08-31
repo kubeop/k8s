@@ -17,8 +17,8 @@ Kubernetes是容器集群管理系统，是一个开源的平台，可以实现�
 
 | 名称       | 版本       |
 | ---------- | ---------- |
-| kubernetes | 1.14.2     |
-| docker     | 18.09      |
+| kubernetes | 1.15.3     |
+| docker     | 19.03.1    |
 | system     | CentOS 7.6 |
 
 
@@ -65,10 +65,6 @@ Kubernetes是容器集群管理系统，是一个开源的平台，可以实现�
 [haproxy:vars]
 vip=172.17.15.10
 
-[nginx]
-172.17.15.249 hostname=nginx-01
-172.17.15.250 hostname=nginx-02
-
 #本组内填写node服务器及主机名
 [node]
 172.17.15.243 hostname=node-01
@@ -80,7 +76,7 @@ vip=172.17.15.10
 
 ###  二、修改相关配置
 
-编辑group_vars/all文件，填入自己的参数
+编辑group_vars/all.yml文件，填入自己的参数
 
 | 配置项                   | 说明                                                         |
 | ------------------------ | ------------------------------------------------------------ |
@@ -91,24 +87,22 @@ vip=172.17.15.10
 | docker_version           | 可通过查看版本yum list docker-ce.x86_64 --showduplicates     |
 | ssl_dir                  | 签发ssl证书保存路径，ansible控制端机器上的路径               |
 | ssl_days                 | 签发ssl的有效期（单位：天）                                  |
+| kube_dir                 | kubernetes相关配置文件存放目录，证书存在此路径下的ssl目录下  |
+| kube_data_dir            | kubernetes数据存放目录                                       |
 | apiserver_domain_name    | apiserver域名，签发证书和配置node节点连接master时会用到      |
 | service_cluster_ip_range | 指定k8s集群service的网段                                     |
 | pod_cluster_cidr         | 指定k8s集群pod的网段                                         |
 | cluster_dns              | 指定集群dns服务IP                                            |
 | harbor_url               | 镜像仓库地址(包含group)，例如：registry.k8sre.com/library    |
 | pause_image              | 指定pause镜像名称及tag，与harbor_url拼接成完整镜像地址       |
-| coredns_image            | 指定coredns镜像名称及tag，与harbor_url拼接成完整镜像地址     |
-| calico_cni_image         | 指定calico cni镜像名称及tag，与harbor_url拼接成完整镜像地址  |
-| calico_node_image        | 指定calico node镜像名称及tag，与harbor_url拼接成完整镜像地址 |
-| calico_controllers_image | 指定calico controllers镜像名称及tag，与harbor_url拼接成完整镜像地址 |
 
 - 注：以下程序默认数据目录
 
-- etcd数据目录: ${data_dir}/data/etcd
+- etcd数据目录: ${kube_data_dir}/etcd
 
-  docker数据目录: ${data_dir}/data/docker
+  docker数据目录: ${kube_data_dir}/docker
 
-  kubelet数据目录: ${data_dir}/data/kubelet
+  kubelet数据目录: ${kube_data_dir}/kubelet
 
 - 下载路径：
 
