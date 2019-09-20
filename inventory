@@ -34,5 +34,3 @@ vip=10.15.1.200
 172.17.15.243 hostname=node-01
 172.17.15.244 hostname=node-02
 172.17.15.245 hostname=node-03
-
-

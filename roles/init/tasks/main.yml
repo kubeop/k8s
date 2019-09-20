@@ -236,6 +236,7 @@
     - {name: 'net.core.somaxconn',value: '8192' }
     - {name: 'net.ipv4.tcp_max_tw_buckets',value: '300000' }
     - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
+    - {name: 'net.bridge.bridge-nf-call-ip6tables',value: '1' }
   tags: sysctl
 - name: "安装基础应用"
   yum:
