@@ -228,13 +228,17 @@
     reload: yes
   with_items:
     - {name: 'net.ipv4.ip_forward',value: '1' }
+    - {name: 'net.core.somaxconn',value: '8192' }
     - {name: 'fs.file-max',value: '655360' }
     - {name: 'vm.max_map_count',value: '500000' }
+    - {name: 'fs.inotify.max_user_instances',value: '8192' }
+    - {name: 'fs.inotify.max_user_watches',value: '1048576' }
+    - {name: 'fs.nr_open',value: '52706963' }
     - {name: 'net.ipv4.tcp_fin_timeout',value: '3' }
     - {name: 'net.ipv4.tcp_max_orphans',value: '655360' }
-    - {name: 'net.ipv4.ip_local_port_range',value: '20000 60999' }
-    - {name: 'net.core.somaxconn',value: '8192' }
     - {name: 'net.ipv4.tcp_max_tw_buckets',value: '300000' }
+    - {name: 'net.ipv4.ip_local_port_range',value: '20000 60999' }
+    - {name: 'net.netfilter.nf_conntrack_max',value: '2310720' }
     - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
     - {name: 'net.bridge.bridge-nf-call-ip6tables',value: '1' }
   tags: sysctl
