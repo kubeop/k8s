@@ -2,139 +2,381 @@
   file:
     path: "{{ ssl_dir }}"
     state: directory
-- name: "拷贝ca配置文件"
-  template:
-    src: "ca.cnf.j2"
-    dest: "{{ ssl_dir }}/ca.cnf"
-- stat:
+
+- name: "Generate Etcd CA private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/etcd-ca.key"
+    type: RSA
+    size: 4096
+- name: "Generate Etcd CA request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/etcd-ca.csr"
+    privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: k8sre
+    common_name: etcd-ca
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyCertSign
+      - keyEncipherment
+- name: "Generate Etcd CA certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/etcd-ca.pem"
+    provider: selfsigned
+    privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+    csr_path: "{{ ssl_dir }}/etcd-ca.csr"
+
+- name: "Generate Etcd Server private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/etcd-server.key"
+    type: RSA
+    size: 4096
+- name: "Generate Etcd Server request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/etcd-server.csr"
+    privatekey_path: "{{ ssl_dir }}/etcd-server.key"
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: k8sre
+    common_name: etcd-server
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+      - serverAuth
+    subject_alt_name: "{{ item | map('regex_replace', '^', 'IP:') | list }}"
+  with_list:
+    - "{{ groups['master'] | union(groups['etcd']) }}"
+- name: "Generate Etcd Server certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/etcd-server.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/etcd-server.key"
+    csr_path: "{{ ssl_dir }}/etcd-server.csr"
+    ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+
+- name: "Generate Etcd Client private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/etcd-client.key"
+    type: RSA
+    size: 4096
+- name: "Generate Etcd Client request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/etcd-client.csr"
+    privatekey_path: "{{ ssl_dir }}/etcd-client.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: system:masters
+    common_name: etcd-client
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+- name: "Generate Etcd Client certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/etcd-client.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/etcd-client.key"
+    csr_path: "{{ ssl_dir }}/etcd-client.csr"
+    ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+
+- name: "Generate Etcd Peer private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/etcd-peer.key"
+    type: RSA
+    size: 4096
+- name: "Generate Etcd Peer request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/etcd-peer.csr"
+    privatekey_path: "{{ ssl_dir }}/etcd-peer.key"
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: k8sre
+    common_name: etcd-peer
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+      - serverAuth
+    subject_alt_name: "{{ item | map('regex_replace', '^', 'IP:') | list }}"
+  with_list:
+    - "{{ groups['etcd'] }}"
+- name: "Generate Etcd Peer certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/etcd-peer.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/etcd-peer.key"
+    csr_path: "{{ ssl_dir }}/etcd-peer.csr"
+    ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+
+
+- name: "Generate CA private key"
+  openssl_privatekey:
     path: "{{ ssl_dir }}/ca.key"
-  register: ca_key_stat
-- name: "签发ca证书"
-  when: not ca_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/ca.key {{ ssl_size }}'}
-    - {line: 'openssl req -x509 -new -nodes -key {{ ssl_dir }}/ca.key -days {{ ssl_days }} -out {{ ssl_dir }}/ca.pem -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/ca.cnf -extensions v3_req'}
+    type: RSA
+    size: 4096
+- name: "Generate CA request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/ca.csr"
+    privatekey_path: "{{ ssl_dir }}/ca.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: k8sre
+    common_name: kubernetes
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - cRLSign
+      - keyCertSign
+      - digitalSignature
+      - keyEncipherment
+- name: "Generate CA certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/ca.pem"
+    provider: selfsigned
+    privatekey_path: "{{ ssl_dir }}/ca.key"
+    csr_path: "{{ ssl_dir }}/ca.csr"
 
-- name: "拷贝etcd证书配置文件"
-  template:
-    src: "etcd.cnf.j2"
-    dest: "{{ ssl_dir }}/etcd.cnf"
-- stat:
-    path: "{{ ssl_dir }}/etcd.key"
-  register: etcd_key_stat
-- name: "etcd"
-  when: not etcd_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/etcd.key {{ ssl_size }}'}
-    - {line: 'openssl req -new -key {{ ssl_dir }}/etcd.key -out {{ ssl_dir }}/etcd.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd.cnf'}
-    - {line: 'openssl x509 -req -in {{ ssl_dir }}/etcd.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd.cnf -extensions v3_req'}
-
-- name: "拷贝admin证书配置文件"
-  template:
-    src: "admin.cnf.j2"
-    dest: "{{ ssl_dir }}/admin.cnf"
-- stat:
+- name: "Generate kubectl private key"
+  openssl_privatekey:
     path: "{{ ssl_dir }}/admin.key"
-  register: admin_key_stat
-- name: "签发admin证书"
-  when: not admin_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/admin.key {{ ssl_size }}'}
-    - {line: 'openssl req -new -key {{ ssl_dir }}/admin.key -out {{ ssl_dir }}/admin.csr -subj "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" -config {{ ssl_dir }}/admin.cnf'}
-    - {line: 'openssl x509 -req -in {{ ssl_dir }}/admin.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/admin.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/admin.cnf -extensions v3_req'}
+    type: RSA
+    size: 4096
+- name: "Generate kubectl request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/admin.csr"
+    privatekey_path: "{{ ssl_dir }}/admin.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: system:masters
+    common_name: admin
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+- name: "Generate kubectl certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/admin.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/admin.key"
+    csr_path: "{{ ssl_dir }}/admin.csr"
+    ownca_path: "{{ ssl_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-- name: "拷贝apiserver证书配置文件"
-  template:
-    src: "apiserver.cnf.j2"
-    dest: "{{ ssl_dir }}/apiserver.cnf"
-- stat:
-    path: "{{ ssl_dir }}/apiserver.key"
-  register: apiserver_key_stat
-- name: "签发apiserver证书"
-  when: not apiserver_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/apiserver.key {{ ssl_size }}'}
-    - {line: 'openssl req -new -key {{ ssl_dir }}/apiserver.key -out {{ ssl_dir }}/apiserver.csr -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/apiserver.cnf'}
-    - {line: 'openssl x509 -req -in {{ ssl_dir }}/apiserver.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/apiserver.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/apiserver.cnf -extensions v3_req'}
+- name: "merge lists"
+  set_fact:
+    lists_merged: "{{ groups['master'] | union(groups['k8s_service']) | map('regex_replace', '^', 'IP:') | list }} + {{ groups['k8s_domain'] | map('regex_replace', '^', 'DNS:') | list}}"
+- name: "Generate kube-apiserver private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/kube-apiserver.key"
+    type: RSA
+    size: 4096
+- name: "Generate kube-apiserver request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/kube-apiserver.csr"
+    privatekey_path: "{{ ssl_dir }}/kube-apiserver.key"
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: k8sre
+    common_name: kube-apiserver
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+    subject_alt_name: "{{ lists_merged }}"
+- name: "Generate kube-apiserver certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/kube-apiserver.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/kube-apiserver.key"
+    csr_path: "{{ ssl_dir }}/kube-apiserver.csr"
+    ownca_path: "{{ ssl_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-- name: "拷贝metrics-server证书配置文件"
-  template:
-    src: "proxy-client.cnf.j2"
-    dest: "{{ ssl_dir }}/proxy-client.cnf"
-- stat:
+
+- name: "Generate kube-apiserver-kubelet-client private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
+    type: RSA
+    size: 4096
+- name: "Generate kube-apiserver-kubelet-client request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.csr"
+    privatekey_path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: system:masters
+    common_name: kube-apiserver-kubelet-client
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+- name: "Generate kube-apiserver-kubelet-client certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
+    csr_path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.csr"
+    ownca_path: "{{ ssl_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
+
+
+- name: "Generate proxy-client private key"
+  openssl_privatekey:
     path: "{{ ssl_dir }}/proxy-client.key"
-  register: proxy_client_key_stat
-- name: "签发proxy-client证书"
-  when: not proxy_client_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/proxy-client.key {{ ssl_size }}'}
-    - {line: 'openssl req -new -key {{ ssl_dir }}/proxy-client.key -out {{ ssl_dir }}/proxy-client.csr -subj "/CN=aggregator/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/proxy-client.cnf'}
-    - {line: 'openssl x509 -req -in {{ ssl_dir }}/proxy-client.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/proxy-client.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/proxy-client.cnf -extensions v3_req'}
+    type: RSA
+    size: 4096
+- name: "Generate proxy-client request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/proxy-client.csr"
+    privatekey_path: "{{ ssl_dir }}/proxy-client.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: k8sre
+    common_name: aggregator
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+- name: "Generate proxy-client certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/proxy-client.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/proxy-client.key"
+    csr_path: "{{ ssl_dir }}/proxy-client.csr"
+    ownca_path: "{{ ssl_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-- name: "拷贝kube-controller-manager证书配置文件"
-  template:
-    src: "kube-controller-manager.cnf.j2"
-    dest: "{{ ssl_dir }}/kube-controller-manager.cnf"
-- stat:
+
+- name: "Generate kube-controller-manager private key"
+  openssl_privatekey:
     path: "{{ ssl_dir }}/kube-controller-manager.key"
-  register: kube_controller_manager_key_stat
-- name: "签发kube-controller-manager证书"
-  when: not kube_controller_manager_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-controller-manager.key {{ ssl_size }}'}
-    - {line: 'openssl req -new -key {{ ssl_dir }}/kube-controller-manager.key -out {{ ssl_dir }}/kube-controller-manager.csr -subj "/CN=system:kube-controller-manager/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:kube-controller-manager" -config {{ ssl_dir }}/kube-controller-manager.cnf'}
-    - {line: 'openssl x509 -req -in {{ ssl_dir }}/kube-controller-manager.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kube-controller-manager.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kube-controller-manager.cnf -extensions v3_req'}
+    type: RSA
+    size: 4096
+- name: "Generate kube-controller-manager request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/kube-controller-manager.csr"
+    privatekey_path: "{{ ssl_dir }}/kube-controller-manager.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: system:kube-controller-manager
+    common_name: system:kube-controller-manager
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+- name: "Generate kube-controller-manager certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/kube-controller-manager.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/kube-controller-manager.key"
+    csr_path: "{{ ssl_dir }}/kube-controller-manager.csr"
+    ownca_path: "{{ ssl_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-- name: "拷贝kube-scheduler证书配置文件"
-  template:
-    src: "kube-scheduler.cnf.j2"
-    dest: "{{ ssl_dir }}/kube-scheduler.cnf"
-- stat:
+
+- name: "Generate kube-scheduler private key"
+  openssl_privatekey:
     path: "{{ ssl_dir }}/kube-scheduler.key"
-  register: kube_scheduler_key_stat
-- name: "签发kube-scheduler证书"
-  when: not kube_scheduler_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-scheduler.key {{ ssl_size }}'}
-    - {line: 'openssl req -new -key {{ ssl_dir }}/kube-scheduler.key -out {{ ssl_dir }}/kube-scheduler.csr -subj "/CN=system:kube-scheduler/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:kube-scheduler" -config {{ ssl_dir }}/kube-scheduler.cnf'}
-    - {line: 'openssl x509 -req -in {{ ssl_dir }}/kube-scheduler.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kube-scheduler.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kube-scheduler.cnf -extensions v3_req'}
+    type: RSA
+    size: 4096
+- name: "Generate kube-scheduler request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/kube-scheduler.csr"
+    privatekey_path: "{{ ssl_dir }}/kube-scheduler.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: system:kube-scheduler
+    common_name: system:kube-scheduler
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+- name: "Generate kube-scheduler certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/kube-scheduler.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/kube-scheduler.key"
+    csr_path: "{{ ssl_dir }}/kube-scheduler.csr"
+    ownca_path: "{{ ssl_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-- name: "拷贝kube-proxy证书配置文件"
-  template:
-    src: "kube-proxy.cnf.j2"
-    dest: "{{ ssl_dir }}/kube-proxy.cnf"
-- stat:
+- name: "Generate kube-proxy private key"
+  openssl_privatekey:
     path: "{{ ssl_dir }}/kube-proxy.key"
-  register: kube_proxy_key_stat
-- name: "签发kube-proxy证书"
-  when: not kube_proxy_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/kube-proxy.key {{ ssl_size }}'}
-    - {line: 'openssl req -new -key {{ ssl_dir }}/kube-proxy.key -out {{ ssl_dir }}/kube-proxy.csr -subj "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/kube-proxy.cnf'}
-    - {line: 'openssl x509 -req -in {{ ssl_dir }}/kube-proxy.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kube-proxy.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kube-proxy.cnf -extensions v3_req'}
-
-- name: "拷贝calico证书配置文件"
-  template:
-    src: "etcd-calico.cnf.j2"
-    dest: "{{ ssl_dir }}/etcd-calico.cnf"
-- stat:
-    path: "{{ ssl_dir }}/etcd-calico.key"
-  register: etcd_calico_key_stat
-- name: "etcd-calico"
-  when: not etcd_calico_key_stat.stat.exists
-  command: "{{ item.line }}"
-  with_items:
-    - {line: 'openssl genrsa -out {{ ssl_dir }}/etcd-calico.key {{ ssl_size }}'}
-    - {line: 'openssl req -new -key {{ ssl_dir }}/etcd-calico.key -out {{ ssl_dir }}/etcd-calico.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd-calico.cnf'}
-    - {line: 'openssl x509 -req -in {{ ssl_dir }}/etcd-calico.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd-calico.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd-calico.cnf -extensions v3_req'}
+    type: RSA
+    size: 4096
+- name: "Generate kube-proxy request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/kube-proxy.csr"
+    privatekey_path: "{{ ssl_dir }}/kube-proxy.key"
+    use_common_name_for_san: no
+    country_name: CN
+    state_or_province_name: Shanghai
+    locality_name: Shanghai
+    organization_name: k8sre
+    common_name: system:kube-proxy
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+- name: "Generate kube-proxy certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/kube-proxy.pem"
+    provider: ownca
+    privatekey_path: "{{ ssl_dir }}/kube-proxy.key"
+    csr_path: "{{ ssl_dir }}/kube-proxy.csr"
+    ownca_path: "{{ ssl_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
 - stat:
     path: "{{ ssl_dir }}/token"
