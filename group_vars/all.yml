@@ -11,8 +11,6 @@ gpgkey: https://mirrors.aliyun.com
 download_url: https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64
 docker_version: docker-ce-19.03.1
 ssl_dir: /etc/ssl/k8s
-ssl_days: 1825
-ssl_size: 4096
 kube_dir: /etc/kubernetes
 #kube_data_dir要保持在data_dir目录下，etcd、kubelet、docker数据文件均存放在此目录
 kube_data_dir: /data/kube

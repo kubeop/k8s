@@ -58,12 +58,20 @@ Kubernetes是容器集群管理系统，是一个开源的平台，可以实现�
 [k8s_service]
 10.64.0.1        #shoule be k8s servcie first ip
 172.17.15.246    #shoule be k8s apiserver slb ip
+#本组域名不会进行系统初始化等操作，只是apiserver证书签发时使用，不需要进行修改
+[k8s_domain]
+kubernetes
+kubernetes.default
+kubernetes.default.svc
+kubernetes.default.svc.cluster
+kubernetes.default.svc.cluster.local
+apiserver.k8sre.com
 
 [haproxy]
 172.17.15.247 hostname=haproxy-01 type=MASTER priority=100
 172.17.15.248 hostname=haproxy-02 type=BACKUP priority=90
 [haproxy:vars]
-vip=172.17.15.10
+vip=172.17.15.246
 
 #本组内填写node服务器及主机名
 [node]
@@ -85,8 +93,7 @@ vip=172.17.15.10
 | gpgkey                   | 选择使用vpc内网软件源还是外网软件源                          |
 | download_url             | k8s二进制文件下载地址，默认是官方下载地址，可能会比较慢或者下载失败，可自己先行下载配置文件服务器. |
 | docker_version           | 可通过查看版本yum list docker-ce.x86_64 --showduplicates     |
-| ssl_dir                  | 签发ssl证书保存路径，ansible控制端机器上的路径               |
-| ssl_days                 | 签发ssl的有效期（单位：天）                                  |
+| ssl_dir                  | 签发ssl证书保存路径，ansible控制端机器上的路径。默认签发10年有效期的证书 |
 | kube_dir                 | kubernetes相关配置文件存放目录，证书存在此路径下的ssl目录下  |
 | kube_data_dir            | kubernetes数据存放目录                                       |
 | apiserver_domain_name    | apiserver域名，签发证书和配置node节点连接master时会用到      |
@@ -133,7 +140,7 @@ pip install ansible
 ansible-playbook k8s.yml -i inventory -t init
 ```
 
-2、签发证书
+2、签发证书(默认签发10年的证书)
 
 ```
 ansible-playbook k8s.yml -i inventory -t cert

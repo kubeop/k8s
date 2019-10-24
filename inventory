@@ -29,6 +29,7 @@ kubernetes.default
 kubernetes.default.svc
 kubernetes.default.svc.cluster
 kubernetes.default.svc.cluster.local
+apiserver.k8sre.com
 
 [haproxy]
 172.17.15.247 hostname=haproxy-01 type=MASTER priority=100
