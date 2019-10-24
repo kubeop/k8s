@@ -7,9 +7,13 @@
     src: "{{ item.line }}"
     dest: "{{ kube_dir }}/ssl/"
   with_items:
-    - {line: '{{ ssl_dir }}/ca.pem'}
-    - {line: '{{ ssl_dir }}/etcd.pem'}
-    - {line: '{{ ssl_dir }}/etcd.key'}
+    - {line: '{{ ssl_dir }}/etcd-ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd-server.pem'}
+    - {line: '{{ ssl_dir }}/etcd-server.key'}
+    - {line: '{{ ssl_dir }}/etcd-client.pem'}
+    - {line: '{{ ssl_dir }}/etcd-client.key'}
+    - {line: '{{ ssl_dir }}/etcd-peer.pem'}
+    - {line: '{{ ssl_dir }}/etcd-peer.key'}
   tags: dis_certs
 - name: "拷贝etcd配置文件"
   template:

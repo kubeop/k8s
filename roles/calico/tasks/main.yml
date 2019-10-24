@@ -34,8 +34,3 @@
   with_items:
     - { regexp: "typha_service_name:", line: "typha_service_name: "calico-typha"" }
     - { regexp: "192.168.0.0/16", line: "{{ pod_cluster_cidr }}" }
-    - { regexp: "UseDNS", line: "UseDNS no" }
-    - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
-    - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
-    - { regexp: "ClientAliveInterval", line: "ClientAliveInterval 900" }
-    - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }

@@ -41,10 +41,12 @@
   with_items:
     - {line: '{{ ssl_dir }}/ca.key'}
     - {line: '{{ ssl_dir }}/ca.pem'}
-    - {line: '{{ ssl_dir }}/etcd.key'}
-    - {line: '{{ ssl_dir }}/etcd.pem'}
-    - {line: '{{ ssl_dir }}/apiserver.key'}
-    - {line: '{{ ssl_dir }}/apiserver.pem'}
+    - {line: '{{ ssl_dir }}/etcd-client.key'}
+    - {line: '{{ ssl_dir }}/etcd-client.pem'}
+    - {line: '{{ ssl_dir }}/kube-apiserver.key'}
+    - {line: '{{ ssl_dir }}/kube-apiserver.pem'}
+    - {line: '{{ ssl_dir }}/kube-apiserver-kubelet-client.key'}
+    - {line: '{{ ssl_dir }}/kube-apiserver-kubelet-client.pem'}
     - {line: '{{ ssl_dir }}/kube-controller-manager.key'}
     - {line: '{{ ssl_dir }}/kube-controller-manager.pem'}
     - {line: '{{ ssl_dir }}/kube-scheduler.key'}
