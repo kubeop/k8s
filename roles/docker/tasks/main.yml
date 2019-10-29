@@ -50,7 +50,7 @@
   yum:
     update_cache: yes
     enablerepo: docker-ce-stable
-    name: "{{ docker_version }}"
+    name: 'docker-ce{% if docker_version is defined and docker_version != ""  %}-{{ docker_version }}{% endif %}'
     state: installed
 - name: "启动Docker"
   systemd:

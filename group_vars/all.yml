@@ -3,7 +3,7 @@ disk: /dev/vdb
 
 #k8s
 ssl_dir: /etc/ssl/k8s
-docker_version: docker-ce-19.03.1
+docker_version: 19.03.4
 #k8s组件下载地址(建议更换为自己文件服务器)
 download_url: https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64
 
