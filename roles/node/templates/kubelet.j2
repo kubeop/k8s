@@ -1,20 +1,20 @@
 KUBELET_ARGS="\
-    --hostname-override={{ ansible_default_ipv4.address }} \
-    --config={{ kube_dir }}/kubeletconfig.yaml \
+    --hostname-override={{ansible_default_ipv4.address}} \
+    --config=/etc/kubernetes/kubelet.conf \
     --cgroup-driver=systemd \
     --authentication-token-webhook=true \
     --authorization-mode=Webhook \
     --anonymous-auth=false \
-    --pod-infra-container-image={{ harbor_url }}/google-containers/{{ pause_image }} \
-    --cluster-dns={{ cluster_dns }} \
-    --bootstrap-kubeconfig={{ kube_dir }}/bootstrap.kubeconfig \
-    --kubeconfig={{ kube_dir }}/kubelet.kubeconfig  \
+    --pod-infra-container-image=gcr.azk8s.cn/google-containers/pause-amd64:3.1 \
+    --cluster-dns={{cluster_dns}} \
+    --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
     --feature-gates=RotateKubeletClientCertificate=true,RotateKubeletServerCertificate=true \
-    --client-ca-file={{ kube_dir }}/ssl/ca.pem \
-    --cert-dir={{ kube_dir }}/ssl \
+    --client-ca-file=/etc/kubernetes/pki/ca.pem \
+    --cert-dir=/etc/kubernetes/pki \
     --cluster-domain=cluster.local \
     --hairpin-mode promiscuous-bridge \
-    --root-dir={{ kube_data_dir }}/kubelet \
+    --root-dir=/var/lib/kubelet \
     --network-plugin=cni \
     --serialize-image-pulls=false \
     --rotate-certificates \

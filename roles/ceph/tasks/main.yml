@@ -4,7 +4,7 @@
          name: '{{ item.name }}'
          description: '{{ item.description}}'
          baseurl: '{{ item.baseurl }}'
-         gpgkey: "{{ gpgkey }}/ceph/keys/release.asc"
+         gpgkey: "http://mirrors.cloud.aliyuncs.com/ceph/keys/release.asc \n https://mirrors.aliyun.com/ceph/keys/release.asc"
          gpgcheck: yes
          enabled: yes
       with_items:

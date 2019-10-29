@@ -1,23 +1,13 @@
 #init
 disk: /dev/vdb
-data_dir: /data
-#阿里云内网机器使用
-#gpgkey: http://mirrors.cloud.aliyuncs.com
-#非阿里云以及其他能访问公网的机器使用
-gpgkey: https://mirrors.aliyun.com
 
 #k8s
+ssl_dir: /etc/ssl/k8s
+docker_version: docker-ce-19.03.1
 #k8s组件下载地址(建议更换为自己文件服务器)
 download_url: https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64
-docker_version: docker-ce-19.03.1
-ssl_dir: /etc/ssl/k8s
-kube_dir: /etc/kubernetes
-#kube_data_dir要保持在data_dir目录下，etcd、kubelet、docker数据文件均存放在此目录
-kube_data_dir: /data/kube
-apiserver_domain_name: apiserver.k8sre.com
-service_cluster_ip_range: 10.64.0.0/16
-pod_cluster_cidr: 10.80.0.0/12
+
+#集群配置
+service_ip_range: 10.64.0.0/16
+pod_ip_range: 10.80.0.0/12
 cluster_dns: 10.64.0.2
-#使用Azure中国镜像仓库
-harbor_url: gcr.azk8s.cn
-pause_image: pause-amd64:3.1

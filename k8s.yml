@@ -27,7 +27,7 @@
     - { role: 'master', tags: "install_master" }
 
 - name: "配置node"
-  hosts: node
+  hosts: master node
   roles:
     - { role: 'docker', tags: "install_node" }
     - { role: 'node', tags: "install_node" }

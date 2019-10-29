@@ -5,6 +5,15 @@
     uid: 200
     home: /var/kube
     state: present
+- name: "创建kube目录"
+  file:
+    path: "{{ item.line }}"
+    state: directory
+    owner: kube
+    group: kube
+  with_items:
+    - {line: "/etc/kubernetes/pki"}
+  tags: dir
 - name: "创建kubectl目录"
   file:
     path: "/root/.kube"
@@ -37,7 +46,7 @@
 - name: "分发master证书文件"
   copy:
     src: "{{ item.line }}"
-    dest: "{{ kube_dir }}/ssl/"
+    dest: "/etc/kubernetes/pki/"
   with_items:
     - {line: '{{ ssl_dir }}/ca.key'}
     - {line: '{{ ssl_dir }}/ca.pem'}
@@ -61,17 +70,17 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "config.j2",dest: "/root/.kube/config" }
-    - {src: "kube-controller-manager.kubeconfig.j2",dest: "{{ kube_dir }}/kube-controller-manager.kubeconfig" }
-    - {src: "kube-scheduler.kubeconfig.j2",dest: "{{ kube_dir }}/kube-scheduler.kubeconfig" }
+    - {src: "admin.kubeconfig.j2",dest: "/root/.kube/config" }
+    - {src: "kube-controller-manager.kubeconfig.j2",dest: "/etc/kubernetes/kube-controller-manager.kubeconfig" }
+    - {src: "kube-scheduler.kubeconfig.j2",dest: "/etc/kubernetes/kube-scheduler.kubeconfig" }
 - name: "创建master节点配置文件"
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "apiserver.j2",dest: "{{ kube_dir }}/apiserver" }
-    - {src: "controller-manager.j2",dest: "{{ kube_dir }}/controller-manager" }
-    - {src: "scheduler.j2",dest: "{{ kube_dir }}/scheduler" }
+    - {src: "apiserver.j2",dest: "/etc/kubernetes/apiserver" }
+    - {src: "controller-manager.j2",dest: "/etc/kubernetes/controller-manager" }
+    - {src: "scheduler.j2",dest: "/etc/kubernetes/scheduler" }
 - name: "创建master节点systemd文件"
   template:
     src: "{{ item.src }}"
@@ -89,8 +98,8 @@
     permissions: r
     state: present
   with_items:
-    - {line: "{{ kube_dir }}/kube-controller-manager.kubeconfig"}
-    - {line: "{{ kube_dir }}/kube-scheduler.kubeconfig"}
+    - {line: "/etc/kubernetes/kube-controller-manager.kubeconfig"}
+    - {line: "/etc/kubernetes/kube-scheduler.kubeconfig"}
 - name: "启动master节点服务"
   systemd:
     name: "{{ item.line }}"

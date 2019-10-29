@@ -5,7 +5,7 @@ After=kube-apiserver.service
 Requires=kube-apiserver.service
 
 [Service]
-EnvironmentFile=-{{ kube_dir }}/controller-manager
+EnvironmentFile=-/etc/kubernetes/controller-manager
 User=kube
 ExecStart=/usr/bin/kube-controller-manager $KUBE_CONTROLLER_MANAGER_ARGS
 Restart=on-failure

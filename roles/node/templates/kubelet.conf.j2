@@ -8,7 +8,7 @@ authentication:
   webhook:
     enabled: true
   x509:
-    clientCAFile: "{{ kube_dir }}/ssl/ca.pem"
+    clientCAFile: "/etc/kubernetes/pki/ca.pem"
 authorization:
   mode: Webhook
 readOnlyPort: 0

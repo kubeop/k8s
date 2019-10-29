@@ -1,7 +1,7 @@
-KUBE_PROXY_ARGS="--bind-address={{ ansible_default_ipv4.address }} \
-                 --hostname-override={{ ansible_default_ipv4.address }} \
+KUBE_PROXY_ARGS="--bind-address={{ansible_default_ipv4.address}} \
+                 --hostname-override={{ansible_default_ipv4.address}} \
                  --kubeconfig=/etc/kubernetes/kube-proxy.kubeconfig \
-                 --cluster-cidr={{ service_cluster_ip_range }} \
+                 --cluster-cidr={{pod_ip_range}} \
                  --proxy-mode=ipvs \
                  --masquerade-all \
                  --ipvs-min-sync-period=2s \

@@ -5,7 +5,7 @@ After=network.target
 Requires=network.service
 
 [Service]
-EnvironmentFile=-{{ kube_dir }}/proxy
+EnvironmentFile=-/etc/kubernetes/proxy
 ExecStart=/usr/bin/kube-proxy $KUBE_PROXY_ARGS
 Restart=on-failure
 LimitNOFILE=65536

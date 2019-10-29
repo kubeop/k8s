@@ -10,43 +10,13 @@
 - name: "设置时区"
   timezone:
     name: Asia/Shanghai
-#- name: "获取JumpServer Token"
-#  uri:
-#    url: https://j.anymb.com/api/users/v1/auth/
-#    headers:
-#      Content-Type: application/json
-#    method: POST
-#    body: '{"username": "admin", "password": "admin"}'
-#  register: jms_token
-#  tags: add_jump
-#- name: "查询是否已经注册"
-#  uri:
-#    url: https://j.anymb.com/api/assets/v1/assets/?ip={{ ansible_default_ipv4.address }}
-#    headers:
-#      Authorization: "Bearer {{ jms_token.json.token }}"
-#      Content-Type: application/json
-#  register: jms_asset
-#  tags: add_jump
-#- debug:
-#    msg: "{{ jms_asset.json }}"
-#  tags: add_jump
-#- name: "注册到JumpServer"
-#  when: jms_asset.json == []
-#  uri:
-#    url: https://j.anymb.com/api/assets/v1/assets/
-#    method: POST
-#    headers:
-#      Authorization: "Bearer {{ jms_token.json.token }}"
-#    body: "ip={{ ansible_default_ipv4.address }}&hostname={{ ansible_hostname }}&nodes=2bd72dd0&admin_user=6b68d&is_active=true&port=22"
-#    status_code: 201
-#  tags: add_jump
 - name: "添加阿里云软件源"
   yum_repository:
     file: CentOS-Base
     name: '{{ item.name }}'
     description: '{{ item.description}}'
     baseurl: '{{ item.baseurl }}'
-    gpgkey: "{{ gpgkey }}/centos/RPM-GPG-KEY-CentOS-7"
+    gpgkey: "http://mirrors.cloud.aliyuncs.com/centos/RPM-GPG-KEY-CentOS-7 \n https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7"
     failovermethod: priority
     gpgcheck: yes
     enabled: yes
@@ -66,34 +36,6 @@
     gpgcheck: no
     enabled: yes
   tags: epel
-#- name: "添加跳板机super用户"
-#  user:
-#    name: super
-#    shell: /bin/bash
-#    state: present
-#  tags: jump
-#- name: "添加跳板机用户sudo权限"
-#  lineinfile:
-#    dest: "/etc/sudoers"
-#    line: "{{ item.line }}"
-#    state: present
-#  with_items:
-#    - { line: 'super ALL=(ALL) NOPASSWD: /sbin/ifconfig,/usr/bin/bash,/usr/bin/su,/bin/bash,/bin/su,/usr/bin/sudo'}
-#  tags: jump
-- name: "添加root用户公钥"
-  authorized_key:
-    user: root
-    state: present
-    key: "{{ lookup('file', 'root_id_rsa.pub') }}"
-    manage_dir: yes
-  tags: jump
-#- name: "添加super用户公钥"
-#  authorized_key:
-#    user: super
-#    state: present
-#    key: "{{ lookup('file', 'super_id_rsa.pub') }}"
-#    manage_dir: yes
-#  tags: jump
 - name: "配置chrony服务"
   copy:
     src: "chrony.conf"
@@ -104,66 +46,6 @@
     name: chronyd
     state: restarted
   tags: ntp
-- name: "限制ssh登录的用户"
-  lineinfile:
-    dest: "/etc/ssh/sshd_config"
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - { regexp: "Protocol", line: "Protocol 2" }
-    - { regexp: "MaxAuthTries", line: "MaxAuthTries 6" }
-    - { regexp: "UseDNS", line: "UseDNS no" }
-    - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
-    - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
-    - { regexp: "ClientAliveInterval", line: "ClientAliveInterval 900" }
-    - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }
-  tags: sshd
-- name: "重启ssh服务"
-  systemd:
-    name: sshd
-    state: restarted
-  tags: sshd
-- stat:
-    path: "{{ disk }}1"
-  register: disk_stat
-  tags: fdisk
-- name: "创建{{ disk }}分区"
-  when: not disk_stat.stat.exists
-  parted:
-    device: "{{ disk }}"
-    number: 1
-    part_type: primary
-    part_start: 0%
-    part_end: 100%
-    label: gpt
-    state: present
-  tags: fdisk
-- name: "disk"
-  debug: 
-    msg: "即将格式化的磁盘分区是{{ disk }}1"
-  tags: fdisk
-- name: "格式化{{ disk }}1分区"
-  when: not disk_stat.stat.exists
-  filesystem:
-    dev: "{{ disk }}1"
-    force: yes
-    fstype: xfs
-  tags: fdisk
-- name: "挂载{{ disk }}1分区到{{ data_dir }}目录"
-  mount:
-    path: "{{ data_dir }}"
-    src: "{{ disk }}1"
-    fstype: xfs
-    opts: defaults,noatime,nodiratime,nobarrier
-    state: mounted
-  tags: fdisk
-- name: "更新系统"
-  yum:
-    name: "*"
-    exclude: "kernel*"
-    state: latest
-  tags: update_os
 - name: "关闭交换分区"
   shell: swapoff -a
 - name: "关闭selinux"
@@ -175,7 +57,7 @@
     name: firewalld
     enabled: no
     state: stopped
-  tags: iptables
+  tags: firewalld
 - name: "更改系统limits"
   pam_limits:
     dest: "/etc/security/limits.conf"
@@ -194,8 +76,6 @@
     - { limit_domain: '*',limit_type: 'hard',limit_item: 'stack', value: 'unlimited' }
     - { limit_domain: '*',limit_type: 'soft',limit_item: 'nofile', value: '655360' }
     - { limit_domain: '*',limit_type: 'hard',limit_item: 'nofile', value: '655360' }
-    - { limit_domain: '*',limit_type: 'soft',limit_item: 'memlock', value: 'unlimited' }
-    - { limit_domain: '*',limit_type: 'hard',limit_item: 'memlock', value: 'unlimited' }
   tags: limits
 - name: "更改systemd limits"
   lineinfile:
@@ -205,7 +85,6 @@
   with_items: 
     - {line: 'DefaultLimitNOFILE=65535' }
     - {line: 'DefaultLimitNPROC=65535' }
-    - {line: 'DefaultLimitMEMLOCK=infinity' }
   tags: limits
 - name: "启用依赖内核模块"
   modprobe:
@@ -251,6 +130,8 @@
     state: installed
   with_items:
     - {line: 'vim'}
+    - {line: 'mtr'}
+    - {line: 'nscd'}
     - {line: 'curl'}
     - {line: 'wget'}
     - {line: 'lsof'}
@@ -260,30 +141,11 @@
     - {line: 'bash-completion'}
     - {line: 'nmap-ncat'}
     - {line: 'net-tools'}
-    - {line: 'ntpdate'}
-    - {line: 'protobuf-devel'}
-    - {line: 'libcurl-devel'}
-    - {line: 'gcc'}
-    - {line: 'gcc-c++'}
-    - {line: 'libtool'}
-    - {line: 'make'}
-    - {line: 'automake'}
-    - {line: 'mtr'}
     - {line: 'nfs-utils'}
     - {line: 'yum-utils'}
-    - {line: 'lvm2'}
-    - {line: 'nscd'}
-    - {line: 'device-mapper-persistent-data'}
+    - {line: 'conntrack'}
   tags: install_app
 - name: "启用dns缓存"
   systemd:
     name: nscd
     state: started
-- name: "创建kube目录"
-  file:
-    path: "{{ item.line }}"
-    state: directory
-  with_items:
-    - {line: "{{ kube_dir }}/ssl"}
-    - {line: "{{ kube_data_dir }}"}
-  tags: dir

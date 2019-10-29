@@ -1,3 +1,10 @@
+- name: "创建kube目录"
+  file:
+    path: "{{ item.line }}"
+    state: directory
+  with_items:
+    - {line: "/etc/kubernetes/pki"}
+  tags: dir
 - name: "安装依赖"
   yum:
     name: "{{ item.line }}"
@@ -7,12 +14,13 @@
     - {line: 'libnetfilter_conntrack'}
     - {line: 'conntrack-tools'}
     - {line: 'socat'}
+    - {line: 'ipvsadm'}
 - name: "创建kubelet数据目录"
   file:
     path: "{{ item.line }}"
     state: directory
   with_items:
-    - {line: "{{ kube_data_dir }}/kubelet"}
+    - {line: "/var/lib/kubelet"}
 - name: "安装kube-node"
   get_url:
     url: "{{ item.line }}"
@@ -32,7 +40,7 @@
 - name: "分发node证书文件"
   copy:
     src: "{{ item.line }}"
-    dest: "{{ kube_dir }}/ssl/"
+    dest: "/etc/kubernetes/pki/"
   with_items:
     - {line: "{{ ssl_dir }}/ca.pem"}
     - {line: "{{ ssl_dir }}/ca.key"}
@@ -40,27 +48,27 @@
     - {line: "{{ ssl_dir }}/kube-proxy.key"}
     - {line: "{{ ssl_dir }}/token"}
 - name: "读取当前bootstrap-token-id"
-  shell: cat {{ kube_dir }}/ssl/token | grep -v "^#" | awk -F '.' '{print $1}'
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
   register: token_id
 - name: "读取当前bootstrap-token-secret"
-  shell: cat {{ kube_dir }}/ssl/token | grep -v "^#" | awk -F '.' '{print $2}'
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
   register: token_secret
 - name: "分发kubeconfig"
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "bootstrap.kubeconfig.j2",dest: "{{ kube_dir }}/bootstrap.kubeconfig" }
-    - {src: "kube-proxy.kubeconfig.j2",dest: "{{ kube_dir }}/kube-proxy.kubeconfig" }
+    - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
+    - {src: "kube-proxy.kubeconfig.j2",dest: "/etc/kubernetes/kube-proxy.kubeconfig" }
   tags: kubeconfig
 - name: "创建node节点配置文件"
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "kubelet.j2",dest: "{{ kube_dir }}/kubelet" }
-    - {src: "kubeletconfig.yaml.j2",dest: "{{ kube_dir }}/kubeletconfig.yaml" }
-    - {src: "proxy.j2",dest: "{{ kube_dir }}/proxy" }
+    - {src: "kubelet.j2",dest: "/etc/kubernetes/kubelet" }
+    - {src: "kubelet.conf.j2",dest: "/etc/kubernetes/kubelet.conf" }
+    - {src: "proxy.j2",dest: "/etc/kubernetes/proxy" }
   tags: kube-node-config
 - name: "创建node节点systemd文件"
   template:
@@ -72,7 +80,7 @@
   tags: kube-node-service
 - name: "删除bootstrap-token文件"
   file:
-    path: "{{ kube_dir }}/ssl/token"
+    path: "/etc/kubernetes/pki/token"
     state: absent
 - name: "启动node节点服务"
   systemd:
