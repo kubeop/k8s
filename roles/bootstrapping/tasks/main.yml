@@ -5,11 +5,8 @@
 - name: "修改calico-etcd部署文件"
   replace:
     path: "/tmp/calico.yaml"
-    regexp: "{{ item.regexp }}"
-    replace: "{{ item.line }}"
-    state: present
-  with_items:
-    - { regexp: "192.168.0.0/16", line: "{{ pod_ip_range }}" }
+    regexp: "192.168.0.0/16"
+    replace: "{{ pod_ip_range }}"
 - name: "部署calico"
   shell: "kubectl apply -f /tmp/calico.yaml"
 - name: "拷贝bootstrap-token文件"
