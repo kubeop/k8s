@@ -2,6 +2,14 @@
   get_url:
     url: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
     dest: /tmp/
+- name: "修改calico-etcd部署文件"
+  lineinfile:
+    dest: "/tmp/calico.yaml"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: "192.168.0.0/16", line: "{{ pod_ip_range }}" }
 - name: "部署calico"
   shell: "kubectl apply -f /tmp/calico.yaml"
 - name: "拷贝bootstrap-token文件"
