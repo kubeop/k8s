@@ -25,7 +25,6 @@
   hosts: master node
   roles:
     - { role: 'docker', tags: "install_docker" }
-    - { role: 'ceph', tags: "install_ceph" }
 
 - name: "配置kubelet"
   hosts: master node

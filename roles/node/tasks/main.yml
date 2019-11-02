@@ -6,6 +6,7 @@
     - {line: 'libnetfilter_conntrack-devel'}
     - {line: 'libnetfilter_conntrack'}
     - {line: 'conntrack-tools'}
+    - {line: 'conntrack'}
     - {line: 'socat'}
     - {line: 'ipvsadm'}
 - name: "添加kubernetes软件源"
@@ -13,8 +14,8 @@
     file: kubernetes
     name: "kubernetes"
     description: "kubernetes Repo"
-    baseurl: "http://mirrors.cloud.aliyuncs.com/kubernetes/yum/repos/kubernetes-el7-x86_64 \n https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64"
-    gpgkey: "http://mirrors.cloud.aliyuncs.com/kubernetes/yum/doc/yum-key.gpg \n https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg \n http://mirrors.cloud.aliyuncs.com/kubernetes/yum/doc/rpm-package-key.gpg \n https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg"
+    baseurl: "https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64"
+    gpgkey: "https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg \n https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg"
     gpgcheck: yes
     enabled: yes
   tags: kube_repo

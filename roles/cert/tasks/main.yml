@@ -3,12 +3,20 @@
     path: "{{ ssl_dir }}"
     state: directory
 
+- stat:
+    path: "{{ ssl_dir }}/etcd-ca.key"
+  register: etcd_ca_key_stat
 - name: "Generate Etcd CA private key"
+  when: not etcd_ca_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/etcd-ca.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/etcd-ca.csr"
+  register: etcd_ca_csr_stat
 - name: "Generate Etcd CA request"
+  when: not etcd_ca_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/etcd-ca.csr"
     privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
@@ -26,19 +34,31 @@
       - digitalSignature
       - keyCertSign
       - keyEncipherment
+- stat:
+    path: "{{ ssl_dir }}/etcd-ca.pem"
+  register: etcd_ca_pem_stat
 - name: "Generate Etcd CA certificate"
+  when: not etcd_ca_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/etcd-ca.pem"
     provider: selfsigned
     privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
     csr_path: "{{ ssl_dir }}/etcd-ca.csr"
 
+- stat:
+    path: "{{ ssl_dir }}/etcd-server.key"
+  register: etcd_server_key_stat
 - name: "Generate Etcd Server private key"
+  when: not etcd_server_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/etcd-server.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/etcd-server.csr"
+  register: etcd_server_csr_stat 
 - name: "Generate Etcd Server request"
+  when: not etcd_server_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/etcd-server.csr"
     privatekey_path: "{{ ssl_dir }}/etcd-server.key"
@@ -57,7 +77,11 @@
     subject_alt_name: "{{ item | map('regex_replace', '^', 'IP:') | list }}"
   with_list:
     - "{{ groups['master'] | union(groups['etcd']) }}"
+- stat:
+    path: "{{ ssl_dir }}/etcd-server.pem"
+  register: etcd_server_pem_stat 
 - name: "Generate Etcd Server certificate"
+  when: not etcd_server_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/etcd-server.pem"
     provider: ownca
@@ -66,12 +90,20 @@
     ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
 
+- stat:
+    path: "{{ ssl_dir }}/etcd-client.key"
+  register: etcd_client_key_stat 
 - name: "Generate Etcd Client private key"
+  when: not etcd_client_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/etcd-client.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/etcd-client.csr"
+  register: etcd_client_csr_stat 
 - name: "Generate Etcd Client request"
+  when: not etcd_client_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/etcd-client.csr"
     privatekey_path: "{{ ssl_dir }}/etcd-client.key"
@@ -87,7 +119,11 @@
       - keyEncipherment
     extended_key_usage:
       - clientAuth
+- stat:
+    path: "{{ ssl_dir }}/etcd-client.pem"
+  register: etcd_client_pem_stat 
 - name: "Generate Etcd Client certificate"
+  when: not etcd_client_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/etcd-client.pem"
     provider: ownca
@@ -96,12 +132,20 @@
     ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
 
+- stat:
+    path: "{{ ssl_dir }}/etcd-peer.key"
+  register: etcd_peer_key_stat 
 - name: "Generate Etcd Peer private key"
+  when: not etcd_peer_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/etcd-peer.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/etcd-peer.csr"
+  register: etcd_peer_csr_stat 
 - name: "Generate Etcd Peer request"
+  when: not etcd_peer_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/etcd-peer.csr"
     privatekey_path: "{{ ssl_dir }}/etcd-peer.key"
@@ -120,7 +164,11 @@
     subject_alt_name: "{{ item | map('regex_replace', '^', 'IP:') | list }}"
   with_list:
     - "{{ groups['etcd'] }}"
+- stat:
+    path: "{{ ssl_dir }}/etcd-peer.pem"
+  register: etcd_peer_pem_stat 
 - name: "Generate Etcd Peer certificate"
+  when: not etcd_peer_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/etcd-peer.pem"
     provider: ownca
@@ -129,13 +177,20 @@
     ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
 
-
+- stat:
+    path: "{{ ssl_dir }}/ca.key"
+  register: ca_key_stat 
 - name: "Generate CA private key"
+  when: not ca_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/ca.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/ca.csr"
+  register: ca_csr_stat 
 - name: "Generate CA request"
+  when: not ca_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/ca.csr"
     privatekey_path: "{{ ssl_dir }}/ca.key"
@@ -154,19 +209,31 @@
       - keyCertSign
       - digitalSignature
       - keyEncipherment
+- stat:
+    path: "{{ ssl_dir }}/ca.pem"
+  register: ca_pem_stat 
 - name: "Generate CA certificate"
+  when: not ca_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/ca.pem"
     provider: selfsigned
     privatekey_path: "{{ ssl_dir }}/ca.key"
     csr_path: "{{ ssl_dir }}/ca.csr"
 
+- stat:
+    path: "{{ ssl_dir }}/admin.key"
+  register: admin_key_stat 
 - name: "Generate kubectl private key"
+  when: not admin_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/admin.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/admin.csr"
+  register: admin_csr_stat
 - name: "Generate kubectl request"
+  when: not admin_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/admin.csr"
     privatekey_path: "{{ ssl_dir }}/admin.key"
@@ -182,7 +249,11 @@
       - keyEncipherment
     extended_key_usage:
       - clientAuth
+- stat:
+    path: "{{ ssl_dir }}/admin.pem"
+  register: admin_pem_stat
 - name: "Generate kubectl certificate"
+  when: not admin_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/admin.pem"
     provider: ownca
@@ -194,12 +265,20 @@
 - name: "merge lists"
   set_fact:
     lists_merged: "{{ groups['master'] | union(groups['k8s_service']) | map('regex_replace', '^', 'IP:') | list }} + {{ groups['k8s_domain'] | map('regex_replace', '^', 'DNS:') | list}}"
+- stat:
+    path: "{{ ssl_dir }}/kube-apiserver.key"
+  register: kube_apiserver_key_stat
 - name: "Generate kube-apiserver private key"
+  when: not kube_apiserver_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/kube-apiserver.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/kube-apiserver.csr"
+  register: kube_apiserver_csr_stat
 - name: "Generate kube-apiserver request"
+  when: not kube_apiserver_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/kube-apiserver.csr"
     privatekey_path: "{{ ssl_dir }}/kube-apiserver.key"
@@ -215,7 +294,11 @@
     extended_key_usage:
       - serverAuth
     subject_alt_name: "{{ lists_merged }}"
+- stat:
+    path: "{{ ssl_dir }}/kube-apiserver.pem"
+  register: kube_apiserver_pem_stat
 - name: "Generate kube-apiserver certificate"
+  when: not kube_apiserver_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/kube-apiserver.pem"
     provider: ownca
@@ -224,13 +307,20 @@
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-
+- stat:
+    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
+  register: kube_apiserver_kubelet_client_key_stat
 - name: "Generate kube-apiserver-kubelet-client private key"
+  when: not kube_apiserver_kubelet_client_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.csr"
+  register: kube_apiserver_kubelet_client_csr_stat
 - name: "Generate kube-apiserver-kubelet-client request"
+  when: not kube_apiserver_kubelet_client_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.csr"
     privatekey_path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
@@ -246,7 +336,11 @@
       - keyEncipherment
     extended_key_usage:
       - clientAuth
+- stat:
+    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.pem"
+  register: kube_apiserver_kubelet_client_pem_stat
 - name: "Generate kube-apiserver-kubelet-client certificate"
+  when: not kube_apiserver_kubelet_client_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.pem"
     provider: ownca
@@ -255,13 +349,20 @@
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-
+- stat:
+    path: "{{ ssl_dir }}/proxy-client.key"
+  register: proxy_client_key_stat
 - name: "Generate proxy-client private key"
+  when: not proxy_client_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/proxy-client.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/proxy-client.csr"
+  register: proxy_client_csr_stat
 - name: "Generate proxy-client request"
+  when: not proxy_client_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/proxy-client.csr"
     privatekey_path: "{{ ssl_dir }}/proxy-client.key"
@@ -277,7 +378,11 @@
       - keyEncipherment
     extended_key_usage:
       - clientAuth
+- stat:
+    path: "{{ ssl_dir }}/proxy-client.pem"
+  register: proxy_client_pem_stat
 - name: "Generate proxy-client certificate"
+  when: not proxy_client_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/proxy-client.pem"
     provider: ownca
@@ -286,13 +391,20 @@
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-
+- stat:
+    path: "{{ ssl_dir }}/kube-controller-manager.key"
+  register: kube_controller_manager_key_stat
 - name: "Generate kube-controller-manager private key"
+  when: not kube_controller_manager_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/kube-controller-manager.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/kube-controller-manager.csr"
+  register: kube_controller_manager_csr_stat
 - name: "Generate kube-controller-manager request"
+  when: not kube_controller_manager_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/kube-controller-manager.csr"
     privatekey_path: "{{ ssl_dir }}/kube-controller-manager.key"
@@ -308,7 +420,11 @@
       - keyEncipherment
     extended_key_usage:
       - clientAuth
+- stat:
+    path: "{{ ssl_dir }}/kube-controller-manager.pem"
+  register: kube_controller_manager_pem_stat
 - name: "Generate kube-controller-manager certificate"
+  when: not kube_controller_manager_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/kube-controller-manager.pem"
     provider: ownca
@@ -317,13 +433,20 @@
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
-
+- stat:
+    path: "{{ ssl_dir }}/kube-scheduler.key"
+  register: kube_scheduler_key_stat
 - name: "Generate kube-scheduler private key"
+  when: not kube_scheduler_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/kube-scheduler.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/kube-scheduler.csr"
+  register: kube_scheduler_csr_stat
 - name: "Generate kube-scheduler request"
+  when: not kube_scheduler_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/kube-scheduler.csr"
     privatekey_path: "{{ ssl_dir }}/kube-scheduler.key"
@@ -339,7 +462,11 @@
       - keyEncipherment
     extended_key_usage:
       - clientAuth
+- stat:
+    path: "{{ ssl_dir }}/kube-scheduler.pem"
+  register: kube_scheduler_pem_stat
 - name: "Generate kube-scheduler certificate"
+  when: not kube_scheduler_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/kube-scheduler.pem"
     provider: ownca
@@ -348,12 +475,20 @@
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
+- stat:
+    path: "{{ ssl_dir }}/kube-proxy.key"
+  register: kube_proxy_key_stat
 - name: "Generate kube-proxy private key"
+  when: not kube_proxy_key_stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/kube-proxy.key"
     type: RSA
     size: 4096
+- stat:
+    path: "{{ ssl_dir }}/kube-proxy.csr"
+  register: kube_proxy_csr_stat
 - name: "Generate kube-proxy request"
+  when: not kube_proxy_csr_stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/kube-proxy.csr"
     privatekey_path: "{{ ssl_dir }}/kube-proxy.key"
@@ -369,7 +504,11 @@
       - keyEncipherment
     extended_key_usage:
       - clientAuth
+- stat:
+    path: "{{ ssl_dir }}/kube-proxy.pem"
+  register: kube_proxy_pem_stat
 - name: "Generate kube-proxy certificate"
+  when: not kube_proxy_pem_stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/kube-proxy.pem"
     provider: ownca
