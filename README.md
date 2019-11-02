@@ -93,7 +93,7 @@ ansible-playbook k8s.yml -i inventory
 ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepalived
 ```
 
-⚠️：默认使用calico网络插件，可自行下载flannel yaml安装flannel网络插件
+⚠️：默认使用calico ipip网络，部署成功后，可以自行修改。
 
 #### 3.3、扩容mater节点
 
@@ -118,7 +118,7 @@ ansible-playbook k8s.yml -i inventory -t cert
 ansible-playbook k8s.yml -i inventory -t dis_certs
 ```
 
-
+然后依次重启每个节点。
 
 ### kubernetes HA架构
 
