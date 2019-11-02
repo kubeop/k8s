@@ -20,6 +20,7 @@
   with_items:
     - {line: '{{ ssl_dir }}/ca.key'}
     - {line: '{{ ssl_dir }}/ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd-ca.pem'}
     - {line: '{{ ssl_dir }}/etcd-client.key'}
     - {line: '{{ ssl_dir }}/etcd-client.pem'}
     - {line: '{{ ssl_dir }}/kube-apiserver.key'}
