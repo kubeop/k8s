@@ -33,7 +33,6 @@ spec:
         cpu: 100m
     volumeMounts:
     - mountPath: /etc/kubernetes/kube-scheduler.kubeconfig
-      subPath: kube-scheduler.kubeconfig
       name: kubeconfig
       readOnly: true
   hostNetwork: true
