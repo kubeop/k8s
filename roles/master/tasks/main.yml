@@ -1,34 +1,13 @@
-- name: "添加k8s运行用户kube"
-  user:
-    name: kube
-    shell: /sbin/nologin
-    uid: 200
-    home: /var/kube
-    state: present
 - name: "创建kubectl目录"
   file:
-    path: "/root/.kube"
+    path: "~/.kube"
     state: directory
-- name: "安装kube-master"
-  get_url:
-    url: "{{ item.line }}"
-    dest: /usr/bin/
-  with_items:
-    - {line: "{{ download_url }}/kube-apiserver"}
-    - {line: "{{ download_url }}/kube-controller-manager"}
-    - {line: "{{ download_url }}/kube-scheduler"}
-    - {line: "{{ download_url }}/kubectl"}
-  tags: instll_kube-master
-- name: "添加执行权限"
-  file:
-    dest: "{{ item.line }}"
-    mode: 0755
-  with_items:
-    - {line: '/usr/bin/kube-apiserver'}
-    - {line: '/usr/bin/kube-controller-manager'}
-    - {line: '/usr/bin/kube-scheduler'}
-    - {line: '/usr/bin/kubectl'}
-  tags: instll_kube-master
+- name: "安装kubectl"
+  yum:
+    update_cache: yes
+    enablerepo: kubernetes
+    name: 'kubectl{% if kubernetes_version is defined and kubernetes_version != ""  %}-{{ kubernetes_version }}{% endif %}'
+    state: installed
 - name: "添加命令自动补全"
   lineinfile:
     dest: "/etc/profile"
@@ -37,10 +16,11 @@
 - name: "分发master证书文件"
   copy:
     src: "{{ item.line }}"
-    dest: "{{ kube_dir }}/ssl/"
+    dest: "/etc/kubernetes/pki/"
   with_items:
     - {line: '{{ ssl_dir }}/ca.key'}
     - {line: '{{ ssl_dir }}/ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd-ca.pem'}
     - {line: '{{ ssl_dir }}/etcd-client.key'}
     - {line: '{{ ssl_dir }}/etcd-client.pem'}
     - {line: '{{ ssl_dir }}/kube-apiserver.key'}
@@ -61,44 +41,11 @@
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "config.j2",dest: "/root/.kube/config" }
-    - {src: "kube-controller-manager.kubeconfig.j2",dest: "{{ kube_dir }}/kube-controller-manager.kubeconfig" }
-    - {src: "kube-scheduler.kubeconfig.j2",dest: "{{ kube_dir }}/kube-scheduler.kubeconfig" }
-- name: "创建master节点配置文件"
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-  with_items:
-    - {src: "apiserver.j2",dest: "{{ kube_dir }}/apiserver" }
-    - {src: "controller-manager.j2",dest: "{{ kube_dir }}/controller-manager" }
-    - {src: "scheduler.j2",dest: "{{ kube_dir }}/scheduler" }
-- name: "创建master节点systemd文件"
-  template:
-    src: "{{ item.src }}"
-    dest: "{{ item.dest }}"
-  with_items:
-    - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
-    - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
-    - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
-  tags: kube-master-service
-- name: "添加acl"
-  acl:
-    path: "{{ item.line }}"
-    entity: kube
-    etype: user
-    permissions: r
-    state: present
-  with_items:
-    - {line: "{{ kube_dir }}/kube-controller-manager.kubeconfig"}
-    - {line: "{{ kube_dir }}/kube-scheduler.kubeconfig"}
-- name: "启动master节点服务"
-  systemd:
-    name: "{{ item.line }}"
-    enabled: yes
-    daemon_reload: yes
-    state: restarted
-  with_items:
-    - {line: 'kube-apiserver'}
-    - {line: 'kube-controller-manager'}
-    - {line: 'kube-scheduler'}
-  tags: restart_master
+    - {src: "admin.kubeconfig.j2",dest: "~/.kube/config" }
+    - {src: "kube-controller-manager.kubeconfig.j2",dest: "/etc/kubernetes/kube-controller-manager.kubeconfig" }
+    - {src: "kube-scheduler.kubeconfig.j2",dest: "/etc/kubernetes/kube-scheduler.kubeconfig" }
+    - {src: "kube-apiserver.yaml.j2",dest: "/etc/kubernetes/manifests/kube-apiserver.yaml" }
+    - {src: "kube-controller-manager.yaml.j2",dest: "/etc/kubernetes/manifests/kube-controller-manager.yaml" }
+    - {src: "kube-scheduler.yaml.j2",dest: "/etc/kubernetes/manifests/kube-scheduler.yaml" }
+  notify:
+    - restart kubelet

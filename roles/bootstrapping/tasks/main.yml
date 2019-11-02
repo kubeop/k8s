@@ -1,12 +1,12 @@
 - name: "拷贝bootstrap-token文件"
   copy:
     src: "{{ ssl_dir }}/token"
-    dest: "{{ kube_dir }}/ssl/token"
+    dest: "/etc/kubernetes/pki/token"
 - name: "读取当前bootstrap-token-id"
-  shell: cat {{ kube_dir }}/ssl/token | grep -v "^#" | awk -F '.' '{print $1}'
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
   register: token_id
 - name: "读取当前bootstrap-token-secret"
-  shell: cat {{ kube_dir }}/ssl/token | grep -v "^#" | awk -F '.' '{print $2}'
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
   register: token_secret
 - name: "授予kube-apiserver访问kubelet API权限"
   shell: kubectl create clusterrolebinding kube-apiserver:kubelet-apis --clusterrole=system:kubelet-api-admin --user kubernetes
@@ -31,5 +31,30 @@
   shell: kubectl certificate approve {{ approve_csr.stdout }}
 - name: "删除bootstrap-token文件"
   file:
-    path: "{{ kube_dir }}/ssl/token"
+    path: "/etc/kubernetes/pki/token"
     state: absent
+- name: "为master打污点"
+  shell: "kubectl taint nodes {{ item }} node-role.kubernetes.io/master=:NoSchedule"
+  with_items:
+    - "{{ groups['master'] }}"
+- name: "为master打标签"
+  shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/master="
+  with_items:
+    - "{{ groups['master'] }}"
+- name: "拷贝kube-proxy.yaml"
+  template:
+    src: "kube-proxy.yaml.j2"
+    dest: "/tmp/kube-proxy.yaml"
+- name: "部署kube-proxy"
+  shell: "kubectl apply -f /tmp/kube-proxy.yaml"
+- name: "下载calico部署文件"
+  get_url:
+    url: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
+    dest: /tmp/
+- name: "修改calico-etcd部署文件"
+  replace:
+    path: "/tmp/calico.yaml"
+    regexp: "192.168.0.0/16"
+    replace: "{{ pod_ip_range }}"
+- name: "部署calico"
+  shell: "kubectl apply -f /tmp/calico.yaml"

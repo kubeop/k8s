@@ -1,22 +1,52 @@
+- stat:
+    path: "{{ disk }}1"
+  register: disk_stat
+  tags: docker_fdisk
+- name: "创建{{ disk }}分区"
+  when: not disk_stat.stat.exists
+  parted:
+    device: "{{ disk }}"
+    number: 1
+    part_type: primary
+    part_start: 0%
+    part_end: 100%
+    label: gpt
+    state: present
+  tags: docker_fdisk
+- name: "disk"
+  debug: 
+    msg: "即将格式化的磁盘分区是{{ disk }}1"
+  tags: docker_fdisk
+- name: "格式化{{ disk }}1分区"
+  when: not disk_stat.stat.exists
+  filesystem:
+    dev: "{{ disk }}1"
+    force: yes
+    fstype: xfs
+  tags: docker_fdisk
+- name: "挂载{{ disk }}1分区到/var/lib/docker目录"
+  mount:
+    path: "/var/lib/docker"
+    src: "{{ disk }}1"
+    fstype: xfs
+    opts: defaults,noatime,nodiratime,nobarrier
+    state: mounted
+  tags: docker_fdisk
 - name: "添加Docker软件源"
   yum_repository:
     file: docker-ce
-    name: '{{ item.name }}'
-    description: '{{ item.description}}'
-    baseurl: '{{ item.baseurl }}'
-    gpgkey: "{{ gpgkey }}/docker-ce/linux/centos/gpg"
+    name: "docker-ce-stable"
+    description: "Docker CE Stable - $basearch"
+    baseurl: "https://mirrors.aliyun.com/docker-ce/linux/centos/7/$basearch/stable"
+    gpgkey: "https://mirrors.aliyun.com/docker-ce/linux/centos/gpg"
     gpgcheck: yes
     enabled: yes
-  with_items:
-    - { name: "docker-ce-stable",description: "Docker CE Stable - $basearch",baseurl: "http://mirrors.cloud.aliyuncs.com/docker-ce/linux/centos/7/$basearch/stable \n https://mirrors.aliyun.com/docker-ce/linux/centos/7/$basearch/stable" }
-    - { name: "docker-ce-stable-debuginfo",description: "Docker CE Stable - Debuginfo $basearch",baseurl: "http://mirrors.cloud.aliyuncs.com/docker-ce/linux/centos/7/debug-$basearch/stable \n https://mirrors.aliyun.com/docker-ce/linux/centos/7/debug-$basearch/stable" }
-    - { name: "docker-ce-stable-source",description: "Docker CE Stable - Sources",baseurl: "http://mirrors.cloud.aliyuncs.com/docker-ce/linux/centos/7/source/stable \n https://mirrors.aliyun.com/docker-ce/linux/centos/7/source/stable" }
   tags: docker_repo
 - name: "安装Docker-ce"
   yum:
     update_cache: yes
     enablerepo: docker-ce-stable
-    name: "{{ docker_version }}"
+    name: 'docker-ce{% if docker_version is defined and docker_version != ""  %}-{{ docker_version }}{% endif %}'
     state: installed
 - name: "启动Docker"
   systemd:
@@ -26,13 +56,5 @@
   template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
-- name: "创建docker数据目录"
-  file:
-    path: "{{ kube_data_dir }}/docker"
-    state: directory
-- name: "重新加载并重启Docker"
-  systemd:
-    daemon_reload: yes
-    name: docker
-    enabled: yes
-    state: restarted
+  notify:
+    - restart docker
