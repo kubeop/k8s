@@ -33,3 +33,16 @@
   file:
     path: "/etc/kubernetes/pki/token"
     state: absent
+- name: "master打污点"
+  shell: "kubectl taint nodes {{ item }} node-role.kubernetes.io/master=:NoSchedule"
+  with_items:
+    - "{{ groups['master'] }}"
+- name: "拷贝kube-proxy.yaml"
+  template:
+    src: "kube-proxy.yaml.j2"
+    dest: "/tmp/kube-proxy.yaml"
+- name: "部署kube-proxy"
+  shell: "kubectl apply -f /tmp/kube-proxy.yaml"
+
+
+

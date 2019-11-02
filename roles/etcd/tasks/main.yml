@@ -49,24 +49,12 @@
     - {line: '{{ ssl_dir }}/etcd-peer.pem'}
     - {line: '{{ ssl_dir }}/etcd-peer.key'}
   tags: dis_certs
-- name: "拷贝etcd配置文件"
+- name: "生成etcd配置文件"
   template:
-    src: "etcd.conf.j2"
-    dest: "/etc/etcd/etcd.conf"
-- name: "拷贝etcd service文件"
-  template:
-    src: "etcd.service.j2"
-    dest: "/usr/lib/systemd/system/etcd.service"
-- name: "创建etcd数据目录权限"
-  file:
-    path: "/var/lib/etcd"
-    owner: etcd
-    group: etcd
-    state: directory
-- name: "启动服务"
-  systemd:
-    name: etcd
-    daemon_reload: yes
-    enabled: yes
-    state: restarted
-  tags: restart_etcd
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "etcd.conf.j2",dest: "/etc/etcd/etcd.conf" }
+    - {src: "etcd.service.j2",dest: "/usr/lib/systemd/system/etcd.service" }
+  notify:
+    - restart etcd

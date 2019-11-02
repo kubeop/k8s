@@ -21,6 +21,17 @@
     - { role: 'haproxy', tags: "install_haproxy" }
     - { role: 'keepalived', tags: "install_keepalived" }
 
+- name: "安装docker"
+  hosts: master node
+  roles:
+    - { role: 'docker', tags: "install_docker" }
+
+- name: "配置kubelet"
+  hosts: master node
+  roles:
+    - { role: 'kubelet', tags: "install_kubelet" }
+
+
 - name: "配置master"
   hosts: master
   roles:

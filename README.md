@@ -65,9 +65,10 @@ vip=172.17.15.200
 | ssl_dir          | 签发ssl证书保存路径，ansible控制端机器上的路径。默认签发10年有效期的证书 |
 | service_ip_range | 指定k8s集群service的网段                                     |
 | pod_ip_range     | 指定k8s集群pod的网段                                         |
-| cluster_dns      | 指定集群dns服务IP                                            |
 
 - 注：以下程序默认数据目录
+
+- 请将etcd安装在独立的服务器上，不建议跟master安装在一起
 
 - etcd数据目录: /var/lib/etcd
 

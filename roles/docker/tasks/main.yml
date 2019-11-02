@@ -60,13 +60,5 @@
   template:
     src: daemon.json.j2
     dest: /etc/docker/daemon.json
-- name: "创建docker数据目录"
-  file:
-    path: "/var/lib/docker"
-    state: directory
-- name: "重新加载并重启Docker"
-  systemd:
-    daemon_reload: yes
-    name: docker
-    enabled: yes
-    state: restarted
+  notify:
+    - restart docker
