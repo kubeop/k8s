@@ -78,6 +78,7 @@ vip=172.16.90.200
 
 ```
 yum -y install ansible
+pip install netaddr
 ```
 
 #### 3.2、部署集群

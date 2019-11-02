@@ -20,7 +20,7 @@ spec:
     - --etcd-cafile=/etc/kubernetes/pki/etcd-ca.pem
     - --etcd-certfile=/etc/kubernetes/pki/etcd-client.pem
     - --etcd-keyfile=/etc/kubernetes/pki/etcd-client.key
-    - --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %}
+    - --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}\n{% endfor %}
     - --insecure-port=0
     - --kubelet-client-certificate=/etc/kubernetes/pki/kube-apiserver-kubelet-client.pem
     - --kubelet-client-key=/etc/kubernetes/pki/kube-apiserver-kubelet-client.key

@@ -76,7 +76,7 @@
       - serverAuth
     subject_alt_name: "{{ item | map('regex_replace', '^', 'IP:') | list }}"
   with_list:
-    - "{{ groups['master'] | union(groups['etcd']) }}"
+    - "{{ groups['master'] }}"
 - stat:
     path: "{{ ssl_dir }}/etcd-server.pem"
   register: etcd_server_pem 
