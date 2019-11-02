@@ -4,13 +4,13 @@
          name: '{{ item.name }}'
          description: '{{ item.description}}'
          baseurl: '{{ item.baseurl }}'
-         gpgkey: "http://mirrors.cloud.aliyuncs.com/ceph/keys/release.asc \n https://mirrors.aliyun.com/ceph/keys/release.asc"
+         gpgkey: "https://mirrors.aliyun.com/ceph/keys/release.asc"
          gpgcheck: yes
          enabled: yes
       with_items:
-         - { name: "Ceph",description: "Ceph packages for $basearch",baseurl: "http://mirrors.cloud.aliyuncs.com/ceph/rpm-nautilus/el7/$basearch \n https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/$basearch" }
-         - { name: "Ceph-noarch",description: "Ceph noarch packages",baseurl: "http://mirrors.cloud.aliyuncs.com/ceph/rpm-nautilus/el7/noarch \n https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/noarch" }
-         - { name: "ceph-source",description: "Ceph source packages",baseurl: "http://mirrors.cloud.aliyuncs.com/ceph/rpm-nautilus/el7/SRPMS \n https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/SRPMS" }
+         - { name: "Ceph",description: "Ceph packages for $basearch",baseurl: "https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/$basearch" }
+         - { name: "Ceph-noarch",description: "Ceph noarch packages",baseurl: "https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/noarch" }
+         - { name: "ceph-source",description: "Ceph source packages",baseurl: "https://mirrors.aliyun.com/ceph/rpm-nautilus/el7/SRPMS" }
       tags: ceph
     - name: "安装ceph客户端"
       yum:
