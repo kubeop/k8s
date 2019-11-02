@@ -115,7 +115,7 @@ ansible-playbook k8s.yml -i inventory -t cert,install_node
 
 ```
 ansible-playbook k8s.yml -i inventory -t cert
-ansible-playbook k8s.yml -i inventory -t dis_certs,restart_master,restart_node,restart_etcd
+ansible-playbook k8s.yml -i inventory -t dis_certs
 ```
 
 

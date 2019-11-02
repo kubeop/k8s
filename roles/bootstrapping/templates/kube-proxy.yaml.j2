@@ -120,7 +120,7 @@ spec:
             fieldRef:
               apiVersion: v1
               fieldPath: spec.nodeName
-        image: gcr.azk8s.cn/google-containers/kube-proxy:{{ kubernetes_version }}
+        image: gcr.azk8s.cn/google-containers/kube-proxy:v{{ kubernetes_version }}
         imagePullPolicy: IfNotPresent
         name: kube-proxy
         resources: {}

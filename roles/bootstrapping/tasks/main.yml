@@ -48,6 +48,10 @@
   shell: "kubectl taint nodes {{ item }} node-role.kubernetes.io/master=:NoSchedule"
   with_items:
     - "{{ groups['master'] }}"
+- name: "为master打标签"
+  shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/master="
+  with_items:
+    - "{{ groups['master'] }}"
 - name: "拷贝kube-proxy.yaml"
   template:
     src: "kube-proxy.yaml.j2"

@@ -45,6 +45,7 @@
     - {line: "{{ ssl_dir }}/kube-proxy.pem"}
     - {line: "{{ ssl_dir }}/kube-proxy.key"}
     - {line: "{{ ssl_dir }}/token"}
+  tags: dis_certs
 - name: "读取当前bootstrap-token-id"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
   register: token_id
