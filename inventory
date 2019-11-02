@@ -29,7 +29,7 @@ kubernetes.default.svc.cluster.local
 [haproxy]
 172.16.90.198 hostname=haproxy-01 type=MASTER priority=100
 172.16.90.199 hostname=haproxy-02 type=BACKUP priority=90
-[haproxy:vars]
+[all:vars]
 vip=172.16.90.200
 
 #本组内填写node服务器及主机名
