@@ -1,3 +1,9 @@
+- name: "下载calico部署文件"
+  get_url:
+    url: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
+    dest: /tmp/
+- name: "部署calico"
+  shell: "kubectl apply -f /tmp/calico.yaml"
 - name: "拷贝bootstrap-token文件"
   copy:
     src: "{{ ssl_dir }}/token"
@@ -33,7 +39,7 @@
   file:
     path: "/etc/kubernetes/pki/token"
     state: absent
-- name: "master打污点"
+- name: "为master打污点"
   shell: "kubectl taint nodes {{ item }} node-role.kubernetes.io/master=:NoSchedule"
   with_items:
     - "{{ groups['master'] }}"
@@ -43,6 +49,3 @@
     dest: "/tmp/kube-proxy.yaml"
 - name: "部署kube-proxy"
   shell: "kubectl apply -f /tmp/kube-proxy.yaml"
-
-
-
