@@ -1,14 +1,3 @@
-- name: "下载calico部署文件"
-  get_url:
-    url: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
-    dest: /tmp/
-- name: "修改calico-etcd部署文件"
-  replace:
-    path: "/tmp/calico.yaml"
-    regexp: "192.168.0.0/16"
-    replace: "{{ pod_ip_range }}"
-- name: "部署calico"
-  shell: "kubectl apply -f /tmp/calico.yaml"
 - name: "拷贝bootstrap-token文件"
   copy:
     src: "{{ ssl_dir }}/token"
@@ -58,3 +47,14 @@
     dest: "/tmp/kube-proxy.yaml"
 - name: "部署kube-proxy"
   shell: "kubectl apply -f /tmp/kube-proxy.yaml"
+- name: "下载calico部署文件"
+  get_url:
+    url: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
+    dest: /tmp/
+- name: "修改calico-etcd部署文件"
+  replace:
+    path: "/tmp/calico.yaml"
+    regexp: "192.168.0.0/16"
+    replace: "{{ pod_ip_range }}"
+- name: "部署calico"
+  shell: "kubectl apply -f /tmp/calico.yaml"
