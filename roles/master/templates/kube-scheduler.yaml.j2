@@ -35,9 +35,15 @@ spec:
     - mountPath: /etc/kubernetes/kube-scheduler.kubeconfig
       name: kubeconfig
       readOnly: true
+    - mountPath: /etc/kubernetes/pki
+      name: k8s-certs
+      readOnly: true
   hostNetwork: true
   priorityClassName: system-cluster-critical
   volumes:
+  - hostPath:
+      path: /etc/kubernetes/pki
+      type: DirectoryOrCreate
   - hostPath:
       path: /etc/kubernetes/kube-scheduler.kubeconfig
       type: FileOrCreate
