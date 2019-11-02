@@ -25,11 +25,12 @@
   hosts: master node
   roles:
     - { role: 'docker', tags: "install_docker" }
+    - { role: 'ceph', tags: "install_ceph" }
 
 - name: "配置kubelet"
   hosts: master node
   roles:
-    - { role: 'kubelet', tags: "install_kubelet" }
+    - { role: 'node', tags: "install_node" }
 
 
 - name: "配置master"
@@ -37,14 +38,7 @@
   roles:
     - { role: 'master', tags: "install_master" }
 
-- name: "配置node"
-  hosts: master node
-  roles:
-    - { role: 'docker', tags: "install_node" }
-    - { role: 'node', tags: "install_node" }
-    - { role: 'ceph', tags: "install_ceph" }
-
-- name: "安装kubectl"
+- name: "配置集群"
   hosts: kubectl
   roles:
     - { role: 'bootstrapping', tags: "bootstrapping" }
