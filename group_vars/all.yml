@@ -3,7 +3,7 @@ disk: /dev/sdb
 
 #k8s
 ssl_dir: /etc/ssl/k8s
-kubernetes_version: v1.15.5
+kubernetes_version: 1.15.5
 docker_version: 19.03.4
 
 #集群配置

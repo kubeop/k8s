@@ -16,7 +16,7 @@ spec:
     - --bind-address=127.0.0.1
     - --kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig
     - --leader-elect=true
-    image: gcr.azk8s.cn/google-containers/kube-scheduler:{{ kubernetes_version }}
+    image: gcr.azk8s.cn/google-containers/kube-scheduler:v{{ kubernetes_version }}
     imagePullPolicy: IfNotPresent
     livenessProbe:
       failureThreshold: 8

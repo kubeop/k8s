@@ -37,7 +37,7 @@ spec:
     - --service-cluster-ip-range={{ service_ip_range }}
     - --tls-cert-file=/etc/kubernetes/pki/kube-apiserver.pem
     - --tls-private-key-file=/etc/kubernetes/pki/kube-apiserver.key
-    image: gcr.azk8s.cn/google-containers/kube-apiserver:{{ kubernetes_version }}
+    image: gcr.azk8s.cn/google-containers/kube-apiserver:v{{ kubernetes_version }}
     imagePullPolicy: IfNotPresent
     livenessProbe:
       failureThreshold: 8

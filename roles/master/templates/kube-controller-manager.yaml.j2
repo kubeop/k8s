@@ -29,7 +29,7 @@ spec:
     - --service-cluster-ip-range={{ service_ip_range }}
     - --use-service-account-credentials=true
     - --horizontal-pod-autoscaler-sync-period=10s
-    image: gcr.azk8s.cn/google-containers/kube-controller-manager:{{ kubernetes_version }}
+    image: gcr.azk8s.cn/google-containers/kube-controller-manager:v{{ kubernetes_version }}
     imagePullPolicy: IfNotPresent
     livenessProbe:
       failureThreshold: 8
