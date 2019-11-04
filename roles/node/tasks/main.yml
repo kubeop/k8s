@@ -59,7 +59,7 @@
   with_items:
     - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
     - {src: "kube-proxy.kubeconfig.j2",dest: "/etc/kubernetes/kube-proxy.kubeconfig" }
-    - {src: "kubelet.yml.j2",dest: "/etc/kubernetes/kubelet.yml" }
+    - {src: "kubelet.conf.j2",dest: "/etc/kubernetes/kubelet.conf" }
     - {src: "10-kubelet.conf.j2",dest: "/usr/lib/systemd/system/kubelet.service.d/10-kubelet.conf" }
   notify:
     - restart kubelet
