@@ -10,7 +10,7 @@
 172.16.90.205 hostname=master-02
 172.16.90.206 hostname=master-03
 
-#本组机器不会进行系统初始化等操作，仅用做安装kubectl命令行
+#本组机器不会进行系统初始化等操作，仅用做kubectl命令行
 [kubectl]
 172.16.90.204 hostname=master-01
 
