@@ -1,4 +1,4 @@
-本工具使用ansible playbook初始化系统配置、安装kubernetes高可用集群，并可进行节点扩容、替换集群证书等。
+本工具使用ansible playbook初始化系统配置、安装kubernetes高可用集群，并可进行节点扩容、替换集群证书等。本playbook安装kubernetes集群为静态Pod方式部署。
 
 
 
@@ -25,22 +25,10 @@
 [kubectl]
 172.16.90.204 hostname=master-01
 
-#本组机器不会进行系统初始化等操作，只是apiserver证书签发时使用
-[k8s_service]
-10.64.0.1        #shoule be k8s servcie first ip
-172.16.90.200    #shoule be k8s apiserver slb ip
-#本组域名不会进行系统初始化等操作，只是apiserver证书签发时使用，不需要进行修改
-[k8s_domain]
-kubernetes
-kubernetes.default
-kubernetes.default.svc
-kubernetes.default.svc.cluster
-kubernetes.default.svc.cluster.local
-
 [haproxy]
 172.16.90.198 hostname=haproxy-01 type=MASTER priority=100
 172.16.90.199 hostname=haproxy-02 type=BACKUP priority=90
-[haproxy:vars]
+[all:vars]
 vip=172.16.90.200
 
 #本组内填写node服务器及主机名
@@ -58,10 +46,9 @@ vip=172.16.90.200
 
 | 配置项             | 说明                                                         |
 | ------------------ | ------------------------------------------------------------ |
-| disk               | 指定机器数据盘盘符。本脚本会自动格式化并挂载磁盘，自动挂载到应用的默认目录 |
 | ssl_dir            | 签发ssl证书保存路径，ansible控制端机器上的路径。默认签发10年有效期的证书 |
 | kubernetes_version | kubernetes 版本                                              |
-| docker_version     | 可通过查看版本yum list docker-ce.x86_64 --showduplicates     |
+| docker_version     | 可通过查看版本yum list docker-ce --showduplicates            |
 | service_ip_range   | 指定k8s集群service的网段                                     |
 | pod_ip_range       | 指定k8s集群pod的网段                                         |
 
@@ -109,9 +96,9 @@ ansible-playbook k8s.yml -i inventory -t init -l node
 ansible-playbook k8s.yml -i inventory -t cert,install_node
 ```
 
-#### 3.3、替换集群证书
+#### 3.5、替换集群证书
 
-先删除ca、apiserver证书，然后执行以下步骤
+先备份并删除证书目录，然后执行以下步骤
 
 ```
 ansible-playbook k8s.yml -i inventory -t cert
@@ -119,6 +106,8 @@ ansible-playbook k8s.yml -i inventory -t dis_certs
 ```
 
 然后依次重启每个节点。
+
+
 
 ### kubernetes HA架构
 
