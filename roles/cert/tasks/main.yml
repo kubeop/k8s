@@ -262,6 +262,10 @@
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
 
+- include_vars: apiserver.yml
+  when: apiserver_domain_name is defined
+- include_vars: kube.yml
+  when: apiserver_domain_name is not defined
 - name: "merge lists"
   set_fact:
     lists_merged: "{{ groups['master'] | union(k8s_ip) | map('regex_replace', '^', 'IP:') | list }} + {{ k8s_domain | map('regex_replace', '^', 'DNS:') | list}}"

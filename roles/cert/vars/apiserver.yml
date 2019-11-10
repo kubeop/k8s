@@ -4,9 +4,7 @@ k8s_domain:
   - kubernetes.default.svc
   - kubernetes.default.svc.cluster
   - kubernetes.default.svc.cluster.local
-{% if apiserver_domain_name is defined %}
-  - {{ apiserver_domain_name }}
-{% endif %}
+  - "{{ apiserver_domain_name }}"
 
 k8s_ip:
   - "{{ service_ip_range | next_nth_usable(1) }}"
