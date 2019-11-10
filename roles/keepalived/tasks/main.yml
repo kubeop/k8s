@@ -6,14 +6,12 @@
   template:
     src: "keepalived.conf.j2"
     dest: "/etc/keepalived/keepalived.conf"
+  notify:
+    - restart keepalived
 - name: "拷贝check_haproxy.sh"
   template:
     src: "check_haproxy.sh.j2"
     dest: "/etc/keepalived/check_haproxy.sh"
     mode: 0777
-- name: "启动keepalived"
-  systemd:
-    name: keepalived
-    enabled: yes
-    daemon_reload: yes
-    state: started
+  notify:
+    - restart keepalived

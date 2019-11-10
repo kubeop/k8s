@@ -1,44 +1,4 @@
-- name: "创建k8s目录"
-  file:
-    path: "{{ item.line }}"
-    state: directory
-  with_items:
-    - {line: '{{ data_dir }}/data/docker'}
-    - {line: '/etc/kubernetes/ssl'}
-- name: "拷贝token文件"
-  copy:
-    src: "{{ ssl_dir }}//token.csv"
-    dest: "/etc/kubernetes/token.csv"
-- name: "添加k8s运行用户kube"
-  user:
-    name: kube
-    shell: /sbin/nologin
-    uid: 200
-    home: /var/kube
-    state: present
-- name: "配置kubelet权限"
-  file:
-    path: "{{ data_dir }}/data/kubelet"
-    owner: kube
-    group: kube
-    state: directory
-- name: "安装kube-node"
-  get_url:
-    url: "{{ item.line }}"
-    dest: /usr/bin/
-  with_items:
-    - { line: "{{ download_url }}/kubelet"}
-    - { line: "{{ download_url }}/kube-proxy"}
-  tags: install_kube-node
-- name: "添加执行权限"
-  file:
-    dest: "{{ item.line }}"
-    mode: 0755
-  with_items:
-    - {line: '/usr/bin/kubelet'}
-    - {line: '/usr/bin/kube-proxy'}
-  tags: install_kubelet
-- name: "解决conntrack报错依赖"
+- name: "安装依赖"
   yum:
     name: "{{ item.line }}"
     state: installed
@@ -46,63 +6,65 @@
     - {line: 'libnetfilter_conntrack-devel'}
     - {line: 'libnetfilter_conntrack'}
     - {line: 'conntrack-tools'}
+    - {line: 'conntrack'}
     - {line: 'socat'}
-- name: "分发ca证书文件"
-  copy:
-    src: "{{ ssl_dir }}/ca.pem"
-    dest: "/etc/kubernetes/ssl/"
-  tags: dis_certs
+    - {line: 'ipvsadm'}
+- name: "添加kubernetes软件源"
+  yum_repository:
+    file: kubernetes
+    name: "kubernetes"
+    description: "kubernetes Repo"
+    baseurl: "https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64"
+    gpgkey: "https://mirrors.aliyun.com/kubernetes/yum/doc/yum-key.gpg \n https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg"
+    gpgcheck: yes
+    enabled: yes
+  tags: kube_repo
+- name: "安装kubelet"
+  yum:
+    update_cache: yes
+    enablerepo: kubernetes
+    name: 'kubelet{% if kubernetes_version is defined and kubernetes_version != ""  %}-{{ kubernetes_version }}{% endif %}'
+    state: installed
+- name: "创建kube目录"
+  file:
+    path: "{{ item.line }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - {line: "/etc/kubernetes/pki"}
+    - {line: "/etc/kubernetes/manifests"}
+    - {line: "/usr/lib/systemd/system/kubelet.service.d/"}
+  tags: dir
 - name: "分发node证书文件"
   copy:
     src: "{{ item.line }}"
-    dest: "/etc/kubernetes/ssl/"
+    dest: "/etc/kubernetes/pki/"
   with_items:
-    - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.key'}
-    - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.pem'}
-    - {line: '{{ ssl_dir }}/kube-proxy/kube-proxy_{{ ansible_default_ipv4.address }}.key'}
-    - {line: '{{ ssl_dir }}/kube-proxy/kube-proxy_{{ ansible_default_ipv4.address }}.pem'}
-    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.key'}
-    - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.pem'}
+    - {line: "{{ ssl_dir }}/ca.pem"}
+    - {line: "{{ ssl_dir }}/ca.key"}
+    - {line: "{{ ssl_dir }}/kube-proxy.pem"}
+    - {line: "{{ ssl_dir }}/kube-proxy.key"}
+    - {line: "{{ ssl_dir }}/token"}
   tags: dis_certs
-- name: "获取bootstrap.kubeconfig token"
-  shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
-  register: kubeconfig
-- name: "创建node节点配置文件"
+- name: "读取当前bootstrap-token-id"
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
+  register: token_id
+- name: "读取当前bootstrap-token-secret"
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
+  register: token_secret
+- name: "生成kubelet配置文件"
   template:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "kubelet.service.j2",dest: "/usr/lib/systemd/system/kubelet.service" }
-    - {src: "kube-proxy.service.j2",dest: "/usr/lib/systemd/system/kube-proxy.service" }
-    - {src: "kubelet.j2",dest: "/etc/kubernetes/kubelet" }
-    - {src: "proxy.j2",dest: "/etc/kubernetes/proxy" }
     - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
-    - {src: "kubelet.kubeconfig.j2",dest: "/etc/kubernetes/kubelet.kubeconfig" }
     - {src: "kube-proxy.kubeconfig.j2",dest: "/etc/kubernetes/kube-proxy.kubeconfig" }
-  tags: kube-node-service
-- name: "添加acl"
-  acl:
-    path: "{{ item.line }}"
-    entity: kube
-    etype: user
-    permissions: r
-    state: present
-  with_items:
-    - {line: '/etc/kubernetes/bootstrap.kubeconfig'}
-    - {line: '/etc/kubernetes/kubelet.kubeconfig'}
-    - {line: '/etc/kubernetes/kube-proxy.kubeconfig'}
-- name: "删除token文件"
+    - {src: "kubelet.conf.j2",dest: "/etc/kubernetes/kubelet.conf" }
+    - {src: "10-kubelet.conf.j2",dest: "/usr/lib/systemd/system/kubelet.service.d/10-kubelet.conf" }
+  notify:
+    - restart kubelet
+- name: "删除bootstrap-token文件"
   file:
-    path: "/etc/kubernetes/token.csv"
+    path: "/etc/kubernetes/pki/token"
     state: absent
-- name: "启动node节点服务"
-  systemd:
-    name: "{{ item.line }}"
-    enabled: yes
-    daemon_reload: yes
-    state: restarted
-  with_items:
-    - {line: 'kubelet'}
-    - {line: 'kube-proxy'}
-  tags: restart_node
-
+    

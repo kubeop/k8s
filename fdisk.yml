@@ -1,0 +1,41 @@
+---
+- name: "格式化磁盘"
+  hosts: all
+  vars:
+    disk: /dev/sdb
+    dir: /var/lib/etcd
+  tasks:
+    - stat:
+        path: "{{ disk }}1"
+      register: disk_stat
+      tags: fdisk
+    - name: "创建{{ disk }}分区"
+      when: not disk_stat.stat.exists
+      parted:
+        device: "{{ disk }}"
+        number: 1
+        part_type: primary
+        part_start: 0%
+        part_end: 100%
+        label: gpt
+        state: present
+      tags: fdisk
+    - name: "disk"
+      debug:
+        msg: "即将格式化的磁盘分区是{{ disk }}1"
+      tags: fdisk
+    - name: "格式化{{ disk }}1分区"
+      when: not disk_stat.stat.exists
+      filesystem:
+        dev: "{{ disk }}1"
+        force: yes
+        fstype: xfs
+      tags: fdisk
+    - name: "挂载{{ disk }}1分区到{{ dir }}目录"
+      mount:
+        path: "{{ dir }}"
+        src: "{{ disk }}1"
+        fstype: xfs
+        opts: defaults,noatime,nodiratime,nobarrier
+        state: mounted
+      tags: fdisk 
