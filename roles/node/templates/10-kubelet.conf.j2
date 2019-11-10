@@ -3,4 +3,5 @@ Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/boot
 Environment="KUBELET_CONFIG_ARGS=--config=/etc/kubernetes/kubelet.conf"
 Environment="KUBELET_ARGS=--hostname-override={{ ansible_default_ipv4.address }} --cgroup-driver=systemd --network-plugin=cni --pod-infra-container-image=gcr.azk8s.cn/google-containers/pause:3.1 --cert-dir=/etc/kubernetes/pki --root-dir=/var/lib/kubelet --runtime-cgroups=/systemd/system.slice --kubelet-cgroups=/systemd/system.slice"
 EnvironmentFile=-/etc/sysconfig/kubelet
+ExecStart=
 ExecStart=/usr/bin/kubelet $KUBELET_KUBECONFIG_ARGS $KUBELET_CONFIG_ARGS $KUBELET_ARGS $KUBELET_EXTRA_ARGS
