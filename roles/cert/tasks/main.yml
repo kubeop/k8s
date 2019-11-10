@@ -264,7 +264,7 @@
 
 - name: "merge lists"
   set_fact:
-    lists_merged: "{{ groups['master'] | union(groups['k8s_service']) | map('regex_replace', '^', 'IP:') | list }} + {{ groups['k8s_domain'] | map('regex_replace', '^', 'DNS:') | list}}"
+    lists_merged: "{{ groups['master'] | union(k8s_ip) | map('regex_replace', '^', 'IP:') | list }} + {{ k8s_domain | map('regex_replace', '^', 'DNS:') | list}}"
 - stat:
     path: "{{ ssl_dir }}/kube-apiserver.key"
   register: kube_apiserver_key

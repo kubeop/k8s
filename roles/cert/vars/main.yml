@@ -1,0 +1,13 @@
+k8s_domain:
+  - kubernetes
+  - kubernetes.default
+  - kubernetes.default.svc
+  - kubernetes.default.svc.cluster
+  - kubernetes.default.svc.cluster.local
+{% if apiserver_domain_name is defined %}
+  - {{ apiserver_domain_name }}
+{% endif %}
+
+k8s_ip:
+  - "{{ service_ip_range | next_nth_usable(1) }}"
+  - "{{ vip }}"
