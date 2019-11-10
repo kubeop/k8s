@@ -6,9 +6,5 @@
   template:
     src: "haproxy.cfg.j2"
     dest: "/etc/haproxy/haproxy.cfg"
-- name: "启动haproxy"
-  systemd:
-    name: haproxy
-    enabled: yes
-    daemon_reload: yes
-    state: started
+  notify:
+    - restart haproxy

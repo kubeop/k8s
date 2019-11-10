@@ -1,28 +1,11 @@
 #init
-disk: /dev/vdb
-data_dir: /data
-#阿里云内网机器使用
-#gpgkey: http://mirrors.cloud.aliyuncs.com
-#非阿里云以及其他能访问公网的机器使用
-gpgkey: https://mirrors.aliyun.com
+disk: /dev/sdb
 
 #k8s
-#k8s组件下载地址(建议更换为自己文件服务器)
-download_url: https://storage.googleapis.com/kubernetes-release/release/v1.14.4/bin/linux/amd64
-docker_version: docker-ce-19.03.1
 ssl_dir: /etc/ssl/k8s
-ssl_days: 1825
-ssl_size: 4096
-apiserver_domain_name: apiserver.k8sre.com
-service_cluster_ip_range: 10.64.0.0/12
-pod_cluster_cidr: 10.80.0.0/12
-cluster_dns: 10.64.0.2
-harbor_url: k8sre
+kubernetes_version: 1.15.5
+docker_version: 19.03.4
 
-#docker images
-pause_image: pause-amd64:3.1
-coredns_image: coredns:1.5.0
-calico_cni_image: cni:v3.6.2
-calico_node_image: node:v3.6.2
-calico_controllers_image: kube-controllers:v3.6.2
-
+#集群配置
+service_ip_range: 10.64.0.0/16
+pod_ip_range: 10.80.0.0/12
