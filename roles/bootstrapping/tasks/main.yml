@@ -2,14 +2,19 @@
   copy:
     src: "{{ ssl_dir }}/token"
     dest: "/etc/kubernetes/pki/token"
+- name: "等待apiserver启动成功"
+  wait_for:
+    port: 6443
+    delay: 3
+  vars: ansible_connection: local
 - name: "读取当前bootstrap-token-id"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
   register: token_id
 - name: "读取当前bootstrap-token-secret"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
   register: token_secret
-- name: "授予kube-apiserver访问kubelet API权限"
-  shell: kubectl create clusterrolebinding kube-apiserver:kubelet-apis --clusterrole=system:kubelet-api-admin --user kubernetes
+#- name: "授予kube-apiserver访问kubelet API权限"
+#  shell: kubectl create clusterrolebinding kube-apiserver:kubelet-apis --clusterrole=system:kubelet-api-admin --user kubernetes
 - name: "创建bootstrap-token secret"
   shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true
 - name: "绑定group system:bootstrappers 和 clusterrole system:node-bootstrapper"
