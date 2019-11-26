@@ -21,10 +21,6 @@
 172.16.90.205 hostname=master-02
 172.16.90.206 hostname=master-03
 
-#本组机器不会进行系统初始化等操作，仅用做安装kubectl命令行
-[kubectl]
-172.16.90.204 hostname=master-01
-
 [haproxy]
 172.16.90.198 hostname=haproxy-01 type=MASTER priority=100
 172.16.90.199 hostname=haproxy-02 type=BACKUP priority=90
@@ -70,6 +66,13 @@ pip install netaddr
 
 #### 3.2、部署集群
 
+先执行格式化磁盘并挂载目录
+
+```
+ansible-playbook fdisk.yml -i inventory -e "dir=/var/lib/etcd"
+ansible-playbook fdisk.yml -i inventory -e "dir=/var/lib/docker"
+```
+安装k8s
 ```
 ansible-playbook k8s.yml -i inventory
 ```
