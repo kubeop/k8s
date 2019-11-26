@@ -38,7 +38,7 @@
     - { role: 'master', tags: "install_master" }
 
 - name: "配置集群"
-  hosts: kubectl
+  hosts: master[0]
   roles:
     - { role: 'bootstrapping', tags: "bootstrapping" }
 
