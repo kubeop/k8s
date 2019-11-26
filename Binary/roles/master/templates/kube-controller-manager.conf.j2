@@ -1,0 +1,24 @@
+KUBE_CONTROLLER_MANAGER_ARGS="\
+    --service-account-private-key-file=/etc/kubernetes/pki/ca.key \
+    --root-ca-file=/etc/kubernetes/pki/ca.pem \
+    --requestheader-client-ca-file=/etc/kubernetes/pki/ca.pem \
+    --allocate-node-cidrs=true \
+    --cluster-name=kubernetes \
+    --cluster-signing-cert-file=/etc/kubernetes/pki/ca.pem \
+    --cluster-signing-key-file=/etc/kubernetes/pki/ca.key \
+    --leader-elect=true \
+    --cluster-cidr={{ pod_ip_range }} \
+    --service-cluster-ip-range={{ service_ip_range }} \
+    --secure-port=10257 \
+    --node-monitor-period=2s \
+    --node-monitor-grace-period=16s \
+    --pod-eviction-timeout=30s \
+    --use-service-account-credentials=true \
+    --controllers=*,bootstrapsigner,tokencleaner \
+    --horizontal-pod-autoscaler-sync-period=10s \
+    --kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig \
+    --authentication-kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig \
+    --authorization-kubeconfig=/etc/kubernetes/kube-controller-manager.kubeconfig \
+    --feature-gates=RotateKubeletServerCertificate=true \
+    --logtostderr=true \
+    --v=4"

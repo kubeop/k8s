@@ -1,0 +1,17 @@
+- name: "安装keepalived"
+  yum:
+    name: keepalived
+    state: present
+- name: "拷贝keepalived.conf文件"
+  template:
+    src: "keepalived.conf.j2"
+    dest: "/etc/keepalived/keepalived.conf"
+  notify:
+    - restart keepalived
+- name: "拷贝check_haproxy.sh"
+  template:
+    src: "check_haproxy.sh.j2"
+    dest: "/etc/keepalived/check_haproxy.sh"
+    mode: 0777
+  notify:
+    - restart keepalived

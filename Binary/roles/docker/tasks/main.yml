@@ -1,0 +1,32 @@
+- name: "添加Docker软件源"
+  yum_repository:
+    file: docker-ce
+    name: "docker-ce-stable"
+    description: "Docker CE Stable - $basearch"
+    baseurl: "https://mirrors.aliyun.com/docker-ce/linux/centos/7/$basearch/stable"
+    gpgkey: "https://mirrors.aliyun.com/docker-ce/linux/centos/gpg"
+    gpgcheck: yes
+    enabled: yes
+  tags: docker_repo
+- name: "安装Docker-ce"
+  yum:
+    update_cache: yes
+    enablerepo: docker-ce-stable
+    name: 'docker-ce{% if docker_version is defined and docker_version != ""  %}-{{ docker_version }}{% endif %}'
+    state: installed
+- name: "启动Docker"
+  systemd:
+    name: docker
+    state: started
+- name: "修改配置文件"
+  template:
+    src: daemon.json.j2
+    dest: /etc/docker/daemon.json
+  notify:
+    - restart docker
+- name: "重新加载并重启Docker"
+  systemd:
+    daemon_reload: yes
+    name: docker
+    enabled: yes
+    state: restarted

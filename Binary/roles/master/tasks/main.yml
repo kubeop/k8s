@@ -1,0 +1,96 @@
+- name: "创建kubernetes证书目录"
+  file:
+    path: "/etc/kubernetes/pki/"
+    state: directory
+- name: "创建kubectl目录"
+  file:
+    path: "~/.kube"
+    state: directory
+- name: "添加k8s运行用户kube"
+  user:
+    name: kube
+    shell: /sbin/nologin
+    uid: 200
+    home: /var/lib/kubernetes
+    state: present
+- name: "安装master节点"
+  get_url:
+    url: "{{ item.line }}"
+    dest: /usr/bin/
+  with_items:
+    - {line: "{{ kubernetes_url }}/kube-apiserver"}
+    - {line: "{{ kubernetes_url }}/kube-controller-manager"}
+    - {line: "{{ kubernetes_url }}/kube-scheduler"}
+    - {line: "{{ kubernetes_url }}/kubectl"}
+  tags: instll_master
+- name: "添加执行权限"
+  file:
+    dest: "{{ item.line }}"
+    mode: 0755
+  with_items:
+    - {line: '/usr/bin/kube-apiserver'}
+    - {line: '/usr/bin/kube-controller-manager'}
+    - {line: '/usr/bin/kube-scheduler'}
+  tags: instll_master
+- name: "分发master证书文件"
+  copy:
+    src: "{{ item.line }}"
+    dest: "/etc/kubernetes/pki/"
+  with_items:
+    - {line: '{{ ssl_dir }}/ca.key'}
+    - {line: '{{ ssl_dir }}/ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd-ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd-client.key'}
+    - {line: '{{ ssl_dir }}/etcd-client.pem'}
+    - {line: '{{ ssl_dir }}/kube-apiserver.key'}
+    - {line: '{{ ssl_dir }}/kube-apiserver.pem'}
+    - {line: '{{ ssl_dir }}/kube-apiserver-kubelet-client.key'}
+    - {line: '{{ ssl_dir }}/kube-apiserver-kubelet-client.pem'}
+    - {line: '{{ ssl_dir }}/kube-controller-manager.key'}
+    - {line: '{{ ssl_dir }}/kube-controller-manager.pem'}
+    - {line: '{{ ssl_dir }}/kube-scheduler.key'}
+    - {line: '{{ ssl_dir }}/kube-scheduler.pem'}
+    - {line: '{{ ssl_dir }}/proxy-client.key'}
+    - {line: '{{ ssl_dir }}/proxy-client.pem'}
+    - {line: '{{ ssl_dir }}/admin.key'}
+    - {line: '{{ ssl_dir }}/admin.pem'}
+  notify:
+    - restart kube-apiserver
+    - restart kube-controller-manager
+    - restart kube-scheduler
+  tags: dis_certs
+- name: "分发kubeconfig"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "admin.kubeconfig.j2",dest: "~/.kube/config" }
+    - {src: "kube-controller-manager.kubeconfig.j2",dest: "/etc/kubernetes/kube-controller-manager.kubeconfig" }
+    - {src: "kube-scheduler.kubeconfig.j2",dest: "/etc/kubernetes/kube-scheduler.kubeconfig" }
+    - {src: "kube-apiserver.conf.j2",dest: "/etc/kubernetes/kube-apiserver.conf" }
+    - {src: "kube-controller-manager.conf.j2",dest: "/etc/kubernetes/kube-controller-manager.conf" }
+    - {src: "kube-scheduler.conf.j2",dest: "/etc/kubernetes/kube-scheduler.conf" }
+    - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
+    - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
+    - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
+  notify:
+    - restart kube-apiserver
+    - restart kube-controller-manager
+    - restart kube-scheduler
+  tags: dis_kubeconfig
+- name: "添加acl"
+  acl:
+    path: "{{ item.line }}"
+    entity: kube
+    etype: user
+    permissions: r
+    state: present
+  with_items:
+    - {line: '/etc/kubernetes/kube-controller-manager.kubeconfig'}
+    - {line: '/etc/kubernetes/kube-scheduler.kubeconfig'}
+  tags: acl
+- name: "添加kubectl命令自动补全"
+  lineinfile:
+    dest: "/etc/profile"
+    line: "source <(kubectl completion bash)"
+    state: present

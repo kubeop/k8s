@@ -1,0 +1,32 @@
+- name: "安装etcd"
+  yum:
+    name: etcd
+    state: installed
+- name: "分发证书"
+  copy:
+    src: "{{ item.line }}"
+    dest: "/etc/kubernetes/pki/"
+  with_items:
+    - {line: '{{ ssl_dir }}/etcd-ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd-server.pem'}
+    - {line: '{{ ssl_dir }}/etcd-server.key'}
+    - {line: '{{ ssl_dir }}/etcd-client.pem'}
+    - {line: '{{ ssl_dir }}/etcd-client.key'}
+    - {line: '{{ ssl_dir }}/etcd-peer.pem'}
+    - {line: '{{ ssl_dir }}/etcd-peer.key'}
+  tags: dis_certs
+- name: "修改etcd数据目录权限"
+  file:
+    path: "/var/lib/etcd"
+    owner: etcd
+    group: etcd
+    state: directory
+- name: "生成etcd配置文件"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "etcd.conf.j2",dest: "/etc/etcd/etcd.conf" }
+    - {src: "etcd.service.j2",dest: "/usr/lib/systemd/system/etcd.service" }
+  notify:
+    - restart etcd

@@ -1,0 +1,74 @@
+- name: "安装依赖"
+  yum:
+    name: "{{ item.line }}"
+    state: installed
+  with_items:
+    - {line: 'libnetfilter_conntrack-devel'}
+    - {line: 'libnetfilter_conntrack'}
+    - {line: 'conntrack-tools'}
+    - {line: 'conntrack'}
+    - {line: 'socat'}
+    - {line: 'ipvsadm'}
+- name: "创建kubernetes目录"
+  file:
+    path: "{{ item.line }}"
+    state: directory
+    mode: '0755'
+  with_items:
+    - {line: '/etc/kubernetes/pki'}
+    - {line: '/etc/kubernetes/manifests'}
+    - {line: '/var/lib/kubelet'}
+    - {line: "/usr/lib/systemd/system/kubelet.service.d/"}
+  tags: dir
+- name: "安装node节点"
+  get_url:
+    url: "{{ item.line }}"
+    dest: /usr/bin/
+  with_items:
+    - { line: "{{ kubernetes_url }}/kubelet"}
+    - { line: "{{ kubernetes_url }}/kube-proxy"}
+  tags: install_node
+- name: "添加执行权限"
+  file:
+    dest: "{{ item.line }}"
+    mode: 0755
+  with_items:
+    - {line: '/usr/bin/kubelet'}
+    - {line: '/usr/bin/kube-proxy'}
+  tags: install_node
+- name: "分发node证书文件"
+  copy:
+    src: "{{ item.line }}"
+    dest: "/etc/kubernetes/pki/"
+  with_items:
+    - {line: "{{ ssl_dir }}/ca.pem"}
+    - {line: "{{ ssl_dir }}/ca.key"}
+    - {line: "{{ ssl_dir }}/kube-proxy.pem"}
+    - {line: "{{ ssl_dir }}/kube-proxy.key"}
+    - {line: "{{ ssl_dir }}/token"}
+  tags: dis_certs
+- name: "读取当前bootstrap-token-id"
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
+  register: token_id
+- name: "读取当前bootstrap-token-secret"
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
+  register: token_secret
+- name: "生成kubelet配置文件"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
+    - {src: "kube-proxy.kubeconfig.j2",dest: "/etc/kubernetes/kube-proxy.kubeconfig" }
+    - {src: "kubelet.service.j2",dest: "/usr/lib/systemd/system/kubelet.service" }
+    - {src: "kube-proxy.service.j2",dest: "/usr/lib/systemd/system/kube-proxy.service" }
+    - {src: "kubelet.conf.j2",dest: "/etc/kubernetes/kubelet.conf" }
+    - {src: "10-kubelet.conf.j2",dest: "/usr/lib/systemd/system/kubelet.service.d/10-kubelet.conf" }
+    - {src: "kube-proxy.conf.j2",dest: "/etc/kubernetes/kube-proxy.conf" }
+  notify:
+    - restart kubelet
+    - restart kube-proxy
+- name: "删除bootstrap-token文件"
+  file:
+    path: "/etc/kubernetes/pki/token"
+    state: absent
