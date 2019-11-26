@@ -5,8 +5,10 @@
 - name: "等待apiserver启动成功"
   wait_for:
     port: 6443
-    delay: 3
-  vars: ansible_connection: local
+    delay: 5
+    sleep: 2
+  vars: 
+    ansible_connection: local
 - name: "读取当前bootstrap-token-id"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
   register: token_id
