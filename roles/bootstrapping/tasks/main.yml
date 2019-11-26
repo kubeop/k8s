@@ -4,9 +4,12 @@
     dest: "/etc/kubernetes/pki/token"
 - name: "等待apiserver启动成功"
   wait_for:
+    host: "{{ item }}"
     port: 6443
     delay: 5
     sleep: 2
+  with_items:
+    - "{{ groups['master'] }}"
   vars: 
     ansible_connection: local
 - name: "读取当前bootstrap-token-id"
