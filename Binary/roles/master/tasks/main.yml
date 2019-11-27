@@ -109,67 +109,60 @@
     state: present
 - name: "等待kube-apiserver启动成功"
   wait_for:
-    host: "{{ item }}"
+    host: "{{ ansible_default_ipv4.address }}"
     port: 6443
     delay: 5
     sleep: 2
-  with_items:
-    - "{{ groups['master'] }}"
   vars: 
     ansible_connection: local
+  tags: healthcheck
 - name: "等待kube-controller-manager启动成功"
   wait_for:
-    host: "{{ item }}"
+    host: "{{ ansible_default_ipv4.address }}"
     port: 10257
     delay: 5
     sleep: 2
-  with_items:
-    - "{{ groups['master'] }}"
   vars: 
     ansible_connection: local
+  tags: healthcheck
 - name: "等待kube-scheduler启动成功"
   wait_for:
-    host: "{{ item }}"
+    host: "{{ ansible_default_ipv4.address }}"
     port: 10259
     delay: 5
     sleep: 2
-  with_items:
-    - "{{ groups['master'] }}"
   vars: 
     ansible_connection: local
+  tags: healthcheck
 - name: "kube-apiserver健康检查"
   uri:
-    url: "https://{{ item }}:6443"
+    url: "https://{{ ansible_default_ipv4.address }}:6443"
     return_content: yes
     validate_certs: no
     client_cert: "{{ ssl_dir }}/admin.pem"
     client_key: "{{ ssl_dir }}/admin.key"
   register: apiserver
   failed_when: "'ok' not in apiserver.centent"
-  with_items:
-    - "{{ groups['master'] }}"
   vars: 
     ansible_connection: local
+  tags: healthcheck
 - name: "kube-controller-manager健康检查"
   uri:
-    url: "https://{{ item }}:10257"
+    url: "https://{{ ansible_default_ipv4.address }}:10257"
     return_content: yes
     validate_certs: no
   register: controller
   failed_when: "'ok' not in controller.centent"
-  with_items:
-    - "{{ groups['master'] }}"
   vars: 
     ansible_connection: local
+  tags: healthcheck
 - name: "kube-scheduler健康检查"
   uri:
-    url: "https://{{ item }}:10259"
+    url: "https://{{ ansible_default_ipv4.address }}:10259"
     return_content: yes
     validate_certs: no
   register: scheduler
   failed_when: "'ok' not in scheduler.centent"
-  with_items:
-    - "{{ groups['master'] }}"
   vars: 
     ansible_connection: local
-
+  tags: healthcheck
