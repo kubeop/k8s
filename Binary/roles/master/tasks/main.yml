@@ -109,19 +109,34 @@
     state: present
 - name: "等待kube-apiserver启动成功"
   wait_for:
+    host: "{{ item }}"
     port: 6443
     delay: 5
     sleep: 2
+  with_items:
+    - "{{ groups['master'] }}"
+  vars: 
+    ansible_connection: local
 - name: "等待kube-controller-manager启动成功"
   wait_for:
+    host: "{{ item }}"
     port: 10257
     delay: 5
     sleep: 2
+  with_items:
+    - "{{ groups['master'] }}"
+  vars: 
+    ansible_connection: local
 - name: "等待kube-scheduler启动成功"
   wait_for:
+    host: "{{ item }}"
     port: 10259
     delay: 5
     sleep: 2
+  with_items:
+    - "{{ groups['master'] }}"
+  vars: 
+    ansible_connection: local
 - name: "kube-apiserver健康检查"
   uri:
     url: "https://{{ item }}:6443"
