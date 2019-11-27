@@ -54,10 +54,6 @@
     - {line: '{{ ssl_dir }}/proxy-client.pem'}
     - {line: '{{ ssl_dir }}/admin.key'}
     - {line: '{{ ssl_dir }}/admin.pem'}
-  notify:
-    - restart kube-apiserver
-    - restart kube-controller-manager
-    - restart kube-scheduler
   tags: dis_certs
 - name: "分发kubeconfig"
   template:
@@ -73,10 +69,6 @@
     - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
     - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
     - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
-  notify:
-    - restart kube-apiserver
-    - restart kube-controller-manager
-    - restart kube-scheduler
   tags: dis_kubeconfig
 - name: "添加acl"
   acl:
@@ -89,8 +81,80 @@
     - {line: '/etc/kubernetes/kube-controller-manager.kubeconfig'}
     - {line: '/etc/kubernetes/kube-scheduler.kubeconfig'}
   tags: acl
+- name: "重启kube-apiserver"
+  systemd:
+    name: kube-apiserver
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags: restart_apiserver
+- name: "重启kube-controller-manager"
+  systemd:
+    name: kube-controller-manager
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags: restart_controller
+- name: "重启kube-scheduler"
+  systemd:
+    name: kube-scheduler
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags: restart_scheduler
 - name: "添加kubectl命令自动补全"
   lineinfile:
     dest: "/etc/profile"
     line: "source <(kubectl completion bash)"
     state: present
+- name: "等待kube-apiserver启动成功"
+  wait_for:
+    port: 6443
+    delay: 5
+    sleep: 2
+- name: "等待kube-controller-manager启动成功"
+  wait_for:
+    port: 10257
+    delay: 5
+    sleep: 2
+- name: "等待kube-scheduler启动成功"
+  wait_for:
+    port: 10259
+    delay: 5
+    sleep: 2
+- name: "kube-apiserver健康检查"
+  uri:
+    url: "https://{{ item }}:6443"
+    return_content: yes
+    validate_certs: no
+    client_cert: "{{ ssl_dir }}/admin.pem"
+    client_key: "{{ ssl_dir }}/admin.key"
+  register: apiserver
+  failed_when: "'ok' not in apiserver.centent"
+  with_items:
+    - "{{ groups['master'] }}"
+  vars: 
+    ansible_connection: local
+- name: "kube-controller-manager健康检查"
+  uri:
+    url: "https://{{ item }}:10257"
+    return_content: yes
+    validate_certs: no
+  register: controller
+  failed_when: "'ok' not in controller.centent"
+  with_items:
+    - "{{ groups['master'] }}"
+  vars: 
+    ansible_connection: local
+- name: "kube-scheduler健康检查"
+  uri:
+    url: "https://{{ item }}:10259"
+    return_content: yes
+    validate_certs: no
+  register: scheduler
+  failed_when: "'ok' not in scheduler.centent"
+  with_items:
+    - "{{ groups['master'] }}"
+  vars: 
+    ansible_connection: local
+
