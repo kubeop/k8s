@@ -136,7 +136,7 @@
   tags: healthcheck
 - name: "kube-apiserver健康检查"
   uri:
-    url: "https://{{ ansible_default_ipv4.address }}:6443"
+    url: "https://{{ ansible_default_ipv4.address }}:6443/healthz"
     return_content: yes
     validate_certs: no
     client_cert: "{{ ssl_dir }}/admin.pem"
@@ -148,7 +148,7 @@
   tags: healthcheck
 - name: "kube-controller-manager健康检查"
   uri:
-    url: "https://{{ ansible_default_ipv4.address }}:10257"
+    url: "https://{{ ansible_default_ipv4.address }}:10257/healthz"
     return_content: yes
     validate_certs: no
   register: controller
@@ -158,7 +158,7 @@
   tags: healthcheck
 - name: "kube-scheduler健康检查"
   uri:
-    url: "https://{{ ansible_default_ipv4.address }}:10259"
+    url: "https://{{ ansible_default_ipv4.address }}:10259/healthz"
     return_content: yes
     validate_certs: no
   register: scheduler
