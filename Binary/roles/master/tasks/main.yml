@@ -142,7 +142,7 @@
     client_cert: "{{ ssl_dir }}/admin.pem"
     client_key: "{{ ssl_dir }}/admin.key"
   register: apiserver
-  failed_when: "'ok' not in apiserver.centent"
+  failed_when: "'ok' not in apiserver.content"
   vars: 
     ansible_connection: local
   tags: healthcheck
@@ -152,7 +152,7 @@
     return_content: yes
     validate_certs: no
   register: controller
-  failed_when: "'ok' not in controller.centent"
+  failed_when: "'ok' not in controller.content"
   vars: 
     ansible_connection: local
   tags: healthcheck
@@ -162,7 +162,7 @@
     return_content: yes
     validate_certs: no
   register: scheduler
-  failed_when: "'ok' not in scheduler.centent"
+  failed_when: "'ok' not in scheduler.content"
   vars: 
     ansible_connection: local
   tags: healthcheck

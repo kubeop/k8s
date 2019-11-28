@@ -89,7 +89,7 @@ pip install netaddr
 
 #### 4.2、部署集群
 
-先执行格式化磁盘并挂载目录
+先执行格式化磁盘并挂载目录。如已经自行格式化磁盘并挂载，请跳过此步骤。
 
 ```
 ansible-playbook fdisk.yml -i inventory -e "dir=/var/lib/etcd"

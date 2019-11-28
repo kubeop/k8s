@@ -65,10 +65,61 @@
     - {src: "kubelet.conf.j2",dest: "/etc/kubernetes/kubelet.conf" }
     - {src: "10-kubelet.conf.j2",dest: "/usr/lib/systemd/system/kubelet.service.d/10-kubelet.conf" }
     - {src: "kube-proxy.conf.j2",dest: "/etc/kubernetes/kube-proxy.conf" }
-  notify:
-    - restart kubelet
-    - restart kube-proxy
 - name: "删除bootstrap-token文件"
   file:
     path: "/etc/kubernetes/pki/token"
     state: absent
+- name: "重启kubelet"
+  systemd:
+    name: kubelet
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  register: kubelet_restarted
+- name: "重启kube-proxy"
+  systemd:
+    name: kube-proxy
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  register: proxy_restarted
+- name: "等待kubelet启动成功"
+  wait_for:
+    host: "{{ ansible_default_ipv4.address }}"
+    port: 10250
+    delay: 5
+    sleep: 2
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "等待kube-proxy启动成功"
+  wait_for:
+    host: "{{ ansible_default_ipv4.address }}"
+    port: 10256
+    delay: 5
+    sleep: 2
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "kubelet健康检查"
+  uri:
+    url: "https://{{ ansible_default_ipv4.address }}:10250/healthz"
+    return_content: yes
+    validate_certs: no
+    client_cert: "{{ ssl_dir }}/admin.pem"
+    client_key: "{{ ssl_dir }}/admin.key"
+  register: kubelet
+  failed_when: "'ok' not in kubelet.content"
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "kube-proxy健康检查"
+  uri:
+    url: "https://{{ ansible_default_ipv4.address }}:10256/healthz"
+    return_content: yes
+    validate_certs: no
+  register: proxy
+  failed_when: "'200' not in proxy.status"
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
