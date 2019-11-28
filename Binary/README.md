@@ -92,8 +92,8 @@ pip install netaddr
 先执行格式化磁盘并挂载目录。如已经自行格式化磁盘并挂载，请跳过此步骤。
 
 ```
-ansible-playbook fdisk.yml -i inventory -e "dir=/var/lib/etcd"
-ansible-playbook fdisk.yml -i inventory -e "dir=/var/lib/docker"
+ansible-playbook fdisk.yml -i inventory -l etcd -e "dir=/var/lib/etcd"
+ansible-playbook fdisk.yml -i inventory -l master,node -e "dir=/var/lib/docker"
 ```
 安装k8s
 ```

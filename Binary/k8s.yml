@@ -32,10 +32,4 @@
     - { role: 'docker', tags: "install_docker" }
     - { role: 'node', tags: "install_node" }
 
-- name: "配置集群"
-  hosts: master[0]
-  roles:
-    - { role: 'bootstrapping', tags: "bootstrapping" }
-
-
 

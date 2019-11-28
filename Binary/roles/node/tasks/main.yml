@@ -76,26 +76,10 @@
     daemon_reload: yes
     enabled: yes
   register: kubelet_restarted
-- name: "重启kube-proxy"
-  systemd:
-    name: kube-proxy
-    state: restarted
-    daemon_reload: yes
-    enabled: yes
-  register: proxy_restarted
 - name: "等待kubelet启动成功"
   wait_for:
     host: "{{ ansible_default_ipv4.address }}"
     port: 10250
-    delay: 5
-    sleep: 2
-  vars: 
-    ansible_connection: local
-  tags: healthcheck
-- name: "等待kube-proxy启动成功"
-  wait_for:
-    host: "{{ ansible_default_ipv4.address }}"
-    port: 10256
     delay: 5
     sleep: 2
   vars: 
@@ -113,6 +97,31 @@
   vars: 
     ansible_connection: local
   tags: healthcheck
+- name: "获取Pending状态的csr"
+  shell: kubectl get csr| grep Pending | awk '{print $1}'|tr '\n' ' '
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  register: approve_csr
+- name: "approve csr"
+  shell: kubectl certificate approve {{ approve_csr.stdout }}
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+- name: "重启kube-proxy"
+  systemd:
+    name: kube-proxy
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  register: proxy_restarted
+- name: "等待kube-proxy启动成功"
+  wait_for:
+    host: "{{ ansible_default_ipv4.address }}"
+    port: 10256
+    delay: 5
+    sleep: 2
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
 - name: "kube-proxy健康检查"
   uri:
     url: "http://{{ ansible_default_ipv4.address }}:10256/healthz"
@@ -123,3 +132,20 @@
   vars:
     ansible_connection: local
   tags: healthcheck
+- name: "下载calico部署文件"
+  get_url:
+    url: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
+    dest: /tmp/
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+- name: "修改calico-etcd部署文件"
+  replace:
+    path: "/tmp/calico.yaml"
+    regexp: "192.168.0.0/16"
+    replace: "{{ pod_ip_range }}"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+- name: "部署calico"
+  shell: "kubectl apply -f /tmp/calico.yaml"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
