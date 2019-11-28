@@ -115,11 +115,11 @@
   tags: healthcheck
 - name: "kube-proxy健康检查"
   uri:
-    url: "https://{{ ansible_default_ipv4.address }}:10256/healthz"
+    url: "http://{{ ansible_default_ipv4.address }}:10256/healthz"
     return_content: yes
     validate_certs: no
+    status_code: 200
   register: proxy
-  failed_when: "'200' not in proxy.status"
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
