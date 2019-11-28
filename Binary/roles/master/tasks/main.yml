@@ -198,18 +198,6 @@
   shell: kubectl create clusterrolebinding node-server-cert-renewal --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeserver --group=system:nodes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
-- name: "为master打污点"
-  shell: "kubectl taint nodes {{ item }} node-role.kubernetes.io/master=:NoSchedule"
-  delegate_to: "{{ groups['master'][0] }}"
-  run_once: true
-  with_items:
-    - "{{ groups['master'] }}"
-- name: "为master打标签"
-  shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/master="
-  delegate_to: "{{ groups['master'][0] }}"
-  run_once: true
-  with_items:
-    - "{{ groups['master'] }}"
 - name: "删除bootstrap-token文件"
   file:
     path: "/etc/kubernetes/pki/token"
