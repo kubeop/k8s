@@ -1,8 +1,0 @@
-#k8s
-ssl_dir: /etc/ssl/k8s
-kubernetes_version: 1.15.5
-docker_version: 18.09.9
-
-#集群配置
-service_ip_range: 10.64.0.0/16
-pod_ip_range: 10.80.0.0/12
