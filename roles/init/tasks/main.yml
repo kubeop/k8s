@@ -66,10 +66,9 @@
      - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
      - { regexp: "ClientAliveInterval", line: "ClientAliveInterval 900" }
      - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }
-     - { regexp: "UseDNS", line: "no" }
+     - { regexp: "UseDNS", line: "UseDNS no" }
      - { regexp: "Protocol", line: "Protocol 2" }
      - { regexp: "MaxAuthTries", line: "MaxAuthTries 6" }
-     - { regexp: "AllowUsers", line: "AllowUsers root work" }
   notify: 
     - restart sshd
   tags: sshd
