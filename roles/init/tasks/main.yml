@@ -16,21 +16,21 @@
     name: '{{ item.name }}'
     description: '{{ item.description}}'
     baseurl: '{{ item.baseurl }}'
-    gpgkey: "http://mirrors.cloud.aliyuncs.com/centos/RPM-GPG-KEY-CentOS-7 \n https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7"
+    gpgkey: "https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7"
     failovermethod: priority
     gpgcheck: yes
     enabled: yes
   with_items:
-    - { name: "base",description: "CentOS-$releasever",baseurl: "http://mirrors.cloud.aliyuncs.com/centos/$releasever/os/$basearch/ \n https://mirrors.aliyun.com/centos/$releasever/os/$basearch/" }
-    - { name: "updates",description: "CentOS-$releasever",baseurl: "http://mirrors.cloud.aliyuncs.com/centos/$releasever/updates/$basearch/ \n https://mirrors.aliyun.com/centos/$releasever/updates/$basearch/" }
-    - { name: "extras",description: "CentOS-$releasever",baseurl: "http://mirrors.cloud.aliyuncs.com/centos/$releasever/extras/$basearch/ \n https://mirrors.aliyun.com/centos/$releasever/extras/$basearch/" }
+    - { name: "base",description: "CentOS-$releasever",baseurl: "https://mirrors.aliyun.com/centos/$releasever/os/$basearch/" }
+    - { name: "updates",description: "CentOS-$releasever",baseurl: "https://mirrors.aliyun.com/centos/$releasever/updates/$basearch/" }
+    - { name: "extras",description: "CentOS-$releasever",baseurl: "https://mirrors.aliyun.com/centos/$releasever/extras/$basearch/" }
   tags: CentOS-Base
 - name: "添加EPEL软件源"
   yum_repository:
     file: epel
     name: epel
     description: Extra Packages for Enterprise Linux 7 - $basearch
-    baseurl: "http://mirrors.cloud.aliyuncs.com/epel/7/$basearch \n https://mirrors.aliyun.com/epel/7/$basearch"
+    baseurl: "https://mirrors.aliyun.com/epel/7/$basearch"
     gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
     failovermethod: priority
     gpgcheck: no
