@@ -150,6 +150,7 @@
     dest: /tmp/
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: cni
 - name: "修改calico-etcd部署文件"
   replace:
     path: "/tmp/calico.yaml"
@@ -157,7 +158,9 @@
     replace: "{{ pod_ip_range }}"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: cni
 - name: "部署calico"
   shell: "kubectl apply -f /tmp/calico.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: cni
