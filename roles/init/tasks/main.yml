@@ -40,11 +40,8 @@
   copy:
     src: "chrony.conf"
     dest: "/etc/chrony.conf"
-  tags: ntp
-- name: "重启chrony服务"
-  systemd:
-    name: chronyd
-    state: restarted
+  notify: 
+    - restart chrony
   tags: ntp
 - name: "关闭交换分区"
   shell: swapoff -a
@@ -58,6 +55,24 @@
     enabled: no
     state: stopped
   tags: firewalld
+- name: "修改ssh配置"
+  lineinfile:
+     dest: "/etc/ssh/sshd_config"
+     regexp: "{{ item.regexp }}"
+     line: "{{ item.line }}"
+     state: present
+  with_items:
+     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
+     - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
+     - { regexp: "ClientAliveInterval", line: "ClientAliveInterval 900" }
+     - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }
+     - { regexp: "UseDNS", line: "no" }
+     - { regexp: "Protocol", line: "Protocol 2" }
+     - { regexp: "MaxAuthTries", line: "MaxAuthTries 6" }
+     - { regexp: "AllowUsers", line: "AllowUsers root work" }
+  notify: 
+    - restart sshd
+  tags: sshd
 - name: "更改系统limits"
   pam_limits:
     dest: "/etc/security/limits.conf"
