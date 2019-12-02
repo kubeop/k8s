@@ -93,8 +93,8 @@ pip install netaddr
 先执行格式化磁盘并挂载目录。如已经自行格式化磁盘并挂载，请跳过此步骤。
 
 ```
-ansible-playbook fdisk.yml -i inventory -l etcd -e "dir=/var/lib/etcd"
-ansible-playbook fdisk.yml -i inventory -l master,node -e "dir=/var/lib/docker"
+ansible-playbook fdisk.yml -i inventory -l etcd -e "disk=/dev/sdb dir=/var/lib/etcd"
+ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=/dev/sdb dir=/var/lib/docker"
 ```
 安装k8s
 ```
@@ -111,11 +111,13 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 
 #### 4.3、扩容mater节点
 
+扩容master前，请将{{ssl_dir}}目录中的kube-apiserver的证书备份并移除。
+
 扩容时，请不要在inventory文件master组中保留旧服务器信息。
 
 ```
 ansible-playbook k8s.yml -i inventory -t init -l master
-ansible-playbook k8s.yml -i inventory -t cert,install_master 
+ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t cert,install_master --skip-tags=bootstrap
 ```
 
 #### 4.4、扩容node节点
@@ -124,7 +126,7 @@ ansible-playbook k8s.yml -i inventory -t cert,install_master
 
 ```
 ansible-playbook k8s.yml -i inventory -t init -l node
-ansible-playbook k8s.yml -i inventory -t cert,install_node
+ansible-playbook k8s.yml -i inventory -l 10.10.100.211 -t install_docker,install_node --skip-tags=create_label,cni
 ```
 
 #### 4.5、替换集群证书

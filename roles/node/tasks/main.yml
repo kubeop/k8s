@@ -138,12 +138,14 @@
   run_once: true
   with_items:
     - "{{ groups['master'] }}"
+  tags: create_label
 - name: "为master节点打标签"
   shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/master="
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
     - "{{ groups['master'] }}"
+  tags: create_label
 - name: "下载calico部署文件"
   get_url:
     url: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"

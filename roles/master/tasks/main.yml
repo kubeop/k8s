@@ -171,34 +171,43 @@
 - name: "读取当前bootstrap-token-id"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
   register: token_id
+  tags: bootstrap
 - name: "读取当前bootstrap-token-secret"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
   register: token_secret
+  tags: bootstrap
 - name: "创建bootstrap-token secret"
   shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: bootstrap
 - name: "绑定group system:bootstrappers 和 clusterrole system:node-bootstrapper"
   shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: bootstrap
 - name: "自动批准 system:bootstrappers 组用户 TLS bootstrapping 首次申请证书的 CSR 请求"
   shell: kubectl create clusterrolebinding auto-approve-csrs-for-group --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers 
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: bootstrap
 - name: "自动批准 system:nodes 组用户更新 kubelet 自身与 apiserver 通讯证书的 CSR 请求"
   shell: kubectl create clusterrolebinding node-client-cert-renewal --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient --group=system:nodes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: bootstrap
 - name: "创建自动批准相关 CSR 请求的 ClusterRole"
   shell: kubectl create clusterrole approve-node-server-renewal-csr --verb=create --resource=certificatesigningrequests/selfnodeserver --resource-name=certificates.k8s.io
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: bootstrap
 - name: "自动批准 system:nodes 组用户更新 kubelet 10250 api 端口证书的 CSR 请求"
   shell: kubectl create clusterrolebinding node-server-cert-renewal --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeserver --group=system:nodes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: bootstrap
 - name: "删除bootstrap-token文件"
   file:
     path: "/etc/kubernetes/pki/token"
     state: absent
+  tags: bootstrap
