@@ -115,17 +115,23 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 
 扩容时，请不要在inventory文件master组中保留旧服务器信息。
 
+例如扩容master节点10.10.100.210
+
 ```
-ansible-playbook k8s.yml -i inventory -t init -l master
-ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t cert,install_master --skip-tags=bootstrap
+ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=/dev/sdb dir=/var/lib/docker"
+ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t init -l master
+ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t cert,install_master,install_docker,install_node --skip-tags=bootstrap,create_label,cni
 ```
 
 #### 4.4、扩容node节点
 
 扩容时，请不要在inventory文件node组中保留旧服务器信息。
 
+例如扩容node节点10.10.100.211
+
 ```
-ansible-playbook k8s.yml -i inventory -t init -l node
+ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=/dev/sdb dir=/var/lib/docker"
+ansible-playbook k8s.yml -i inventory -l 10.10.100.211 -t init -l node
 ansible-playbook k8s.yml -i inventory -l 10.10.100.211 -t install_docker,install_node --skip-tags=create_label,cni
 ```
 

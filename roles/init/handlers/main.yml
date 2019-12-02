@@ -5,6 +5,6 @@
          enabled: yes
     - name: restart chrony
       systemd:
-         name: chrony
+         name: chronyd
          state: restarted
          enabled: yes

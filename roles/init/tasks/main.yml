@@ -36,6 +36,11 @@
     gpgcheck: no
     enabled: yes
   tags: epel
+- name: "安装chrony"
+  yum:
+    name: "chrony"
+    state: installed
+  tags: ntp
 - name: "配置chrony服务"
   copy:
     src: "chrony.conf"
