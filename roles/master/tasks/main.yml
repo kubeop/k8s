@@ -22,7 +22,7 @@
     - {line: "{{ kubernetes_url }}/kube-controller-manager"}
     - {line: "{{ kubernetes_url }}/kube-scheduler"}
     - {line: "{{ kubernetes_url }}/kubectl"}
-  tags: instll_master
+  tags: kube_master
 - name: "添加执行权限"
   file:
     dest: "{{ item.line }}"
@@ -32,7 +32,7 @@
     - {line: '/usr/bin/kube-controller-manager'}
     - {line: '/usr/bin/kube-scheduler'}
     - {line: '/usr/bin/kubectl'}
-  tags: instll_master
+  tags: kube_master
 - name: "分发master证书文件"
   copy:
     src: "{{ item.line }}"

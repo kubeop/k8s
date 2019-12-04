@@ -120,7 +120,7 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 ```
 ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=/dev/sdb dir=/var/lib/docker"
 ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t init -l master
-ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t cert,install_master,install_docker,install_node --skip-tags=bootstrap,create_label,cni
+ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t cert,install_master,install_docker,install_node --skip-tags=bootstrap,cni
 ```
 
 #### 4.4、扩容node节点
@@ -146,4 +146,13 @@ ansible-playbook k8s.yml -i inventory -t dis_certs
 
 然后依次重启每个节点。
 
+#### 4.6、升级kubernetes版本
+
+请先将`kubernetes_url`修改为新版本下载链接
+
+```
+ansible-playbook k8s.yml -i inventory -t kube_master,kube_node
+```
+
+然后依次重启每个kubernetes组件。
 

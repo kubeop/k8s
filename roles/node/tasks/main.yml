@@ -27,7 +27,7 @@
   with_items:
     - { line: "{{ kubernetes_url }}/kubelet"}
     - { line: "{{ kubernetes_url }}/kube-proxy"}
-  tags: install_node
+  tags: kube_node
 - name: "添加执行权限"
   file:
     dest: "{{ item.line }}"
@@ -35,7 +35,7 @@
   with_items:
     - {line: '/usr/bin/kubelet'}
     - {line: '/usr/bin/kube-proxy'}
-  tags: install_node
+  tags: kube_node
 - name: "分发node证书文件"
   copy:
     src: "{{ item.line }}"
