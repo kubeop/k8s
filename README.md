@@ -172,11 +172,19 @@ ETCDCTL_API=3 etcdctl \
   endpoint health 
 ```
 
-重启master节点
+逐个删除旧的kubelet证书
+
+```
+ansible -i inventory master,node -l master-01 -m shell -a "rm -rf /etc/kubernetes/pki/kubelet-client-*"
+```
+
+逐个重启节点
 
 ```
 ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
 ```
+
+- 如网络组件也是用了etcd方式，请记得一起更新
 
 #### 4.6、升级kubernetes版本
 

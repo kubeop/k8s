@@ -90,10 +90,12 @@
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: approve_csr
+  tags: approve_node
 - name: "approve csr"
   shell: kubectl certificate approve {{ approve_csr.stdout }}
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: approve_node
 - name: "kubelet健康检查"
   uri:
     url: "https://{{ ansible_default_ipv4.address }}:10250/healthz"
