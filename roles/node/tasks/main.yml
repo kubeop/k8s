@@ -75,7 +75,7 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
-  register: kubelet_restarted
+  tags: restart_kubelet
 - name: "等待kubelet启动成功"
   wait_for:
     host: "{{ ansible_default_ipv4.address }}"
@@ -112,7 +112,7 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
-  register: proxy_restarted
+  tags: restart_proxy
 - name: "等待kube-proxy启动成功"
   wait_for:
     host: "{{ ansible_default_ipv4.address }}"

@@ -1,6 +1,6 @@
 #k8s
 ssl_dir: /etc/ssl/k8s
-kubernetes_url: http://dl.k8sre.com
+kubernetes_url: https://dl.k8sre.com/v1.16.4
 docker_version: 18.09.9
 
 #集群配置

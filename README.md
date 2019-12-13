@@ -66,7 +66,7 @@ vip=10.10.100.200
 | 配置项                | 说明                                                         |
 | --------------------- | ------------------------------------------------------------ |
 | ssl_dir               | 签发ssl证书保存路径，ansible控制端机器上的路径。默认签发10年有效期的证书 |
-| kubernetes_url        | kubernetes 二进制文件下载链接                                |
+| kubernetes_url        | kubernetes 二进制文件下载链接，请修改为自己的下载服务器地址  |
 | docker_version        | 可通过查看版本yum list docker-ce --showduplicates\|sort -rn  |
 | apiserver_domain_name | kube-apiserver的访问域名，需提前配置解析。不使用域名时，可以指定为负载均衡的IP（本Playbook需指定为haproxy的VIP） |
 | service_ip_range      | 指定k8s集群service的网段                                     |
@@ -155,6 +155,29 @@ ansible-playbook k8s.yml -i inventory -t dis_certs
 
 然后依次重启每个节点。
 
+重启etcd
+
+```
+ansible -i inventory etcd -m systemd -a "name=etcd state=restarted"
+```
+
+验证etcd
+
+```
+ETCDCTL_API=3 etcdctl \
+  --endpoints=https://10.10.100.201:2379,https://10.10.100.202:2379,https://10.10.100.203:2379 \
+  --cacert=/etc/kubernetes/pki/etcd-ca.pem \
+  --cert=/etc/kubernetes/pki/etcd-client.pem \
+  --key=/etc/kubernetes/pki/etcd-client.key \
+  endpoint health 
+```
+
+重启master节点
+
+```
+ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
+```
+
 #### 4.6、升级kubernetes版本
 
 请先将`kubernetes_url`修改为新版本下载链接
@@ -164,4 +187,8 @@ ansible-playbook k8s.yml -i inventory -t kube_master,kube_node
 ```
 
 然后依次重启每个kubernetes组件。
+
+```
+ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,healthcheck
+```
 
