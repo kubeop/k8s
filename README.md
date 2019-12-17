@@ -34,27 +34,27 @@ systemctl start nginx
 ```
 #本组内填写etcd服务器及主机名
 [etcd]
-10.10.100.201 hostname=etcd-01
-10.10.100.202 hostname=etcd-02
-10.10.100.203 hostname=etcd-03
+172.16.100.201 hostname=etcd-01
+172.16.100.202 hostname=etcd-02
+172.16.100.203 hostname=etcd-03
 
 #本组内填写master服务器及主机名
 [master]
-10.10.100.204 hostname=master-01
-10.10.100.205 hostname=master-02
-10.10.100.206 hostname=master-03
+172.16.100.204 hostname=master-01
+172.16.100.205 hostname=master-02
+172.16.100.206 hostname=master-03
 
 [haproxy]
-10.10.100.198 hostname=haproxy-01 type=MASTER priority=100
-10.10.100.199 hostname=haproxy-02 type=BACKUP priority=90
+172.16.100.198 hostname=haproxy-01 type=MASTER priority=100
+172.16.100.199 hostname=haproxy-02 type=BACKUP priority=90
 [all:vars]
-vip=10.10.100.200
+vip=172.16.100.200
 
 #本组内填写node服务器及主机名
 [node]
-10.10.100.207 hostname=node-01
-10.10.100.208 hostname=node-02
-10.10.100.209 hostname=node-03
+172.16.100.207 hostname=node-01
+172.16.100.208 hostname=node-02
+172.16.100.209 hostname=node-03
 ```
 
 
@@ -124,24 +124,24 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 
 扩容时，请不要在inventory文件master组中保留旧服务器信息。
 
-例如扩容master节点10.10.100.210
+例如扩容master节点172.16.100.210
 
 ```
 ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=/dev/sdb dir=/var/lib/docker"
-ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t init -l master
-ansible-playbook k8s.yml -i inventory -l 10.10.100.210 -t cert,install_master,install_docker,install_node --skip-tags=bootstrap,cni
+ansible-playbook k8s.yml -i inventory -l 172.16.100.210 -t init -l master
+ansible-playbook k8s.yml -i inventory -l 172.16.100.210 -t cert,install_master,install_docker,install_node --skip-tags=bootstrap,cni
 ```
 
 #### 4.4、扩容node节点
 
 扩容时，请不要在inventory文件node组中保留旧服务器信息。
 
-例如扩容node节点10.10.100.211
+例如扩容node节点172.16.100.211
 
 ```
 ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=/dev/sdb dir=/var/lib/docker"
-ansible-playbook k8s.yml -i inventory -l 10.10.100.211 -t init -l node
-ansible-playbook k8s.yml -i inventory -l 10.10.100.211 -t install_docker,install_node --skip-tags=create_label,cni
+ansible-playbook k8s.yml -i inventory -l 172.16.100.211 -t init -l node
+ansible-playbook k8s.yml -i inventory -l 172.16.100.211 -t install_docker,install_node --skip-tags=create_label,cni
 ```
 
 #### 4.5、替换集群证书
@@ -165,7 +165,7 @@ ansible -i inventory etcd -m systemd -a "name=etcd state=restarted"
 
 ```
 ETCDCTL_API=3 etcdctl \
-  --endpoints=https://10.10.100.201:2379,https://10.10.100.202:2379,https://10.10.100.203:2379 \
+  --endpoints=https://172.16.100.201:2379,https://172.16.100.202:2379,https://172.16.100.203:2379 \
   --cacert=/etc/kubernetes/pki/etcd-ca.pem \
   --cert=/etc/kubernetes/pki/etcd-client.pem \
   --key=/etc/kubernetes/pki/etcd-client.key \
@@ -175,16 +175,19 @@ ETCDCTL_API=3 etcdctl \
 逐个删除旧的kubelet证书
 
 ```
-ansible -i inventory master,node -l master-01 -m shell -a "rm -rf /etc/kubernetes/pki/kubelet-client-*"
+ansible -i inventory master,node -l master-01 -m shell -a "rm -rf /etc/kubernetes/pki/kubelet-*"
 ```
+
+- `-l`参数更换为具体节点IP
 
 逐个重启节点
 
 ```
-ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
+ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck,approve_node
 ```
 
-- 如网络组件也是用了etcd方式，请记得一起更新
+- 如calico、metrics-server等服务也使用了etcd，请记得一起更新相关证书。
+-  `-l`参数更换为具体节点IP
 
 #### 4.6、升级kubernetes版本
 
@@ -197,6 +200,7 @@ ansible-playbook k8s.yml -i inventory -t kube_master,kube_node
 然后依次重启每个kubernetes组件。
 
 ```
-ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,healthcheck
+ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
 ```
 
+- `-l`参数更换为具体节点IP
