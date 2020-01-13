@@ -154,7 +154,7 @@
   tags: create_label
 - name: "下载calico部署文件"
   get_url:
-    url: "https://docs.projectcalico.org/v3.10/manifests/calico.yaml"
+    url: "https://docs.projectcalico.org/v3.11/manifests/calico.yaml"
     dest: /tmp/
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
