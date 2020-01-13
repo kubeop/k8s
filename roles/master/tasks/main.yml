@@ -71,7 +71,7 @@
     - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
     - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
     - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
-  tags: dis_kubeconfig
+  tags: dis_master_config
 - name: "添加acl"
   acl:
     path: "{{ item.line }}"

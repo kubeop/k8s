@@ -9,6 +9,7 @@
     - {line: 'conntrack'}
     - {line: 'socat'}
     - {line: 'ipvsadm'}
+  tags: node_app
 - name: "创建kubernetes目录"
   file:
     path: "{{ item.line }}"
@@ -50,9 +51,11 @@
 - name: "读取当前bootstrap-token-id"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
   register: token_id
+  tags: dis_node_config
 - name: "读取当前bootstrap-token-secret"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
   register: token_secret
+  tags: dis_node_config
 - name: "生成kubelet配置文件"
   template:
     src: "{{ item.src }}"
@@ -65,6 +68,7 @@
     - {src: "kubelet.conf.j2",dest: "/etc/kubernetes/kubelet.conf" }
     - {src: "10-kubelet.conf.j2",dest: "/usr/lib/systemd/system/kubelet.service.d/10-kubelet.conf" }
     - {src: "kube-proxy.conf.j2",dest: "/etc/kubernetes/kube-proxy.conf" }
+  tags: dis_node_config
 - name: "删除bootstrap-token文件"
   file:
     path: "/etc/kubernetes/pki/token"
