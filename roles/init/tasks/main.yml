@@ -1,3 +1,8 @@
+- name: fail when hostname is not specified
+  fail:
+    msg: "hostname not specified"
+  when:
+    - hostname is not defined
 - name: "修改主机名"
   hostname:
     name: "{{ hostname|quote }}"

@@ -118,7 +118,3 @@
   * [REST简述](kubernetes/configuration.md)
   * [Kubernetes API详解](kubernetes/themes.md)
   * [Kubernetes API的扩展](kubernetes/plugins.md)
-  * [开发插件](kubernetes/write-a-plugin.md)
-  * [Markdown 配置](kubernetes/markdown.md)
-  * [代码高亮](kubernetes/language-highlight.md)
-
