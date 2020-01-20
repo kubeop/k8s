@@ -124,24 +124,20 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 
 扩容时，请不要在inventory文件master组中保留旧服务器信息。
 
-例如扩容master节点172.16.100.210
-
 ```
-ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=/dev/sdb dir=/var/lib/docker"
-ansible-playbook k8s.yml -i inventory -l 172.16.100.210 -t init -l master
-ansible-playbook k8s.yml -i inventory -l 172.16.100.210 -t cert,install_master,install_docker,install_node --skip-tags=bootstrap,cni
+ansible-playbook fdisk.yml -i inventory -l master -e "disk=/dev/sdb dir=/var/lib/docker"
+ansible-playbook k8s.yml -i inventory -l master -t init
+ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_docker,install_node,install_ceph --skip-tags=bootstrap,cni
 ```
 
 #### 4.4、扩容node节点
 
 扩容时，请不要在inventory文件node组中保留旧服务器信息。
 
-例如扩容node节点172.16.100.211
-
 ```
-ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=/dev/sdb dir=/var/lib/docker"
-ansible-playbook k8s.yml -i inventory -l 172.16.100.211 -t init -l node
-ansible-playbook k8s.yml -i inventory -l 172.16.100.211 -t install_docker,install_node --skip-tags=create_label,cni
+ansible-playbook fdisk.yml -i inventory -l node -e "disk=/dev/sdb dir=/var/lib/docker"
+ansible-playbook k8s.yml -i inventory -l node -t init
+ansible-playbook k8s.yml -i inventory -l node -t install_docker,install_node,install_ceph --skip-tags=create_label,cni
 ```
 
 #### 4.5、替换集群证书
