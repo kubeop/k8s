@@ -36,6 +36,6 @@
         path: "{{ dir }}"
         src: "{{ disk }}1"
         fstype: xfs
-        opts: defaults,noatime,nodiratime,nobarrier
+        opts: defaults,noatime,nodiratime,nobarrier,pquota
         state: mounted
       tags: fdisk 
