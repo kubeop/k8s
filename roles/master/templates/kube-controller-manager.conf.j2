@@ -1,4 +1,5 @@
 KUBE_CONTROLLER_MANAGER_ARGS="\
+    --bind-address=127.0.0.1 \
     --service-account-private-key-file=/etc/kubernetes/pki/ca.key \
     --root-ca-file=/etc/kubernetes/pki/ca.pem \
     --requestheader-client-ca-file=/etc/kubernetes/pki/ca.pem \

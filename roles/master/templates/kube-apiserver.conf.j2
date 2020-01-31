@@ -1,5 +1,5 @@
 KUBE_API_ARGS="\
-    --bind-address={{ ansible_default_ipv4.address }} \
+    --advertise-address={{ ansible_default_ipv4.address }} \
     --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %} \
     --secure-port=6443 \
     --insecure-port=0 \
