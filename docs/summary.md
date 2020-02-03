@@ -1,13 +1,13 @@
 * Kubernetes 概述
 
-  * [Kubernetes简介](kubernetes/Introduction.md)
-  * [Kubernetes概念和术语](kubernetes/00.introduction.md)
+  * [Kubernetes简介](kubernetes/01.Introduction.md)
+  * [Kubernetes概念和术语](kubernetes/02.Concepts.md)
 
 * Kubernetes 安装配置
 
-  * [二进制安装kubernetes集群](kubernetes/configuration.md)
-  * [Kubeadm安装kubernetes集群](kubernetes/themes.md)
-  * [StaticPod安装kubernetes集群](kubernetes/plugins.md)
+  * [二进制安装kubernetes集群](kubernetes/03.Install-kubernetes-cluster-Binary.md)
+  * [Kubeadm安装kubernetes集群](kubernetes/04.Install-kubernetes-cluster-Kubeadm.md)
+  * [StaticPod安装kubernetes集群](kubernetes/05.Install-kubernetes-cluster-StaticPod.md)
 
 * Kubernetes 资源对象
 
