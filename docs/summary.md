@@ -8,7 +8,7 @@
   * [Docker 核心技术](docker/07.component.md)
 
 * Kubernetes 概念
-  * [Kubernetes 架构](kubernetes/concepts/01.architecture.md)
+  * [Kubernetes 基础概念及术语](kubernetes/concepts/01.concepts.md)
   * [Kubernetes 对象](kubernetes/concepts/02.objects.md)
 
 * Kubernetes 安装配置
@@ -16,19 +16,47 @@
   * [Kubeadm安装kubernetes集群](kubernetes/deploy/02.kubeadm.md)
 
 * Kubernetes Pod深入理解
-  * [Pod定义详解](kubernetes/configuration.md)
-  * [Pod的基本用法](kubernetes/themes.md)
-  * [静态Pod](kubernetes/plugins.md)
-  * [Pod容器共享Volume](kubernetes/write-a-plugin.md)
-  * [Pod的ConfigMap与Secret](kubernetes/markdown.md)
-  * [Pod的Downward API](kubernetes/language-highlight.md)
-  * [Pod的生命周期和重启策略](kubernetes/language-highlight.md)
-  * [Pod的监控检查和就绪检查](kubernetes/language-highlight.md)
-  * [Pod的调度](kubernetes/language-highlight.md)
-  * [Pod的初始化容器](kubernetes/language-highlight.md)
-  * [Pod的升级与回滚](kubernetes/language-highlight.md)
-  * [Pod的扩缩容](kubernetes/language-highlight.md)
-  * [CRI详解](kubernetes/write-a-plugin.md)
+  * [Pod详解](kubernetes/workload/01.pod.md)
+  * [Pod控制器](kubernetes/workload/02.pod-controller.md)
+  * [Pod初始化容器](kubernetes/workload/03.initcontainer.md)
+  * [Pod扩缩容](kubernetes/workload/04.scaler.md)
+  * [Pod的调度](kubernetes/workload/05.scheduler.md)
+  * [Pod的ConfigMap](kubernetes/workload/06.configmap.md)
+  * [Pod的Secret](kubernetes/workload/07.secret.md)
+  * [CRI详解](kubernetes/workload/08.cri.md)
+
+* Kubernetes Service深入理解
+  * [Service详解](kubernetes/service/01.service.md)
+  * [DNS](kubernetes/service/02.dns.md)
+  * [Ingress](kubernetes/service/03.ingress.md)
+  * [服务发现](kubernetes/service/04.service-discovery.md)
+
+* Kubernetes 集群网络
+  * [kubernetes网络模型](kubernetes/network/01.model.md)
+  * [CNI网络模型](kubernetes/network/02.cni.md)
+  * [kubernetes网络策略](kubernetes/network/03.policy.md)
+  * [Flannel](kubernetes/network/04.flannel.md)
+  * [Calico](kubernetes/network/05.calico.md)
+  * [Macvlan](kubernetes/network/06.macvlan.md)
+  * [CNI方案性能对比](kubernetes/network/07.comparison.md)
+
+* Kubernetes 集群存储
+  * [存储机制概述](kubernetes/configuration.md)
+  * [PV详解](kubernetes/themes.md)
+  * [PVC详解](kubernetes/plugins.md)
+  * [Storageclass详解](kubernetes/write-a-plugin.md)
+  * [CSI存储机制详解](kubernetes/markdown.md)
+
+* Kubernetes 集群安全
+  * [ApiServer认证管理](kubernetes/configuration.md)
+  * [ApiServer授权管理](kubernetes/themes.md)
+    * [ABAC授权模式](kubernetes/themes.md)
+    * [RBAC授权模式](kubernetes/themes.md)
+    * [Webhook授权模式](kubernetes/themes.md)
+  * [Admission Control](kubernetes/plugins.md)
+  * [Service Account](kubernetes/write-a-plugin.md)
+  * [Secret凭据](kubernetes/markdown.md)
+  * [Pod的安全策略配置](kubernetes/language-highlight.md)
 
 * Kubernetes 资源管理
   * [Node的管理](kubernetes/configuration.md)
@@ -53,52 +81,18 @@
     * [现阶段的问题](kubernetes/configuration.md)
   * [主动驱逐保护](kubernetes/plugins.md)
 
-* Kubernetes 集群网络
-  * [Kubernetes网络模型](kubernetes/configuration.md)
-  * [Docker网络基础](kubernetes/themes.md)
-    * [网络命名空间](kubernetes/themes.md)
-    * [Veth设备对](kubernetes/themes.md)
-    * [网桥](kubernetes/themes.md)
-  * [Docker网络实现](kubernetes/plugins.md)
-  * [Kubernetes网络实现](kubernetes/write-a-plugin.md)
-  * [Pod与Service网络实现](kubernetes/markdown.md)
-  * [网络策略](kubernetes/language-highlight.md)
-  * [CNI网络模型](kubernetes/language-highlight.md)
-  * [常用网络组件](kubernetes/language-highlight.md)
-    * [Flannel](kubernetes/language-highlight.md)
-    * [Calico](kubernetes/language-highlight.md)
-    * [Macvlan](kubernetes/language-highlight.md)
-
-* Kubernetes 集群存储
-  * [存储机制概述](kubernetes/configuration.md)
-  * [PV详解](kubernetes/themes.md)
-  * [PVC详解](kubernetes/plugins.md)
-  * [Storageclass详解](kubernetes/write-a-plugin.md)
-  * [CSI存储机制详解](kubernetes/markdown.md)
-
-* Kubernetes 集群安全
-  * [ApiServer认证管理](kubernetes/configuration.md)
-  * [ApiServer授权管理](kubernetes/themes.md)
-    * [ABAC授权模式](kubernetes/themes.md)
-    * [RBAC授权模式](kubernetes/themes.md)
-    * [Webhook授权模式](kubernetes/themes.md)
-  * [Admission Control](kubernetes/plugins.md)
-  * [Service Account](kubernetes/write-a-plugin.md)
-  * [Secret凭据](kubernetes/markdown.md)
-  * [Pod的安全策略配置](kubernetes/language-highlight.md)
-
 * Kubernetes 核心组件原理解析
   * [kube-apiserver原理](kubernetes/configuration.md)
   * [kube-controller-manager原理](kubernetes/themes.md)
   * [kube-scheduler原理](kubernetes/plugins.md)
   * [kubelet原理](kubernetes/write-a-plugin.md)
-  * [kube-proxy原理 配置](kubernetes/markdown.md)
+  * [kube-proxy原理](kubernetes/markdown.md)
 
 * Kubernetes 排障指南
-  * [查看系统日志](kubernetes/configuration.md)
-  * [查看容器日志](kubernetes/themes.md)
-  * [查看kubernetes服务日志](kubernetes/plugins.md)
-  * [常见问题](kubernetes/write-a-plugin.md)
+  * [查看系统日志](kubernetes/troubleshooting/system.md)
+  * [查看容器日志](kubernetes/troubleshooting/logs.md)
+  * [查看kubernetes服务日志](kubernetes/troubleshooting/k8s.md)
+  * [常见问题](kubernetes/troubleshooting/error.md)
 
 * Kubernetes 开发指南
   * [REST简述](kubernetes/configuration.md)
