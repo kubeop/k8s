@@ -24,13 +24,13 @@
   * [Pod的ConfigMap](kubernetes/workload/06.configmap.md)
   * [Pod的Secret](kubernetes/workload/07.secret.md)
   * [CRI详解](kubernetes/workload/08.cri.md)
-
+* [Pod安全策略](kubernetes/workload/09.psp.md)
+  
 * Kubernetes Service深入理解
   * [Service详解](kubernetes/service/01.service.md)
   * [DNS](kubernetes/service/02.dns.md)
   * [Ingress](kubernetes/service/03.ingress.md)
-  * [服务发现](kubernetes/service/04.service-discovery.md)
-
+  
 * Kubernetes 集群网络
   * [kubernetes网络模型](kubernetes/network/01.model.md)
   * [CNI网络模型](kubernetes/network/02.cni.md)
