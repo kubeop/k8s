@@ -24,8 +24,8 @@
   * [Pod的ConfigMap](kubernetes/workload/06.configmap.md)
   * [Pod的Secret](kubernetes/workload/07.secret.md)
   * [CRI详解](kubernetes/workload/08.cri.md)
-* [Pod安全策略](kubernetes/workload/09.psp.md)
-  
+  * [Pod安全策略](kubernetes/workload/09.psp.md)
+
 * Kubernetes Service深入理解
   * [Service详解](kubernetes/service/01.service.md)
   * [DNS](kubernetes/service/02.dns.md)
@@ -47,26 +47,13 @@
   * [Storageclass详解](kubernetes/write-a-plugin.md)
   * [CSI存储机制详解](kubernetes/markdown.md)
 
-* Kubernetes 集群安全
-  * [ApiServer认证管理](kubernetes/configuration.md)
-  * [ApiServer授权管理](kubernetes/themes.md)
-    * [ABAC授权模式](kubernetes/themes.md)
-    * [RBAC授权模式](kubernetes/themes.md)
-    * [Webhook授权模式](kubernetes/themes.md)
-  * [Admission Control](kubernetes/plugins.md)
-  * [Service Account](kubernetes/write-a-plugin.md)
-  * [Secret凭据](kubernetes/markdown.md)
-  * [Pod的安全策略配置](kubernetes/language-highlight.md)
-
 * Kubernetes 资源管理
-  * [Node的管理](kubernetes/configuration.md)
-  * [Namespace](kubernetes/configuration.md)
-  * [kubernetes资源管理](kubernetes/configuration.md)
-    * [计算资源管理](kubernetes/configuration.md)
-    * [资源配置范围管理](kubernetes/configuration.md)
-    * [资源服务质量管理](kubernetes/configuration.md)
-    * [资源配额管理](kubernetes/configuration.md)
-  * [资源紧缺时Pod驱逐机制](kubernetes/themes.md)
+  * [Node的管理](kubernetes/cluster-admin/01.node.md)
+  * kubernetes资源管理
+    * [计算资源](kubernetes/cluster-admin/02.resource.md)
+    * [资源限制](kubernetes/cluster-admin/03.limit-range.md)
+    * [资源配额](kubernetes/cluster-admin/04.resource -quota.md)
+  * 资源紧缺时Pod驱逐机制
     * [驱逐策略](kubernetes/configuration.md)
     * [驱逐信号](kubernetes/configuration.md)
     * [驱逐阈值](kubernetes/configuration.md)
@@ -80,6 +67,18 @@
     * [可调度的资源和驱逐策略实践](kubernetes/configuration.md)
     * [现阶段的问题](kubernetes/configuration.md)
   * [主动驱逐保护](kubernetes/plugins.md)
+  * [kubernetes的审计](kubernetes/plugins.md)
+
+* Kubernetes 集群安全
+  * [ApiServer认证管理](kubernetes/configuration.md)
+  * [ApiServer授权管理](kubernetes/themes.md)
+    * [ABAC授权模式](kubernetes/themes.md)
+    * [RBAC授权模式](kubernetes/themes.md)
+    * [Webhook授权模式](kubernetes/themes.md)
+  * [Admission Control](kubernetes/plugins.md)
+  * [Service Account](kubernetes/write-a-plugin.md)
+  * [Secret凭据](kubernetes/markdown.md)
+  * [Pod的安全策略配置](kubernetes/language-highlight.md)
 
 * Kubernetes 核心组件原理解析
   * [kube-apiserver原理](kubernetes/configuration.md)
