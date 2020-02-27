@@ -52,7 +52,7 @@
   * kubernetes资源管理
     * [计算资源](kubernetes/cluster-admin/02.resource.md)
     * [资源限制](kubernetes/cluster-admin/03.limit-range.md)
-    * [资源配额](kubernetes/cluster-admin/04.resource -quota.md)
+    * [资源配额](kubernetes/cluster-admin/04.resource-quota.md)
   * 资源紧缺时Pod驱逐机制
     * [驱逐策略](kubernetes/configuration.md)
     * [驱逐信号](kubernetes/configuration.md)
