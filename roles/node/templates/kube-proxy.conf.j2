@@ -28,7 +28,7 @@ ipvs:
   scheduler: wlc
   strictARP: false
   syncPeriod: 30s
-metricsBindAddress: 127.0.0.1:10249
+metricsBindAddress: {{ ansible_default_ipv4.address }}:10249
 mode: ipvs
 nodePortAddresses: null
 oomScoreAdj: -999
