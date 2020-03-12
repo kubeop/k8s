@@ -71,6 +71,7 @@ vip=172.16.100.200
 | apiserver_domain_name | kube-apiserver的访问域名，需提前配置解析。不使用域名时，可以指定为负载均衡的IP（本Playbook需指定为haproxy的VIP） |
 | service_ip_range      | 指定k8s集群service的网段                                     |
 | pod_ip_range          | 指定k8s集群pod的网段                                         |
+| calico_ipv4pool_ipip  | 指定k8s集群使用calico的ipip模式或者bgp模式，Always为ipip模式，off为bgp模式。注意bgp模式不适用于公有云环境。当值为off的时候，切记使用引号`""`引起来。 |
 
 - 请将etcd安装在独立的服务器上，不建议跟master安装在一起
 - Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复）：

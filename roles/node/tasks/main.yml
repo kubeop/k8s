@@ -154,7 +154,7 @@
   tags: create_label
 - name: "下载calico部署文件"
   get_url:
-    url: "https://docs.projectcalico.org/v3.11/manifests/calico.yaml"
+    url: "https://docs.projectcalico.org/manifests/calico.yaml"
     dest: /tmp/
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
@@ -162,8 +162,12 @@
 - name: "修改calico-etcd部署文件"
   replace:
     path: "/tmp/calico.yaml"
-    regexp: "192.168.0.0/16"
-    replace: "{{ pod_ip_range }}"
+    regexp: '{{ item.name }}'
+    replace: '{{ item.line }}'
+  with_items:
+    - {name: '# - name: CALICO_IPV4POOL_CIDR', line: '- name: CALICO_IPV4POOL_CIDR'}
+    - {name: '#   value: "192.168.0.0/16"', line: '  value: "{{ pod_ip_range }}"'}
+    - {name: 'value: "Always"', line: 'value: "{{ calico_ipv4pool_ipip }}"'}
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: cni

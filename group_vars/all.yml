@@ -7,3 +7,4 @@ docker_version: 19.03.5
 apiserver_domain_name: apiserver.k8sre.com
 service_ip_range: 10.64.0.0/16
 pod_ip_range: 10.80.0.0/12
+calico_ipv4pool_ipip: "Always"
