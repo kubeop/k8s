@@ -4,6 +4,7 @@ kubernetes_url: https://dl.k8sre.com/v1.16.4
 docker_version: 19.03.5
 
 #集群配置
+haproxy_port: 6444
 apiserver_domain_name: apiserver.k8sre.com
 service_ip_range: 10.64.0.0/16
 pod_ip_range: 10.80.0.0/12

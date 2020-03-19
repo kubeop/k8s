@@ -33,7 +33,7 @@ frontend http_stats
    stats uri /haproxy?stats
 
 frontend haproxy_kube
-    bind *:6443
+    bind *:{{haproxy_port}}
     mode tcp
     option tcplog
     default_backend masters
