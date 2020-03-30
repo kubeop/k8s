@@ -1,0 +1,24 @@
+[ req ]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+[ v3_req ]
+basicConstraints = critical, CA:FALSE
+keyUsage = critical, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+#subjectKeyIdentifier = hash
+#authorityKeyIdentifier = keyid:always,issuer
+subjectAltName = @alt_names
+[alt_names]
+DNS.1 = kubernetes
+DNS.2 = kubernetes.default
+DNS.3 = kubernetes.default.svc
+DNS.4 = kubernetes.default.svc.cluster
+DNS.5 = kubernetes.default.svc.cluster.local
+DNS.6 = {{ apiserver_domain_name }}
+{% set pk = groups['master'] | union(groups['k8s_service']) %}
+{% for host in pk %}
+{% set count = loop.index  %}
+IP.{{ count }} = {{ host }}
+{% if not loop.last -%}{%- endif -%}
+{% endfor %}

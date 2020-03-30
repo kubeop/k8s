@@ -1,0 +1,47 @@
+    - name: "安装Zabbix"
+      yum:
+         name: "{{ gpgkey }}/zabbix/zabbix/3.4/rhel/7/x86_64/zabbix-agent-3.4.9-1.el7.x86_64.rpm"
+         state: present
+      tags: install_zabbix
+    - name: "修改Zabbix配置文件"
+      lineinfile:
+         dest: "/etc/zabbix/zabbix_agentd.conf"
+         regexp: "{{ item.regexp }}"
+         line: "{{ item.line }}"
+         state: present
+      with_items:
+         - { regexp: "^Server=", line: "Server={{ zbx_server_ip }}" }
+         - { regexp: "^ServerActive=", line: "ServerActive={{ zbx_server_ip }}" }
+         - { regexp: "^Hostname=", line: "Hostname={{ ansible_hostname }}_{{ ansible_default_ipv4.address }}" }
+      tags: install_zabbix
+    - name: "添加自定义监控项"
+      copy:
+         src: "port.conf"
+         dest: "/etc/zabbix/zabbix_agentd.d"
+      tags: install_zabbix
+    - name: "创建zabbix脚本目录"
+      file:
+         path: "/etc/zabbix/script"
+         owner: zabbix
+         group: zabbix
+         state: directory
+      tags: install_zabbix
+    - name: "添加监控端口脚本"
+      copy:
+         src: "port.sh"
+         dest: "/etc/zabbix/script"
+      tags: install_zabbix
+    - name: "修改脚本目录权限"
+      file:
+         dest: "/etc/zabbix/script/port.sh"
+         mode: 0744
+         owner: zabbix
+         group: zabbix
+      tags: install_zabbix
+    - name: "重启zabbix"
+      systemd:
+         name: zabbix-agent
+         enabled: yes
+         daemon_reload: yes
+         state: restarted
+      tags: install_zabbix

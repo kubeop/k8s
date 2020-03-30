@@ -1,0 +1,9 @@
+# kubernetes scheduler config
+
+# default config should be adequate
+
+# Add your own!
+KUBE_SCHEDULER_ARGS="\
+    --master=https://{{ ansible_default_ipv4.address }}:6443 \
+    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig \
+    --leader-elect=true"

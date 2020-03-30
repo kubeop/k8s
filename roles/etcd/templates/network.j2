@@ -1,0 +1,14 @@
+#!/bin/bash
+
+etcdctl --endpoints=https://{{ ansible_default_ipv4.address }}:2379 \
+                        --ca-file=/etc/kubernetes/ssl/ca.pem \
+                        --cert-file=/etc/etcd/ssl/etcd_{{ ansible_default_ipv4.address }}.pem \
+                        --key-file=/etc/etcd/ssl/etcd_{{ ansible_default_ipv4.address }}.key \
+                        mkdir /k8s/network
+
+
+etcdctl --endpoints=https://{{ ansible_default_ipv4.address }}:2379 \
+                        --ca-file=/etc/kubernetes/ssl/ca.pem \
+                        --cert-file=/etc/etcd/ssl/etcd_{{ ansible_default_ipv4.address }}.pem \
+                        --key-file=/etc/etcd/ssl/etcd_{{ ansible_default_ipv4.address }}.key \
+                        set /k8s/network/config '{"Network": "{{ pod_cluster_cidr }}","Backend": {"Type": "vxlan"}}'

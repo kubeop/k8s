@@ -1,0 +1,32 @@
+#本组内填写etcd服务器及主机名
+[etcd]
+172.17.15.233 hostname=etcd-01
+172.17.15.234 hostname=etcd-02
+172.17.15.235 hostname=etcd-03
+172.17.15.236 hostname=etcd-04
+172.17.15.237 hostname=etcd-05
+
+#本组内填写master服务器及主机名
+[master]
+172.17.15.238 hostname=master-01
+172.17.15.239 hostname=master-02
+172.17.15.240 hostname=master-03
+172.17.15.241 hostname=master-04
+172.17.15.242 hostname=master-05
+
+#本组机器不会进行系统初始化等操作，仅用做安装kubectl命令行
+[kubectl]
+172.17.15.238 hostname=master-01
+
+#本组机器不会进行系统初始化等操作，只是apiserver证书签发时使用
+[k8s_service]
+10.64.0.1        #shoule be k8s servcie first ip
+172.17.15.246    #shoule be k8s apiserver slb ip
+
+#本组内填写node服务器及主机名
+[node]
+172.17.15.243 hostname=node-01
+172.17.15.244 hostname=node-02
+172.17.15.245 hostname=node-03
+
+

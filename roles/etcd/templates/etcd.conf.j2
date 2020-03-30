@@ -1,0 +1,21 @@
+[member]
+ETCD_NAME={{ hostname | split_hostname }}
+ETCD_DATA_DIR="{{ data_dir }}/data/etcd"
+ETCD_LISTEN_PEER_URLS="https://{{ ansible_default_ipv4.address }}:2380"
+ETCD_LISTEN_CLIENT_URLS="https://{{ ansible_default_ipv4.address }}:2379"
+[cluster]
+ETCD_INITIAL_ADVERTISE_PEER_URLS="https://{{ ansible_default_ipv4.address }}:2380"
+ETCD_INITIAL_CLUSTER="{% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname | split_hostname }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %}"
+ETCD_INITIAL_CLUSTER_STATE="new"
+ETCD_ADVERTISE_CLIENT_URLS="https://{{ ansible_default_ipv4.address }}:2379"
+[security]
+ETCD_CERT_FILE="/etc/etcd/ssl/etcd_{{ ansible_default_ipv4.address }}.pem"
+ETCD_KEY_FILE="/etc/etcd/ssl/etcd_{{ ansible_default_ipv4.address }}.key"
+ETCD_CLIENT_CERT_AUTH="true"
+ETCD_TRUSTED_CA_FILE="/etc/kubernetes/ssl/ca.pem"
+ETCD_AUTO_TLS="true"
+ETCD_PEER_CERT_FILE="/etc/etcd/ssl/etcd_{{ ansible_default_ipv4.address }}.pem"
+ETCD_PEER_KEY_FILE="/etc/etcd/ssl/etcd_{{ ansible_default_ipv4.address }}.key"
+ETCD_PEER_CLIENT_CERT_AUTH="true"
+ETCD_PEER_TRUSTED_CA_FILE="/etc/kubernetes/ssl/ca.pem"
+ETCD_PEER_AUTO_TLS="true"

@@ -1,0 +1,13 @@
+{
+ "registry-mirrors": ["https://registry.docker-cn.com"],
+ "exec-opts": ["native.cgroupdriver=systemd"],
+ "storage-driver": "overlay2",
+ "storage-opts":["overlay2.override_kernel_check=true"],
+ "log-driver": "json-file",
+ "log-opts": {
+     "max-size": "100m",
+     "max-file": "10"
+ },
+ "oom-score-adjust": -1000,
+ "graph": "{{ data_dir }}/data/docker"
+}

@@ -1,0 +1,48 @@
+    - name: "创建k8s目录"
+      file:
+         path: "/etc/kubernetes/ssl/"
+         state: directory
+    - name: "安装etcd"
+      yum:
+         name: etcd
+         state: installed
+    - name: "分发ca证书"
+      copy:
+         src: "{{ ssl_dir }}/ca.pem"
+         dest: "/etc/kubernetes/ssl/"
+      tags: dis_certs
+    - name: "分发etcd证书文件"
+      copy:
+         src: "{{ item.line }}"
+         dest: "/etc/etcd/ssl/"
+      with_items:
+         - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.key'}
+         - {line: '{{ ssl_dir }}/etcd/etcd_{{ ansible_default_ipv4.address }}.pem'}
+      tags: dis_certs
+    - name: "拷贝etcd配置文件"
+      template:
+         src: "etcd.conf.j2"
+         dest: "/etc/etcd/etcd.conf"
+    - name: "拷贝etcd service文件"
+      template:
+         src: "etcd.service.j2"
+         dest: "/usr/lib/systemd/system/etcd.service"
+    - name: "修改etcd数据目录权限"
+      file:
+         path: "{{ data_dir }}/data/etcd"
+         owner: etcd
+         group: etcd
+         state: directory
+    - name: "启动服务"
+      systemd:
+         name: etcd
+         daemon_reload: yes
+         enabled: yes
+         state: restarted
+      tags: restart_etcd
+    - name: "拷贝创建网络脚本"
+      template:
+         src: "network.j2"
+         dest: /tmp/network.sh
+    - name: "创建并设置网络"
+      shell: bash /tmp/network.sh

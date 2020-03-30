@@ -1,0 +1,156 @@
+    - name: "创建ssl证书目录"
+      file:
+         path: "{{ ssl_dir }}"
+         state: directory
+    - name: "拷贝ca配置文件"
+      template:
+         src: "ca.cnf.j2"
+         dest: "{{ ssl_dir }}/ca.cnf"
+    - stat:
+         path: "{{ ssl_dir }}/ca.key"
+      register: ca_key_stat
+    - name: "签发ca证书"
+      when: not ca_key_stat.stat.exists
+      command: "{{ item.line }}"
+      with_items:
+         - {line: 'openssl genrsa -out {{ ssl_dir }}/ca.key {{ ssl_size }}'}
+         - {line: 'openssl req -x509 -new -nodes -key {{ ssl_dir }}/ca.key -days {{ ssl_days }} -out {{ ssl_dir }}/ca.pem -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/ca.cnf -extensions v3_req'}
+    - name: "拷贝apiserver证书配置文件"
+      template:
+         src: "apiserver.cnf.j2"
+         dest: "{{ ssl_dir }}/apiserver.cnf"
+    - stat:
+         path: "{{ ssl_dir }}/apiserver.key"
+      register: apiserver_key_stat
+    - name: "签发apiserver证书"
+      when: not apiserver_key_stat.stat.exists
+      command: "{{ item.line }}"
+      with_items:
+         - {line: 'openssl genrsa -out {{ ssl_dir }}/apiserver.key {{ ssl_size }}'}
+         - {line: 'openssl req -new -key {{ ssl_dir }}/apiserver.key -out {{ ssl_dir }}/apiserver.csr -subj "/CN=kubernetes/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/apiserver.cnf'}
+         - {line: 'openssl x509 -req -in {{ ssl_dir }}/apiserver.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/apiserver.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/apiserver.cnf -extensions v3_req'}
+    - name: "获取token"
+      shell: "head -c 16 /dev/urandom | od -An -t x | tr -d ' '"
+      register: bootstrap_token
+    - stat:
+         path: "{{ ssl_dir }}/token.csv"
+      register: token_stat
+    - name: "生成token文件"
+      when: not token_stat.stat.exists
+      template:
+         src: "token.csv.j2"
+         dest: "{{ ssl_dir }}/token.csv"
+    - name: "创建etcd证书保存目录"
+      file:
+         path: "{{ ssl_dir }}/etcd"
+         state: directory
+    - name: "拷贝etcd证书配置文件"
+      template:
+         src: etcd.cnf.j2
+         dest: "{{ ssl_dir }}/etcd/etcd_{{ item }}.cnf"
+      with_items:
+         - "{{ groups['etcd'] }}"
+    - name: "签发etcd证书"
+      command: 'openssl genrsa -out {{ ssl_dir }}/etcd/etcd_{{ item }}.key {{ ssl_size }}'
+      with_items:
+         - "{{ groups['etcd'] }}"
+    - name: "签发etcd证书"
+      command: 'openssl req -new -key {{ ssl_dir }}/etcd/etcd_{{ item }}.key -out {{ ssl_dir }}/etcd/etcd_{{ item }}.csr -subj "/CN=etcd/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/etcd/etcd_{{ item }}.cnf'
+      with_items:
+         - "{{ groups['etcd'] }}"
+    - name: "签发etcd证书"
+      command: 'openssl x509 -req -in {{ ssl_dir }}/etcd/etcd_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/etcd/etcd_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/etcd/etcd_{{ item }}.cnf -extensions v3_req'
+      with_items:
+         - "{{ groups['etcd'] }}"
+
+    - name: "创建kubelet证书保存目录"
+      file:
+         path: "{{ ssl_dir }}/kubelet"
+         state: directory
+      tags: kubelet
+    - name: "拷贝kubelet证书配置文件"
+      template:
+         src: client.cnf.j2
+         dest: "{{ ssl_dir }}/kubelet/kubelet_{{ item }}.cnf"
+      with_items:
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
+      tags: kubelet
+    - name: "签发kubelet证书"
+      command: 'openssl genrsa -out {{ ssl_dir }}/kubelet/kubelet_{{ item }}.key {{ ssl_size }}'
+      with_items:
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
+      tags: kubelet
+    - name: "签发kubelet证书"
+      command: 'openssl req -new -key {{ ssl_dir }}/kubelet/kubelet_{{ item }}.key -out {{ ssl_dir }}/kubelet/kubelet_{{ item }}.csr -subj "/CN=admin/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=system:masters" -config {{ ssl_dir }}/kubelet/kubelet_{{ item }}.cnf'
+      with_items:
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
+      tags: kubelet
+    - name: "签发kubelet证书"
+      command: 'openssl x509 -req -in {{ ssl_dir }}/kubelet/kubelet_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kubelet/kubelet_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kubelet/kubelet_{{ item }}.cnf -extensions v3_req'
+      with_items:
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
+      tags: kubelet
+
+    - name: "创建kube-proxy证书目录"
+      file:
+         path: "{{ ssl_dir }}/kube-proxy"
+         state: directory
+      tags: kube-proxy
+    - name: "拷贝kube-proxy证书配置文件"
+      template:
+         src: client.cnf.j2
+         dest: "{{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.cnf"
+      with_items:
+         - "{{ groups['node'] }}"
+      tags: kube-proxy
+    - name: "签发kube-proxy证书"
+      command: 'openssl genrsa -out {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.key {{ ssl_size }}'
+      with_items:
+         - "{{ groups['node'] }}"
+      tags: kube-proxy
+    - name: "签发kube-proxy证书"
+      command: 'openssl req -new -key {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.key -out {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.csr -subj "/CN=system:kube-proxy/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.cnf'
+      with_items:
+         - "{{ groups['node'] }}"
+      tags: kube-proxy
+    - name: "签发kube-proxy证书"
+      command: 'openssl x509 -req -in {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/kube-proxy/kube-proxy_{{ item }}.cnf -extensions v3_req'
+      with_items:
+         - "{{ groups['node'] }}"
+      tags: kube-proxy
+
+    - name: "创建flannel证书目录"
+      file:
+         path: "{{ ssl_dir }}/flannel"
+         state: directory
+      tags: flannel
+    - name: "拷贝flannel证书配置文件"
+      template:
+         src: flannel.cnf.j2
+         dest: "{{ ssl_dir }}/flannel/flannel_{{ item }}.cnf"
+      with_items:
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
+      tags: flannel
+    - name: "签发flannel证书"
+      command: 'openssl genrsa -out {{ ssl_dir }}/flannel/flannel_{{ item }}.key {{ ssl_size }}'
+      with_items:
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
+      tags: flannel
+    - name: "签发flannel证书"
+      command: 'openssl req -new -key {{ ssl_dir }}/flannel/flannel_{{ item }}.key -out {{ ssl_dir }}/flannel/flannel_{{ item }}.csr -subj "/CN=flannel/OU=System/C=CN/ST=Shanghai/L=Shanghai/O=k8s" -config {{ ssl_dir }}/flannel/flannel_{{ item }}.cnf'
+      with_items:
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
+      tags: flannel
+    - name: "签发flannel证书"
+      command: 'openssl x509 -req -in {{ ssl_dir }}/flannel/flannel_{{ item }}.csr -CA {{ ssl_dir }}/ca.pem -CAkey {{ ssl_dir }}/ca.key -CAcreateserial -out {{ ssl_dir }}/flannel/flannel_{{ item }}.pem -days {{ ssl_days }} -extfile {{ ssl_dir }}/flannel/flannel_{{ item }}.cnf -extensions v3_req'
+      with_items:
+         - "{{ groups['master'] }}"
+         - "{{ groups['node'] }}"
+      tags: flannel

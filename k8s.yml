@@ -1,0 +1,35 @@
+---
+- name: "Creating Kubernetes High Availability Cluster with Ansible Playbook"
+  hosts: etcd master node
+  roles:
+    - { role: 'init', tags: "init",when: "ansible_os_family == 'RedHat'" }
+
+- name: "签发证书"
+  hosts: localhost
+  connection: local
+  roles:
+    - { role: 'cert', tags: "cert" }
+
+- name: "配置etcd"
+  hosts: etcd
+  roles:
+    - { role: 'etcd', tags: "install_etcd" }
+
+- name: "配置master"
+  hosts: master
+  roles:
+    - { role: 'flannel', tags: "install_master" }
+    - { role: 'master', tags: "install_master" }
+
+- name: "安装kubectl"
+  hosts: kubectl
+  roles:
+    - { role: 'kubectl', tags: "install_kubectl" }
+
+- name: "配置node"
+  hosts: node
+  roles:
+    - { role: 'flannel', tags: "install_node" }
+    - { role: 'docker', tags: "install_node" }
+    - { role: 'node', tags: "install_node" }
+

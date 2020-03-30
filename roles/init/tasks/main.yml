@@ -1,0 +1,322 @@
+    - name: "修改主机名"
+      hostname:
+         name: "{{ hostname|quote }}"
+      tags: hostname
+    - name: "设置主机名ip高亮显示"
+      copy:
+         src: "ipenv.sh"
+         dest: "/etc/profile.d/"
+      tags: os_env
+#    - name: "获取JumpServer Token"
+#      uri:
+#         url: https://j.anymb.com/api/users/v1/auth/
+#         headers:
+#           Content-Type: application/json
+#         method: POST
+#         body: '{"username": "admin", "password": "admin"}'
+#      register: jms_token
+#      tags: add_jump
+#    - name: "查询是否已经注册"
+#      uri:
+#         url: https://j.anymb.com/api/assets/v1/assets/?ip={{ ansible_default_ipv4.address }}
+#         headers:
+#           Authorization: "Bearer {{ jms_token.json.token }}"
+#           Content-Type: application/json
+#      register: jms_asset
+#      tags: add_jump
+#    - debug:
+#         msg: "{{ jms_asset.json }}"
+#      tags: add_jump
+#    - name: "注册到JumpServer"
+#      when: jms_asset.json == []
+#      uri:
+#         url: https://j.anymb.com/api/assets/v1/assets/
+#         method: POST
+#         headers:
+#           Authorization: "Bearer {{ jms_token.json.token }}"
+#         body: "ip={{ ansible_default_ipv4.address }}&hostname={{ ansible_hostname }}&nodes=2bd72dd0&admin_user=6b68d&is_active=true&port=22"
+#         status_code: 201
+#      tags: add_jump
+    - name: "添加阿里云软件源"
+      yum_repository:
+         file: CentOS-Base
+         name: '{{ item.name }}'
+         description: '{{ item.description}}'
+         baseurl: '{{ item.baseurl }}'
+         gpgkey: "{{ gpgkey }}/centos/RPM-GPG-KEY-CentOS-7"
+         failovermethod: priority
+         gpgcheck: yes
+         enabled: yes
+      with_items:
+         - { name: "base",description: "CentOS-$releasever",baseurl: "http://mirrors.cloud.aliyuncs.com/centos/$releasever/os/$basearch/ \n https://mirrors.aliyun.com/centos/$releasever/os/$basearch/" }
+         - { name: "updates",description: "CentOS-$releasever",baseurl: "http://mirrors.cloud.aliyuncs.com/centos/$releasever/updates/$basearch/ \n https://mirrors.aliyun.com/centos/$releasever/updates/$basearch/" }
+         - { name: "extras",description: "CentOS-$releasever",baseurl: "http://mirrors.cloud.aliyuncs.com/centos/$releasever/extras/$basearch/ \n https://mirrors.aliyun.com/centos/$releasever/extras/$basearch/" }
+      tags: CentOS-Base
+    - name: "添加EPEL软件源"
+      yum_repository:
+         file: epel
+         name: epel
+         description: Extra Packages for Enterprise Linux 7 - $basearch
+         baseurl: "http://mirrors.cloud.aliyuncs.com/epel/7/$basearch \n https://mirrors.aliyun.com/epel/7/$basearch"
+         gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
+         failovermethod: priority
+         gpgcheck: no
+         enabled: yes
+      tags: epel
+    - name: "添加跳板机lcsuper用户"
+      user:
+         name: lcsuper
+         shell: /bin/bash
+         state: present
+      tags: jump
+    - name: "添加跳板机用户sudo权限"
+      lineinfile:
+         dest: "/etc/sudoers"
+         line: "{{ item.line }}"
+         state: present
+      with_items:
+         - { line: 'lcsuper ALL=(ALL) NOPASSWD: /sbin/ifconfig,/usr/bin/bash,/usr/bin/su,/bin/bash,/bin/su,/usr/bin/sudo'}
+      tags: jump
+#    - name: "添加root用户公钥"
+#      authorized_key:
+#         user: root
+#         state: present
+#         key: "{{ lookup('file', 'root_id_rsa.pub') }}"
+#         manage_dir: yes
+#      tags: jump
+#    - name: "添加lcsuper用户公钥"
+#      authorized_key:
+#         user: lcsuper
+#         state: present
+#         key: "{{ lookup('file', 'lcsuper_id_rsa.pub') }}"
+#         manage_dir: yes
+#      tags: jump
+    - name: "限制ssh登录的用户"
+      lineinfile:
+         dest: "/etc/ssh/sshd_config"
+         regexp: "{{ item.regexp }}"
+         line: "{{ item.line }}"
+         state: present
+      with_items:
+         - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
+         - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
+         - { regexp: "AllowUsers", line: "AllowUsers root lcsuper" }
+      tags: sshd
+    - name: "重启ssh服务"
+      systemd:
+         name: sshd
+         state: restarted
+      tags: sshd
+    - stat:
+         path: "{{ disk }}1"
+      register: disk_stat
+      tags: fdisk
+    - name: "创建{{ disk }}分区"
+      when: not disk_stat.stat.exists
+      parted:
+         device: "{{ disk }}"
+         number: 1
+         part_type: primary
+         part_start: 0%
+         part_end: 100%
+         label: gpt
+         state: present
+      tags: fdisk
+    - name: "disk"
+      debug: 
+         msg: "即将格式化的磁盘分区是{{ disk }}1"
+      tags: fdisk
+    - name: "格式化{{ disk }}1分区"
+      when: not disk_stat.stat.exists
+      filesystem:
+         dev: "{{ disk }}1"
+         force: yes
+         fstype: xfs
+      tags: fdisk
+    - name: "挂载{{ disk }}1分区到{{ data_dir }}目录"
+      mount:
+         path: "{{ data_dir }}"
+         src: "{{ disk }}1"
+         fstype: xfs
+         opts: defaults,noatime,nodiratime,nobarrier
+         state: mounted
+      tags: fdisk
+    - name: "更新系统"
+      yum:
+         name: "*"
+         state: latest
+      tags: update_os
+    - name: "关闭selinux"
+      selinux:
+         state: disabled
+      tags: selinux
+    - name: "关闭防火墙"
+      systemd:
+         name: firewalld
+         enabled: no
+         state: stopped
+      tags: iptables
+    - name: "更改系统limits"
+      pam_limits:
+        dest: "/etc/security/limits.conf"
+        domain: '{{ item.limit_domain }}'
+        limit_type: "{{ item.limit_type }}"
+        limit_item: "{{ item.limit_item }}"
+        value: "{{ item.value }}"
+      with_items:
+          - { limit_domain: 'root',limit_type: 'soft',limit_item: 'nofile', value: '655360' }
+          - { limit_domain: 'root',limit_type: 'hard',limit_item: 'nofile', value: '655360' }
+          - { limit_domain: '*',limit_type: 'soft',limit_item: 'core', value: '0' }
+          - { limit_domain: '*',limit_type: 'hard',limit_item: 'core', value: '0' }
+          - { limit_domain: '*',limit_type: 'soft',limit_item: 'nproc', value: '655360' }
+          - { limit_domain: '*',limit_type: 'hard',limit_item: 'nproc', value: '655360' }
+          - { limit_domain: '*',limit_type: 'soft',limit_item: 'stack', value: 'unlimited' }
+          - { limit_domain: '*',limit_type: 'hard',limit_item: 'stack', value: 'unlimited' }
+          - { limit_domain: '*',limit_type: 'soft',limit_item: 'nofile', value: '655360' }
+          - { limit_domain: '*',limit_type: 'hard',limit_item: 'nofile', value: '655360' }
+          - { limit_domain: '*',limit_type: 'soft',limit_item: 'memlock', value: 'unlimited' }
+          - { limit_domain: '*',limit_type: 'hard',limit_item: 'memlock', value: 'unlimited' }
+      tags: limits
+    - name: "更改systemd limits"
+      lineinfile:
+         dest: "/etc/systemd/system.conf"
+         line: "{{ item.line }}"
+         state: present
+      with_items: 
+         - {line: 'DefaultLimitNOFILE=65535' }
+         - {line: 'DefaultLimitNPROC=65535' }
+         - {line: 'DefaultLimitMEMLOCK=infinity' }
+      tags: limits
+    - name: "启用br_netfilter模块"
+      modprobe:
+         name: br_netfilter
+         state: present
+      tags: mod
+    - name: "启用bridge模块"
+      modprobe:
+         name: bridge
+         state: present
+      tags: mod
+    - name: "启用ip_conntrack模块"
+      modprobe:
+         name: ip_conntrack
+         state: present
+      tags: mod
+    - name: "启用ip_vs模块"
+      modprobe:
+         name: ip_vs
+         state: present
+      tags: mod
+    - name: "启用ip_vs_rr模块"
+      modprobe:
+         name: ip_vs_rr
+         state: present
+      tags: mod
+    - name: "启用ip_vs_wrr模块"
+      modprobe:
+         name: ip_vs_wrr
+         state: present
+      tags: mod
+    - name: "启用ip_vs_sh模块"
+      modprobe:
+         name: ip_vs_sh
+         state: present
+      tags: mod
+    - name: "启用nf_conntrack_ipv4模块"
+      modprobe:
+         name: nf_conntrack_ipv4
+         state: present
+      tags: mod
+    - name: "修改net.ipv4.ip_forward"
+      sysctl:
+         name: net.ipv4.ip_forward
+         value: 1
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "修改fs.file-max"
+      sysctl:
+         name: fs.file-max
+         value: 655360
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "修改vm.max_map_count"
+      sysctl:
+         name: vm.max_map_count
+         value: 500000
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "修改net.ipv4.tcp_fin_timeout"
+      sysctl:
+         name: net.ipv4.tcp_fin_timeout
+         value: 3
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "修改net.ipv4.tcp_max_orphans"
+      sysctl:
+         name: net.ipv4.tcp_max_orphans
+         value: 655360
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "修改net.core.somaxconn"
+      sysctl:
+         name: net.core.somaxconn
+         value: 8192
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "修改net.ipv4.tcp_max_tw_buckets"
+      sysctl:
+         name: net.ipv4.tcp_max_tw_buckets
+         value: 300000
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "修改net.bridge.bridge-nf-call-iptables"
+      sysctl:
+         name: net.bridge.bridge-nf-call-iptables
+         value: 1
+         state: present
+         reload: yes
+      tags: sysctl
+    - name: "安装基础应用"
+      yum:
+         name: "{{ item.line }}"
+         state: installed
+      with_items:
+         - {line: 'vim'}
+         - {line: 'curl'}
+         - {line: 'wget'}
+         - {line: 'lsof'}
+         - {line: 'lrzsz'}
+         - {line: 'rsync'}
+         - {line: 'telnet'}
+         - {line: 'bash-completion'}
+         - {line: 'nmap-ncat'}
+         - {line: 'net-tools'}
+         - {line: 'ntpdate'}
+         - {line: 'protobuf-devel'}
+         - {line: 'libcurl-devel'}
+         - {line: 'gcc'}
+         - {line: 'gcc-c++'}
+         - {line: 'libtool'}
+         - {line: 'make'}
+         - {line: 'automake'}
+         - {line: 'mtr'}
+         - {line: 'nfs-utils'}
+         - {line: 'yum-utils'}
+         - {line: 'lvm2'}
+         - {line: 'device-mapper-persistent-data'}
+      tags: install_app
+    - name: "创建app目录"
+      file:
+         path: "{{ item.line }}"
+         state: directory
+      with_items:
+         - {line: "{{ data_dir }}/data"}
+         - {line: "{{ data_dir }}/logs"}
+      tags: dir

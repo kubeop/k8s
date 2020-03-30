@@ -1,0 +1,11 @@
+[ req ]
+req_extensions = v3_req
+distinguished_name = req_distinguished_name
+[req_distinguished_name]
+
+[ v3_req ]
+keyUsage = critical, cRLSign, keyCertSign, digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth, clientAuth
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer
+basicConstraints = critical, CA:true, pathlen:2
