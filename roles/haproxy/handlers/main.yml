@@ -1,0 +1,8 @@
+
+- name: restart haproxy
+  systemd:
+    name: haproxy
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  register: haproxy_restarted

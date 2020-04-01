@@ -1,0 +1,46 @@
+KUBE_API_ARGS="\
+    --advertise-address={{ ansible_default_ipv4.address }} \
+    --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %} \
+    --secure-port=6443 \
+    --insecure-port=0 \
+    --service-account-key-file=/etc/kubernetes/pki/ca.key \
+    --tls-cert-file=/etc/kubernetes/pki/kube-apiserver.pem \
+    --tls-private-key-file=/etc/kubernetes/pki/kube-apiserver.key \
+    --client-ca-file=/etc/kubernetes/pki/ca.pem \
+    --etcd-cafile=/etc/kubernetes/pki/etcd-ca.pem \
+    --etcd-certfile=/etc/kubernetes/pki/etcd-client.pem \
+    --etcd-keyfile=/etc/kubernetes/pki/etcd-client.key \
+    --kubelet-certificate-authority=/etc/kubernetes/pki/ca.pem \
+    --kubelet-client-certificate=/etc/kubernetes/pki/kube-apiserver-kubelet-client.pem \
+    --kubelet-client-key=/etc/kubernetes/pki/kube-apiserver-kubelet-client.key \
+    --enable-admission-plugins=NamespaceLifecycle,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota,NodeRestriction \
+    --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname \
+    --authorization-mode=RBAC,Node \
+    --kubelet-https=true \
+    --anonymous-auth=false \
+    --endpoint-reconciler-type=lease \
+    --default-not-ready-toleration-seconds=10 \
+    --default-unreachable-toleration-seconds=10 \
+    --delete-collection-workers=3 \
+    --audit-log-path=/var/log/kubernetes-audit.log \
+    --audit-policy-file=/etc/kubernetes/audit-policy.yaml \
+    --audit-log-truncate-enabled \
+    --audit-log-maxage=7 \
+    --audit-log-maxbackup=10 \
+    --audit-log-maxsize=100 \
+    --event-ttl=1h \
+    --service-cluster-ip-range={{ service_ip_range }} \
+    --service-node-port-range=30000-50000 \
+    --requestheader-client-ca-file=/etc/kubernetes/pki/ca.pem \
+    --proxy-client-cert-file=/etc/kubernetes/pki/proxy-client.pem \
+    --proxy-client-key-file=/etc/kubernetes/pki/proxy-client.key \
+    --requestheader-allowed-names=aggregator \
+    --requestheader-extra-headers-prefix=X-Remote-Extra- \
+    --requestheader-group-headers=X-Remote-Group \
+    --requestheader-username-headers=X-Remote-User \
+    --enable-aggregator-routing=true \
+    --max-requests-inflight=3000 \
+    --enable-bootstrap-token-auth \
+    --logtostderr=true \
+    --allow-privileged=true \
+    --v=4"

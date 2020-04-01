@@ -1,0 +1,58 @@
+---
+- name: "格式化磁盘"
+  hosts: all
+  vars:
+    disk: sdb
+    dir: /var/lib/etcd
+  tasks:
+    - name: set variable
+      set_fact:
+        partation: "{{ disk }}1"
+    - stat:
+        path: "/dev/{{ partation }}"
+      register: disk_stat
+      tags: fdisk
+    - name: "创建/dev/{{ disk }}分区"
+      when: not disk_stat.stat.exists
+      parted:
+        device: "/dev/{{ disk }}"
+        number: 1
+        part_type: primary
+        part_start: 0%
+        part_end: 100%
+        label: gpt
+        state: present
+      tags: fdisk
+    - name: "disk"
+      debug:
+        msg: "即将格式化的磁盘分区是/dev/{{ partation }}"
+      tags: fdisk
+    - name: "格式化/dev/{{ partation }}分区"
+      when: not disk_stat.stat.exists
+      filesystem:
+        dev: "/dev/{{ partation }}"
+        force: yes
+        fstype: xfs
+      tags: fdisk
+    - name: 重新获取facter
+      setup:
+        gather_subset:
+          - '!all'
+          - '!any'
+          - hardware
+      tags: fdisk
+    - name: 获取/dev/{{ partation }}的UUID
+      set_fact:
+        device_uuid: "{{ item.value }}"
+      with_dict:
+        - "{{ ansible_device_links.uuids }}"
+      when: item.key == (partation)
+      tags: fdisk
+    - name: "挂载/dev/{{ partation }}分区到{{ dir }}目录"
+      mount:
+        path: "{{ dir }}"
+        src: "UUID={{device_uuid[0]}}"
+        fstype: xfs
+        opts: defaults,noatime,nodiratime,nobarrier,pquota
+        state: mounted
+      tags: fdisk 

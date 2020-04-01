@@ -6,7 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=notify
-WorkingDirectory={{ data_dir }}/data/etcd/
+WorkingDirectory=/var/lib/etcd
 EnvironmentFile=-/etc/etcd/etcd.conf
 User=etcd
 

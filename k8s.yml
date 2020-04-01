@@ -1,8 +1,8 @@
 ---
-- name: "Creating Kubernetes High Availability Cluster with Ansible Playbook"
-  hosts: etcd master node
+- name: "Deploying Kubernetes High Availability Cluster with Ansible Playbook"
+  hosts: etcd master node haproxy
   roles:
-    - { role: 'init', tags: "init",when: "ansible_os_family == 'RedHat'" }
+    - { role: 'init', tags: "init", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
 
 - name: "签发证书"
   hosts: localhost
@@ -13,23 +13,21 @@
 - name: "配置etcd"
   hosts: etcd
   roles:
-    - { role: 'etcd', tags: "install_etcd" }
+    - { role: 'etcd', tags: "install_etcd", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"}
+
+- name: "配置haproxy"
+  hosts: haproxy
+  roles:
+    - { role: 'haproxy', tags: "install_haproxy", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"}
+    - { role: 'keepalived', tags: "install_keepalived", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
 
 - name: "配置master"
   hosts: master
   roles:
-    - { role: 'flannel', tags: "install_master" }
-    - { role: 'master', tags: "install_master" }
-
-- name: "安装kubectl"
-  hosts: kubectl
-  roles:
-    - { role: 'kubectl', tags: "install_kubectl" }
+    - { role: 'master', tags: "install_master", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
 
 - name: "配置node"
-  hosts: node
+  hosts: master node
   roles:
-    - { role: 'flannel', tags: "install_node" }
-    - { role: 'docker', tags: "install_node" }
-    - { role: 'node', tags: "install_node" }
-
+    - { role: 'docker', tags: "install_docker", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
+    - { role: 'node', tags: "install_node", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }

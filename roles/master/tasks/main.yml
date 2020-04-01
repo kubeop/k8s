@@ -1,119 +1,214 @@
-    - name: "创建k8s目录"
-      file:
-         path: "/etc/kubernetes/ssl/"
-         state: directory
-    - name: "拷贝token文件"
-      copy:
-         src: "{{ ssl_dir }}//token.csv"
-         dest: "/etc/kubernetes/token.csv"
-    - name: "添加k8s运行用户kube"
-      user:
-         name: kube
-         shell: /sbin/nologin
-         uid: 200
-         home: /var/kube
-         state: present
-    - name: "安装kube-apiserver"
-      get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-apiserver"
-         dest: /usr/bin/
-      tags: install_kube-apiserver
-    - name: "安装kube-controller-manager"
-      get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-controller-manager"
-         dest: /usr/bin/
-      tags: install_kube-controller-manager
-    - name: "安装kube-scheduler"
-      get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-scheduler"
-         dest: /usr/bin/
-      tags: install_kube-scheduler
-    - name: "安装kube-aggregator"
-      get_url:
-         url: "{{ download_url }}/soft/k8s/{{ k8s_version }}/kube-aggregator"
-         dest: /usr/bin/
-      tags: install_kube-aggregator
-    - name: "添加执行权限"
-      file:
-         dest: "{{ item.line }}"
-         mode: 0755
-      with_items:
-         - {line: '/usr/bin/kube-apiserver'}
-         - {line: '/usr/bin/kube-controller-manager'}
-         - {line: '/usr/bin/kube-scheduler'}
-         - {line: '/usr/bin/kube-aggregator'}
-      tags: install_kube-apiserver
-    - name: "分发master证书文件"
-      copy:
-         src: "{{ item.line }}"
-         dest: "/etc/kubernetes/ssl/"
-      with_items:
-         - {line: '{{ ssl_dir }}/apiserver.key'}
-         - {line: '{{ ssl_dir }}/apiserver.pem'}
-         - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.key'}
-         - {line: '{{ ssl_dir }}/kubelet/kubelet_{{ ansible_default_ipv4.address }}.pem'}
-      tags: dis_certs
-    - name: "配置kube-apiserver systemd文件"
-      template:
-         src: "kube-apiserver.service.j2"
-         dest: "/usr/lib/systemd/system/kube-apiserver.service"
-    - name: "配置kube-controller-manager systemd文件"
-      template:
-         src: "kube-controller-manager.service.j2"
-         dest: "/usr/lib/systemd/system/kube-controller-manager.service"
-    - name: "配置kube-scheduler systemd文件"
-      template:
-         src: "kube-scheduler.service.j2"
-         dest: "/usr/lib/systemd/system/kube-scheduler.service"
-    - name: "配置apiserver"
-      template:
-         src: "apiserver.j2"
-         dest: "/etc/kubernetes/apiserver"
-    - name: "配置controller-manager"
-      template:
-         src: "controller-manager.j2"
-         dest: "/etc/kubernetes/controller-manager"
-    - name: "配置scheduler"
-      template:
-         src: "scheduler.j2"
-         dest: "/etc/kubernetes/scheduler"
-    - name: "配置config"
-      template:
-         src: "config.j2"
-         dest: "/etc/kubernetes/config"
-    - name: "获取bootstrap.kubeconfig token"
-      shell: "cat /etc/kubernetes/token.csv |awk -F ',' '{print $1}'"
-      register: kubeconfig
-    - name: "配置bootstrap.kubeconfig"
-      template:
-         src: "bootstrap.kubeconfig.j2"
-         dest: "/etc/kubernetes/bootstrap.kubeconfig"
-    - name: "配置kubelet.kubeconfig"
-      template:
-         src: "kubelet.kubeconfig.j2"
-         dest: "/etc/kubernetes/kubelet.kubeconfig"
-    - name: "添加acl"
-      acl:
-         path: "{{ item.line }}"
-         entity: kube
-         etype: user
-         permissions: r
-         state: present
-      with_items:
-         - {line: '/etc/kubernetes/bootstrap.kubeconfig'}
-         - {line: '/etc/kubernetes/kubelet.kubeconfig'}
-    - name: "启动服务"
-      systemd:
-         name: "{{ item.line }}"
-         enabled: yes
-         daemon_reload: yes
-         state: restarted
-      with_items:
-         - {line: 'kube-apiserver'}
-         - {line: 'kube-controller-manager'}
-         - {line: 'kube-scheduler'}
-      tags: restart_master
-
-
-
-
+- name: "创建kubernetes证书目录"
+  file:
+    path: "/etc/kubernetes/pki/"
+    state: directory
+- name: "创建kubectl目录"
+  file:
+    path: "~/.kube"
+    state: directory
+- name: "添加k8s运行用户kube"
+  user:
+    name: kube
+    shell: /sbin/nologin
+    uid: 200
+    home: /var/lib/kubernetes
+    state: present
+- name: "安装master节点"
+  get_url:
+    url: "{{ item.line }}"
+    dest: /usr/bin/
+  with_items:
+    - {line: "{{ kubernetes_url }}/kube-apiserver"}
+    - {line: "{{ kubernetes_url }}/kube-controller-manager"}
+    - {line: "{{ kubernetes_url }}/kube-scheduler"}
+    - {line: "{{ kubernetes_url }}/kubectl"}
+  tags: kube_master
+- name: "添加执行权限"
+  file:
+    dest: "{{ item.line }}"
+    mode: 0755
+  with_items:
+    - {line: '/usr/bin/kube-apiserver'}
+    - {line: '/usr/bin/kube-controller-manager'}
+    - {line: '/usr/bin/kube-scheduler'}
+    - {line: '/usr/bin/kubectl'}
+  tags: kube_master
+- name: "分发master证书文件"
+  copy:
+    src: "{{ item.line }}"
+    dest: "/etc/kubernetes/pki/"
+  with_items:
+    - {line: '{{ ssl_dir }}/ca.key'}
+    - {line: '{{ ssl_dir }}/ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd-ca.pem'}
+    - {line: '{{ ssl_dir }}/etcd-client.key'}
+    - {line: '{{ ssl_dir }}/etcd-client.pem'}
+    - {line: '{{ ssl_dir }}/kube-apiserver.key'}
+    - {line: '{{ ssl_dir }}/kube-apiserver.pem'}
+    - {line: '{{ ssl_dir }}/kube-apiserver-kubelet-client.key'}
+    - {line: '{{ ssl_dir }}/kube-apiserver-kubelet-client.pem'}
+    - {line: '{{ ssl_dir }}/kube-controller-manager.key'}
+    - {line: '{{ ssl_dir }}/kube-controller-manager.pem'}
+    - {line: '{{ ssl_dir }}/kube-scheduler.key'}
+    - {line: '{{ ssl_dir }}/kube-scheduler.pem'}
+    - {line: '{{ ssl_dir }}/proxy-client.key'}
+    - {line: '{{ ssl_dir }}/proxy-client.pem'}
+    - {line: '{{ ssl_dir }}/admin.key'}
+    - {line: '{{ ssl_dir }}/admin.pem'}
+    - {line: '{{ ssl_dir }}/token'}
+  tags: dis_certs
+- name: "分发kubeconfig"
+  template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "admin.kubeconfig.j2",dest: "~/.kube/config" }
+    - {src: "kube-controller-manager.kubeconfig.j2",dest: "/etc/kubernetes/kube-controller-manager.kubeconfig" }
+    - {src: "kube-scheduler.kubeconfig.j2",dest: "/etc/kubernetes/kube-scheduler.kubeconfig" }
+    - {src: "kube-apiserver.conf.j2",dest: "/etc/kubernetes/kube-apiserver.conf" }
+    - {src: "kube-controller-manager.conf.j2",dest: "/etc/kubernetes/kube-controller-manager.conf" }
+    - {src: "kube-scheduler.conf.j2",dest: "/etc/kubernetes/kube-scheduler.conf" }
+    - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
+    - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
+    - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
+    - {src: "audit-policy.yaml.j2",dest: "/etc/kubernetes/audit-policy.yaml" }
+  tags: dis_master_config
+- name: "添加acl"
+  acl:
+    path: "{{ item.line }}"
+    entity: kube
+    etype: user
+    permissions: r
+    state: present
+  with_items:
+    - {line: '/etc/kubernetes/kube-controller-manager.kubeconfig'}
+    - {line: '/etc/kubernetes/kube-scheduler.kubeconfig'}
+  tags: acl
+- name: "重启kube-apiserver"
+  systemd:
+    name: kube-apiserver
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags: restart_apiserver
+- name: "重启kube-controller-manager"
+  systemd:
+    name: kube-controller-manager
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags: restart_controller
+- name: "重启kube-scheduler"
+  systemd:
+    name: kube-scheduler
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+  tags: restart_scheduler
+- name: "添加kubectl命令自动补全"
+  lineinfile:
+    dest: "/etc/profile"
+    line: "source <(kubectl completion bash)"
+    state: present
+- name: "等待kube-apiserver启动成功"
+  wait_for:
+    host: "{{ ansible_default_ipv4.address }}"
+    port: 6443
+    delay: 5
+    sleep: 2
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "等待kube-controller-manager启动成功"
+  wait_for:
+    host: "{{ ansible_default_ipv4.address }}"
+    port: 10257
+    delay: 5
+    sleep: 2
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "等待kube-scheduler启动成功"
+  wait_for:
+    host: "{{ ansible_default_ipv4.address }}"
+    port: 10259
+    delay: 5
+    sleep: 2
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "kube-apiserver健康检查"
+  uri:
+    url: "https://{{ ansible_default_ipv4.address }}:6443/healthz"
+    return_content: yes
+    validate_certs: no
+    client_cert: "{{ ssl_dir }}/admin.pem"
+    client_key: "{{ ssl_dir }}/admin.key"
+  register: apiserver
+  failed_when: "'ok' not in apiserver.content"
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "kube-controller-manager健康检查"
+  uri:
+    url: "https://{{ ansible_default_ipv4.address }}:10257/healthz"
+    return_content: yes
+    validate_certs: no
+  register: controller
+  failed_when: "'ok' not in controller.content"
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "kube-scheduler健康检查"
+  uri:
+    url: "https://{{ ansible_default_ipv4.address }}:10259/healthz"
+    return_content: yes
+    validate_certs: no
+  register: scheduler
+  failed_when: "'ok' not in scheduler.content"
+  vars: 
+    ansible_connection: local
+  tags: healthcheck
+- name: "读取当前bootstrap-token-id"
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
+  register: token_id
+  tags: bootstrap
+- name: "读取当前bootstrap-token-secret"
+  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
+  register: token_secret
+  tags: bootstrap
+- name: "创建bootstrap-token secret"
+  shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: bootstrap
+- name: "绑定group system:bootstrappers 和 clusterrole system:node-bootstrapper"
+  shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: bootstrap
+- name: "自动批准 system:bootstrappers 组用户 TLS bootstrapping 首次申请证书的 CSR 请求"
+  shell: kubectl create clusterrolebinding auto-approve-csrs-for-group --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers 
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: bootstrap
+- name: "自动批准 system:nodes 组用户更新 kubelet 自身与 apiserver 通讯证书的 CSR 请求"
+  shell: kubectl create clusterrolebinding node-client-cert-renewal --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient --group=system:nodes
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: bootstrap
+- name: "创建自动批准相关 CSR 请求的 ClusterRole"
+  shell: kubectl create clusterrole approve-node-server-renewal-csr --verb=create --resource=certificatesigningrequests/selfnodeserver --resource-name=certificates.k8s.io
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: bootstrap
+- name: "自动批准 system:nodes 组用户更新 kubelet 10250 api 端口证书的 CSR 请求"
+  shell: kubectl create clusterrolebinding node-server-cert-renewal --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeserver --group=system:nodes
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: bootstrap
+- name: "删除bootstrap-token文件"
+  file:
+    path: "/etc/kubernetes/pki/token"
+    state: absent
+  tags: bootstrap

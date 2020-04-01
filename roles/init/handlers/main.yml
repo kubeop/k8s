@@ -1,0 +1,10 @@
+- name: restart sshd
+  systemd:
+     name: sshd
+     state: restarted
+     enabled: yes
+- name: restart chrony
+  systemd:
+     name: chronyd
+     state: restarted
+     enabled: yes

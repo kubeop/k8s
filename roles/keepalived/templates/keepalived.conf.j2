@@ -23,7 +23,7 @@ vrrp_instance VI_1 {
         auth_pass kuburnetes
     }
     unicast_peer {
-    {% for host in groups['slb'] %}
+    {% for host in groups['haproxy'] %}
       {{ host }}   
     {% endfor %}
 

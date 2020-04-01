@@ -1,18 +1,16 @@
-本工具使用ansible playbook初始化系统配置、安装kubernetes高可用集群，并可进行节点扩容、替换集群证书等。本playbook安装kubernetes集群为二进制方式部署。
+​		本工具使用ansible playbook初始化系统配置、安装kubernetes高可用集群，并可进行节点扩容、替换集群证书、版本升级等。本playbook安装kubernetes集群为二进制方式部署。
 
 
-
-## 使用方法：
 
 ### 一、下载二进制包
 
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.16.3/kubernetes-server-linux-amd64.tar.gz
+wget https://storage.googleapis.com/kubernetes-release/release/v1.16.8/kubernetes-server-linux-amd64.tar.gz
 ```
 
-- url中v1.16.3替换为需要下载的版本即可
+- url中v1.16.8替换为需要下载的版本即可。
 
-配置文件服务器
+配置文件服务器。
 
 ```
 yum -y install nginx
@@ -75,7 +73,7 @@ vip=172.16.100.200
 | pod_ip_range          | 指定k8s集群pod的网段                                         |
 | calico_ipv4pool_ipip  | 指定k8s集群使用calico的ipip模式或者bgp模式，Always为ipip模式，off为bgp模式。注意bgp模式不适用于公有云环境。当值为off的时候，切记使用引号`""`引起来。 |
 
-- 请将etcd安装在独立的服务器上，不建议跟master安装在一起
+- 请将etcd安装在独立的服务器上，不建议跟master安装在一起。数据盘尽量使用SSD盘。
 - Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复）：
   - Pod 网段
     - A类地址：10.0.0.0/8
@@ -153,11 +151,10 @@ ansible-playbook k8s.yml -i inventory -l node -t install_docker,install_node,ins
 
 #### 4.5、替换集群证书
 
-先备份并删除证书目录，然后执行以下步骤
+先备份并删除证书目录{{ssl_dir}}，然后执行以下步骤重新生成证书并分发证书。
 
 ```
-ansible-playbook k8s.yml -i inventory -t cert
-ansible-playbook k8s.yml -i inventory -t dis_certs
+ansible-playbook k8s.yml -i inventory -t cert,dis_certs
 ```
 
 然后依次重启每个节点。
@@ -185,7 +182,7 @@ ETCDCTL_API=3 etcdctl \
 ansible -i inventory master,node -l master-01 -m shell -a "rm -rf /etc/kubernetes/pki/kubelet-*"
 ```
 
-- `-l`参数更换为具体节点IP
+- `-l`参数更换为具体节点IP。
 
 逐个重启节点
 
@@ -194,13 +191,13 @@ ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_
 ```
 
 - 如calico、metrics-server等服务也使用了etcd，请记得一起更新相关证书。
--  `-l`参数更换为具体节点IP
+-  `-l`参数更换为具体节点IP。
 
 
 
 #### 4.6、升级kubernetes版本
 
-请先将`kubernetes_url`修改为新版本下载链接
+请先将`kubernetes_url`修改为新版本下载链接。
 
 ```
 ansible-playbook k8s.yml -i inventory -t kube_master,kube_node
@@ -212,5 +209,5 @@ ansible-playbook k8s.yml -i inventory -t kube_master,kube_node
 ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
 ```
 
-- `-l`参数更换为具体节点IP
+- `-l`参数更换为具体节点IP。
 
