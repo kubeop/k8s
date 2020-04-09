@@ -20,7 +20,7 @@
     path: "/var/log/kubernetes-audit.log"
     owner: kube
     group: kube
-    state: file
+    state: touch
   tags: audit-log
 - name: "安装master节点"
   get_url:
