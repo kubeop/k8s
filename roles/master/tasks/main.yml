@@ -1,11 +1,3 @@
-- name: "创建kubernetes证书目录"
-  file:
-    path: "/etc/kubernetes/pki/"
-    state: directory
-- name: "创建kubectl目录"
-  file:
-    path: "~/.kube"
-    state: directory
 - name: "添加k8s运行用户kube"
   user:
     name: kube
@@ -13,6 +5,23 @@
     uid: 200
     home: /var/lib/kubernetes
     state: present
+- name: "创建kubernetes证书目录"
+  file:
+    path: "/etc/kubernetes/pki/"
+    owner: kube
+    group: kube
+    state: directory
+- name: "创建kubectl目录"
+  file:
+    path: "~/.kube"
+    state: directory
+- name: "创建kubernetes-audit日志文件"
+  file:
+    path: "/var/log/kubernetes-audit.log"
+    owner: kube
+    group: kube
+    state: file
+  tags: audit-log
 - name: "安装master节点"
   get_url:
     url: "{{ item.line }}"

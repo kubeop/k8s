@@ -1,4 +1,4 @@
-​		本工具使用ansible playbook初始化系统配置、安装kubernetes高可用集群，并可进行节点扩容、替换集群证书、版本升级等。本playbook安装kubernetes集群为二进制方式部署。
+		本工具使用ansible playbook初始化系统配置、安装kubernetes高可用集群，并可进行节点扩容、替换集群证书、版本升级等。本playbook安装kubernetes集群为二进制方式部署。
 
 
 
@@ -95,7 +95,7 @@ vip=172.16.100.200
 
 ```
 yum -y install ansible
-pip install netaddr
+pip install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 ```
 
 
