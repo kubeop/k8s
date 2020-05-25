@@ -1,32 +1,53 @@
-		本工具使用ansible playbook初始化系统配置、安装kubernetes高可用集群，并可进行节点扩容、替换集群证书、版本升级等。本playbook安装kubernetes集群为二进制方式部署。
+使用Ansible Playbook进行生产级别高可用kubernetes集群部署，包含初始化系统配置、自动签发集群证书、安装配置etcd集群、安装配置haproxy及keepalived等，并使用bootstrap方式认证以及kubernetes组件健康检查。另外支持集群节点扩容、替换集群证书、kubernetes版本升级等。本Playbook使用二进制方式部署。
 
 
 
-### 一、下载二进制包
+## 一、准备文件服务器
+
+### 1.1、下载二进制包
 
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.16.8/kubernetes-server-linux-amd64.tar.gz
+wget https://storage.googleapis.com/kubernetes-release/release/v1.16.10/kubernetes-server-linux-amd64.tar.gz
 ```
 
-- url中v1.16.8替换为需要下载的版本即可。
+- url中v1.16.10替换为需要下载的版本即可。
 
-配置文件服务器。
+
+
+### 1.2、配置文件服务器
+
+安装nginx
 
 ```
 yum -y install nginx
+```
+
+将文件拷贝nginx目录
+
+```
 tar zxvf kubernetes-server-linux-amd64.tar.gz
 cp kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kubelet,kube-proxy} /usr/share/nginx/html/
 ```
-
+启动服务
 ```
 systemctl start nginx
 ```
 
 
 
-### 二、准备资源
+## 二、配置Playbook
 
-请按照inventory格式修改对应资源
+### 2.1、拉取Playbook代码
+
+```
+git clone https://github.com/k8sre/k8s.git
+```
+
+
+
+### 2.2、配置inventory
+
+请按照inventory模板格式修改对应资源
 
 ```
 #本组内填写etcd服务器及主机名
@@ -59,7 +80,7 @@ vip=172.16.100.200
 
 
 
-###  三、修改相关配置
+### 2.3、配置集群安装信息
 
 编辑group_vars/all.yml文件，填入自己的配置
 
@@ -74,7 +95,7 @@ vip=172.16.100.200
 | calico_ipv4pool_ipip  | 指定k8s集群使用calico的ipip模式或者bgp模式，Always为ipip模式，off为bgp模式。注意bgp模式不适用于公有云环境。当值为off的时候，切记使用引号`""`引起来。 |
 
 - 请将etcd安装在独立的服务器上，不建议跟master安装在一起。数据盘尽量使用SSD盘。
-- Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复）：
+- Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复，同时也避免与docker0网卡的网段冲突。）：
   - Pod 网段
     - A类地址：10.0.0.0/8
     - B类地址：172.16-31.0.0/12-16
@@ -86,12 +107,11 @@ vip=172.16.100.200
 
 
 
+## 三、安装步骤
 
-### 四、使用方法
+### 3.1、安装Ansible
 
-#### 4.1、安装ansible
-
-在控制端机器执行以下命令安装ansible
+在单独的Ansible机器或者master-01执行以下命令安装Ansible
 
 ```
 yum -y install ansible
@@ -100,18 +120,34 @@ pip install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 
 
 
-#### 4.2、部署集群
+### 3.2、格式化并挂载数据盘
 
-先执行格式化磁盘并挂载目录。如已经自行格式化磁盘并挂载，请跳过此步骤。
+如已经自行格式化并挂载目录完成，可以跳过此步骤。
+
+etcd数据盘
 
 ```
 ansible-playbook fdisk.yml -i inventory -l etcd -e "disk=sdb dir=/var/lib/etcd"
+```
+
+docker数据盘
+
+```
 ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=sdb dir=/var/lib/docker"
 ```
-安装k8s
+
+
+
+### 3.3、部署集群
+
 ```
 ansible-playbook k8s.yml -i inventory
 ```
+
+- 成功执行结束后，既kubernetes集群部署成功。
+- 后续部署其他基础插件可以参考[部署集群插件]([https://www.k8sre.com/#/kubernetes/2.1.binary?id=%e5%8d%81%e3%80%81%e9%83%a8%e7%bd%b2%e9%9b%86%e7%be%a4%e6%8f%92%e4%bb%b6](https://www.k8sre.com/#/kubernetes/2.1.binary?id=十、部署集群插件))。
+
+
 
 如是公有云环境，则执行：
 
@@ -123,33 +159,59 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 
 
 
-#### 4.3、扩容mater节点
+## 四、扩容节点
+
+### 4.1、扩容master节点
 
 扩容master前，请将{{ssl_dir}}目录中的kube-apiserver的证书备份并移除。
 
 扩容时，请不要在inventory文件master组中保留旧服务器信息。
 
+格式化挂载数据盘
+
 ```
 ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/docker"
+```
+
+执行节点初始化
+
+```
 ansible-playbook k8s.yml -i inventory -l master -t init
+```
+
+执行节点扩容
+
+```
 ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_docker,install_node,install_ceph --skip-tags=bootstrap,cni
 ```
 
 
 
-#### 4.4、扩容node节点
+### 4.2、扩容node节点
 
 扩容时，请不要在inventory文件node组中保留旧服务器信息。
 
+格式化挂载数据盘
+
 ```
 ansible-playbook fdisk.yml -i inventory -l node -e "disk=sdb dir=/var/lib/docker"
+```
+
+执行节点初始化
+
+```
 ansible-playbook k8s.yml -i inventory -l node -t init
+```
+
+执行节点扩容
+
+```
 ansible-playbook k8s.yml -i inventory -l node -t install_docker,install_node,install_ceph --skip-tags=create_label,cni
 ```
 
 
 
-#### 4.5、替换集群证书
+## 五、替换集群证书
 
 先备份并删除证书目录{{ssl_dir}}，然后执行以下步骤重新生成证书并分发证书。
 
@@ -195,9 +257,11 @@ ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_
 
 
 
-#### 4.6、升级kubernetes版本
+## 六、升级kubernetes版本
 
 请先将`kubernetes_url`修改为新版本下载链接。
+
+安装kubernetes组件
 
 ```
 ansible-playbook k8s.yml -i inventory -t kube_master,kube_node
