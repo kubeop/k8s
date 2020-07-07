@@ -145,7 +145,7 @@ ansible-playbook k8s.yml -i inventory
 ```
 
 - 成功执行结束后，既kubernetes集群部署成功。
-- 后续部署其他基础插件可以参考[部署集群插件]([https://www.k8sre.com/#/kubernetes/2.1.binary?id=%e5%8d%81%e3%80%81%e9%83%a8%e7%bd%b2%e9%9b%86%e7%be%a4%e6%8f%92%e4%bb%b6](https://www.k8sre.com/#/kubernetes/2.1.binary?id=十、部署集群插件))。
+- 后续部署其他基础插件可以参考[部署集群插件](https://www.k8sre.com/#/kubernetes/2.1.binary?id=%e5%8d%81%e3%80%81%e9%83%a8%e7%bd%b2%e9%9b%86%e7%be%a4%e6%8f%92%e4%bb%b6)。
 
 
 

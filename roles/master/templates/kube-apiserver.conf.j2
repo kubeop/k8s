@@ -22,9 +22,8 @@ KUBE_API_ARGS="\
     --default-not-ready-toleration-seconds=10 \
     --default-unreachable-toleration-seconds=10 \
     --delete-collection-workers=3 \
-    --audit-log-path=/var/log/kubernetes-audit.log \
     --audit-policy-file=/etc/kubernetes/audit-policy.yaml \
-    --audit-log-truncate-enabled \
+    --audit-log-path=/var/log/kubernetes-audit.log \
     --audit-log-maxage=7 \
     --audit-log-maxbackup=10 \
     --audit-log-maxsize=100 \
