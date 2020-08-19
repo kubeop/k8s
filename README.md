@@ -149,7 +149,7 @@ ansible-playbook k8s.yml -i inventory
 
 
 
-如是公有云环境，则执行：
+如是公有云环境，使用公有云的负载均衡即可，无需安装haproxy和keepalived，则执行：
 
 ```
 ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepalived
