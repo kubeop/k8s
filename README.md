@@ -145,11 +145,23 @@ ansible-playbook k8s.yml -i inventory
 ```
 
 - 成功执行结束后，既kubernetes集群部署成功。
-- 后续部署其他基础插件可以参考[部署集群插件](https://www.k8sre.com/#/kubernetes/2.1.binary?id=%e5%8d%81%e3%80%81%e9%83%a8%e7%bd%b2%e9%9b%86%e7%be%a4%e6%8f%92%e4%bb%b6)。
+- 后续部署其他基础插件可以参考[部署集群插件](http://www.k8sre.com/#/kubernetes/2.1.binary?id=%e5%8d%81%e3%80%81%e9%83%a8%e7%bd%b2%e9%9b%86%e7%be%a4%e6%8f%92%e4%bb%b6)。
 
 
 
-如是公有云环境，使用公有云的负载均衡即可，无需安装haproxy和keepalived，则执行：
+如是公有云环境，使用公有云的负载均衡即可，无需安装haproxy和keepalived。另外，因公有云负载均衡不支持同时作为客户端和服务端，所以公有云负载均衡四层监听的后端服务器无法访问SLB。故做以下改造支持公有云环境：
+
+```
+#本组内填写master服务器及主机名
+[master]
+172.16.100.204 hostname=master-01 apiserver_domain_name=172.16.100.204
+172.16.100.205 hostname=master-02 apiserver_domain_name=172.16.100.205
+172.16.100.206 hostname=master-03 apiserver_domain_name=172.16.100.206
+```
+
+- 在inventory文件中，按照以上格式添加配置，将master节点连接的apiserver地址改为本机IP。
+
+执行部署
 
 ```
 ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepalived
