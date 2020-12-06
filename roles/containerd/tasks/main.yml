@@ -33,7 +33,8 @@
 - name: "修改containerd Cgroup Driver"
   lineinfile:
     path: "/etc/containerd/config.toml"
-    insertbefore: '[plugins."io.containerd.grpc.v1.cri".cni]'
+    regexp: '[plugins."io.containerd.grpc.v1.cri".cni]'
+    insertbefore: "*regex*"
     line: "{{ item.line }}"
     state: present
   with_items:
