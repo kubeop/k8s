@@ -9,6 +9,10 @@ KUBELET_ARGS="\
     --root-dir=/var/lib/kubelet \
     --network-plugin=cni \
     --rotate-certificates \
-    --runtime-cgroups=/systemd/system.slice \
-    --kubelet-cgroups=/systemd/system.slice \
+    --runtime-cgroups=/system.slice/containerd.service \
+    --container-runtime=remote \
+    --runtime-request-timeout=15m \
+    --container-runtime-endpoint=unix:///run/containerd/containerd.sock \
+    --container-log-max-files=10 \
+    --container-log-max-size=200Mi \
     --v=2"
