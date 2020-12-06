@@ -12,7 +12,7 @@
   yum:
     update_cache: yes
     enablerepo: docker-ce-stable
-    name: 'containerd{% if containerd_version is defined and containerd_version != ""  %}-{{ containerd_version }}{% endif %}'
+    name: 'containerd.io{% if containerd_version is defined and containerd_version != ""  %}-{{ containerd_version }}{% endif %}'
     state: installed
 - name: "创建containerd配置目录"
   file:
