@@ -35,9 +35,9 @@
     - name: containerd config
       ini_file:
         path: "/etc/containerd/config.toml"
-        section: "[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]"
-        option: "[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]"
-        value: "SystemdCgroup = true"
+        section: '[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]'
+        option: '[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]'
+        value: 'SystemdCgroup = true'
         mode: 0644
 - name: "重启containerd"
   systemd:
