@@ -1,0 +1,47 @@
+- name: "添加Docker软件源"
+  yum_repository:
+    file: docker-ce
+    name: "docker-ce-stable"
+    description: "Docker CE Stable - $basearch"
+    baseurl: "https://mirrors.aliyun.com/docker-ce/linux/centos/7/$basearch/stable"
+    gpgkey: "https://mirrors.aliyun.com/docker-ce/linux/centos/gpg"
+    gpgcheck: yes
+    enabled: yes
+  tags: docker_repo
+- name: "安装containerd"
+  yum:
+    update_cache: yes
+    enablerepo: docker-ce-stable
+    name: 'containerd{% if containerd_version is defined and containerd_version != ""  %}-{{ containerd_version }}{% endif %}'
+    state: installed
+- name: "创建containerd配置目录"
+  file:
+    path: "/etc/containerd"
+    owner: root
+    group: root
+    state: directory
+- name: "生成containerd配置"
+  shell: "containerd config default > /etc/containerd/config.toml"
+- name: "修改containerd镜像pause"
+  lineinfile:
+    dest: "/etc/containerd/config.toml"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: 'sandbox_image = "k8s.gcr.io/pause:3.1"', line: 'sandbox_image = "registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.2"' }
+- name: "修改containerd Cgroup Driver"
+  block:
+    - name: containerd config
+      ini_file:
+        path: "/etc/containerd/config.toml"
+        section: "[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]"
+        option: "[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]"
+        value: "SystemdCgroup = true"
+        mode: 0644
+- name: "重启containerd"
+  systemd:
+    daemon_reload: yes
+    name: containerd
+    enabled: yes
+    state: restarted

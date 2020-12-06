@@ -50,7 +50,7 @@
   copy:
     src: "chrony.conf"
     dest: "/etc/chrony.conf"
-  notify: 
+  notify:
     - restart chrony
   tags: ntp
 - name: "关闭交换分区"
@@ -76,8 +76,8 @@
     - { regexp: "AddressFamily", line: "AddressFamily inet" }
     - { regexp: "PermitRootLogin", line: "PermitRootLogin yes" }
     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
-    - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }  
-  notify: 
+    - { regexp: "PasswordAuthentication", line: "PasswordAuthentication no" }
+  notify:
     - restart sshd
   tags: sshd
 - name: "更改系统limits"
@@ -104,7 +104,7 @@
     dest: "/etc/systemd/system.conf"
     line: "{{ item.line }}"
     state: present
-  with_items: 
+  with_items:
     - {line: 'DefaultLimitNOFILE=65535' }
     - {line: 'DefaultLimitNPROC=65535' }
   tags: limits
@@ -113,6 +113,7 @@
     name: "{{ item.line }}"
     state: present
   with_items:
+    - {line: 'overlay' }
     - {line: 'br_netfilter' }
     - {line: 'nf_conntrack_ipv4' }
     - {line: 'bridge' }

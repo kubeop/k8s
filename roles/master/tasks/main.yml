@@ -1,15 +1,8 @@
-- name: "添加k8s运行用户kube"
-  user:
-    name: kube
-    shell: /sbin/nologin
-    uid: 200
-    home: /var/lib/kubernetes
-    state: present
 - name: "创建kubernetes证书目录"
   file:
     path: "/etc/kubernetes/pki/"
-    owner: kube
-    group: kube
+    owner: root
+    group: root
     state: directory
 - name: "创建kubectl目录"
   file:
@@ -18,8 +11,8 @@
 - name: "创建kubernetes-audit日志文件"
   file:
     path: "/var/log/kubernetes-audit.log"
-    owner: kube
-    group: kube
+    owner: root
+    group: root
     state: touch
   tags: audit-log
 - name: "安装master节点"
@@ -82,17 +75,6 @@
     - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
     - {src: "audit-policy.yaml.j2",dest: "/etc/kubernetes/audit-policy.yaml" }
   tags: dis_master_config
-- name: "添加acl"
-  acl:
-    path: "{{ item.line }}"
-    entity: kube
-    etype: user
-    permissions: r
-    state: present
-  with_items:
-    - {line: '/etc/kubernetes/kube-controller-manager.kubeconfig'}
-    - {line: '/etc/kubernetes/kube-scheduler.kubeconfig'}
-  tags: acl
 - name: "重启kube-apiserver"
   systemd:
     name: kube-apiserver
@@ -125,7 +107,7 @@
     port: 6443
     delay: 5
     sleep: 2
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
 - name: "等待kube-controller-manager启动成功"
@@ -134,7 +116,7 @@
     port: 10257
     delay: 5
     sleep: 2
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
 - name: "等待kube-scheduler启动成功"
@@ -143,7 +125,7 @@
     port: 10259
     delay: 5
     sleep: 2
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
 - name: "kube-apiserver健康检查"
@@ -155,7 +137,7 @@
     client_key: "{{ ssl_dir }}/admin.key"
   register: apiserver
   failed_when: "'ok' not in apiserver.content"
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
 - name: "kube-controller-manager健康检查"
@@ -165,7 +147,7 @@
     validate_certs: no
   register: controller
   failed_when: "'ok' not in controller.content"
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
 - name: "kube-scheduler健康检查"
@@ -175,7 +157,7 @@
     validate_certs: no
   register: scheduler
   failed_when: "'ok' not in scheduler.content"
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
 - name: "读取当前bootstrap-token-id"
@@ -197,7 +179,7 @@
   run_once: true
   tags: bootstrap
 - name: "自动批准 system:bootstrappers 组用户 TLS bootstrapping 首次申请证书的 CSR 请求"
-  shell: kubectl create clusterrolebinding auto-approve-csrs-for-group --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers 
+  shell: kubectl create clusterrolebinding auto-approve-csrs-for-group --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
