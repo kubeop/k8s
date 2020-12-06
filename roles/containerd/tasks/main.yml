@@ -29,16 +29,15 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-    - { regexp: 'sandbox_image = "k8s.gcr.io/pause:3.1"', line: 'sandbox_image = "registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.2"' }
+    - { regexp: 'sandbox_image = "k8s.gcr.io/pause:3.1"', line: '    sandbox_image = "registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.2"' }
 - name: "修改containerd Cgroup Driver"
   lineinfile:
     path: "/etc/containerd/config.toml"
-    regexp: '[plugins."io.containerd.grpc.v1.cri".cni]'
-    insertbefore: '[plugins."io.containerd.grpc.v1.cri".cni]'
+    insertbefore: '.plugins."io.containerd.grpc.v1.cri".cni.'
     line: "{{ item.line }}"
     state: present
   with_items:
-    - {line: '[plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]' }
+    - {line: '          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]' }
     - {line: '            SystemdCgroup = true' }
 - name: "重启containerd"
   systemd:
