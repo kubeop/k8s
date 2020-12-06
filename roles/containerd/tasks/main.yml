@@ -34,7 +34,7 @@
   lineinfile:
     path: "/etc/containerd/config.toml"
     regexp: '[plugins."io.containerd.grpc.v1.cri".cni]'
-    insertbefore: "*regex*"
+    insertbefore: '[plugins."io.containerd.grpc.v1.cri".cni]'
     line: "{{ item.line }}"
     state: present
   with_items:
