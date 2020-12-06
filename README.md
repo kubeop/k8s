@@ -1,4 +1,4 @@
-使用Ansible Playbook进行生产级别高可用kubernetes集群部署，包含初始化系统配置、自动签发集群证书、安装配置etcd集群、安装配置haproxy及keepalived等，并使用bootstrap方式认证以及kubernetes组件健康检查。另外支持集群节点扩容、替换集群证书、kubernetes版本升级等。本Playbook使用二进制方式部署。
+使用Ansible Playbook进行生产级别高可用kubernetes集群部署，使用containerd作为容器运行时，包含初始化系统配置、自动签发集群证书、安装配置etcd集群、安装配置haproxy及keepalived等，并使用bootstrap方式认证以及kubernetes组件健康检查。另外支持集群节点扩容、替换集群证书、kubernetes版本升级等。本Playbook使用二进制方式部署。
 
 
 
@@ -88,7 +88,7 @@ vip=172.16.100.200
 | --------------------- | ------------------------------------------------------------ |
 | ssl_dir               | 签发ssl证书保存路径，ansible控制端机器上的路径。默认签发10年有效期的证书 |
 | kubernetes_url        | kubernetes 二进制文件下载链接，请修改为自己的下载服务器地址  |
-| docker_version        | 可通过查看版本yum list docker-ce --showduplicates\|sort -rn  |
+| containerd_version    | 可通过查看版本yum list containerd.io --showduplicates\|sort -rn |
 | apiserver_domain_name | kube-apiserver的访问域名，需提前配置解析。不使用域名时，可以指定为负载均衡的IP（本Playbook需指定为haproxy的VIP） |
 | service_ip_range      | 指定k8s集群service的网段                                     |
 | pod_ip_range          | 指定k8s集群pod的网段                                         |
@@ -130,10 +130,10 @@ etcd数据盘
 ansible-playbook fdisk.yml -i inventory -l etcd -e "disk=sdb dir=/var/lib/etcd"
 ```
 
-docker数据盘
+containerd数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=sdb dir=/var/lib/docker"
+ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=sdb dir=/var/lib/containerd"
 ```
 
 
@@ -182,7 +182,7 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/docker"
+ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/containerd"
 ```
 
 执行节点初始化
@@ -194,7 +194,7 @@ ansible-playbook k8s.yml -i inventory -l master -t init
 执行节点扩容
 
 ```
-ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_docker,install_node,install_ceph --skip-tags=bootstrap,cni
+ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_containerd,install_node,install_ceph --skip-tags=bootstrap,cni
 ```
 
 
@@ -206,7 +206,7 @@ ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_d
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l node -e "disk=sdb dir=/var/lib/docker"
+ansible-playbook fdisk.yml -i inventory -l node -e "disk=sdb dir=/var/lib/containerd"
 ```
 
 执行节点初始化
@@ -218,7 +218,7 @@ ansible-playbook k8s.yml -i inventory -l node -t init
 执行节点扩容
 
 ```
-ansible-playbook k8s.yml -i inventory -l node -t install_docker,install_node,install_ceph --skip-tags=create_label,cni
+ansible-playbook k8s.yml -i inventory -l node -t install_containerd,install_node,install_ceph --skip-tags=create_label,cni
 ```
 
 

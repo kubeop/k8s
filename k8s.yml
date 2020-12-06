@@ -29,5 +29,5 @@
 - name: "配置node"
   hosts: master node
   roles:
-    - { role: 'docker', tags: "install_docker", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
+    - { role: 'containerd', tags: "install_containerd", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
     - { role: 'node', tags: "install_node", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
