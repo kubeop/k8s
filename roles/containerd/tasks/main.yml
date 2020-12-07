@@ -29,7 +29,8 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-    - { regexp: 'sandbox_image = "k8s.gcr.io/pause:3.1"', line: '    sandbox_image = "registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.2"' }
+    - { regexp: 'sandbox_image = "k8s.gcr.io/pause:3.1"', line: '    sandbox_image = "registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.3"' }
+    - { regexp: 'https://registry-1.docker.io', line: '          endpoint = ["https://hub-mirror.c.163.com"]' }
 - name: "修改containerd Cgroup Driver"
   lineinfile:
     path: "/etc/containerd/config.toml"

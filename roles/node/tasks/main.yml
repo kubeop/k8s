@@ -86,9 +86,12 @@
     port: 10250
     delay: 5
     sleep: 2
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
+- name: "等待csr自动签发"
+  wait_for:
+    timeout: 30
 - name: "获取Pending状态的csr"
   shell: kubectl get csr| grep Pending | awk '{print $1}'|tr '\n' ' '
   delegate_to: "{{ groups['master'][0] }}"
@@ -109,7 +112,7 @@
     client_key: "{{ ssl_dir }}/admin.key"
   register: kubelet
   failed_when: "'ok' not in kubelet.content"
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
 - name: "重启kube-proxy"
@@ -125,7 +128,7 @@
     port: 10256
     delay: 5
     sleep: 2
-  vars: 
+  vars:
     ansible_connection: local
   tags: healthcheck
 - name: "kube-proxy健康检查"
