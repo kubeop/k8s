@@ -3,7 +3,6 @@ containerd_root: "/var/lib/containerd"
 containerd_state: "/run/containerd"
 containerd_config:
   grpc:
-    address: "/run/containerd/containerd.sock"
     max_recv_message_size: 16777216
     max_send_message_size: 16777216
   debug:

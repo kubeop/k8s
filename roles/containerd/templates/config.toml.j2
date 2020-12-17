@@ -1,6 +1,6 @@
 version = 2
 root = "{{ containerd_root | default("/var/lib/containerd") }}"
-state = "{{ containerd_state | default("/run/containerd") }}"
+state = "/run/containerd"
 plugin_dir = ""
 # Kubernetes doesn't use containerd restart manager.
 disabled_plugins = ["restart"]
@@ -9,6 +9,7 @@ oom_score = 0
 
 {% if 'grpc' in containerd_config %}
 [grpc]
+  address = "/run/containerd/containerd.sock"
   tcp_address = ""
   tcp_tls_cert = ""
   tcp_tls_key = ""
