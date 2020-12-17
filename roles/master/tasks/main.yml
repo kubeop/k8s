@@ -169,7 +169,7 @@
   register: token_secret
   tags: bootstrap
 - name: "检查是否存在bootstrap-token"
-  shell: kubectl -n kube-system secret bootstrap-token-{{ token_id.stdout }}
+  shell: kubectl -n kube-system get secret bootstrap-token-{{ token_id.stdout }}
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: bootstrap_token_ready

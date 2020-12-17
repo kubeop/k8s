@@ -155,7 +155,6 @@
   with_items:
     - {line: 'vim'}
     - {line: 'mtr'}
-    - {line: 'nscd'}
     - {line: 'curl'}
     - {line: 'wget'}
     - {line: 'lsof'}
@@ -168,7 +167,3 @@
     - {line: 'nfs-utils'}
     - {line: 'yum-utils'}
   tags: install_app
-- name: "启用dns缓存"
-  systemd:
-    name: nscd
-    state: started
