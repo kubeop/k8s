@@ -1,6 +1,6 @@
 [member]
 ETCD_NAME={{ hostname | split_hostname }}
-ETCD_DATA_DIR="/var/lib/etcd"
+ETCD_DATA_DIR="{{ etcd_data_dir | default("/var/lib/etcd") }}"
 ETCD_LISTEN_PEER_URLS="https://{{ ansible_default_ipv4.address }}:2380"
 ETCD_LISTEN_CLIENT_URLS="https://{{ ansible_default_ipv4.address }}:2379"
 [cluster]

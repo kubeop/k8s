@@ -15,11 +15,12 @@
     - {line: '{{ ssl_dir }}/etcd-peer.pem'}
     - {line: '{{ ssl_dir }}/etcd-peer.key'}
   tags: dis_certs
-- name: "修改etcd数据目录权限"
+- name: "创建etcd数据目录"
   file:
-    path: "/var/lib/etcd"
+    path: "{{ etcd_data_dir }}"
     owner: etcd
     group: etcd
+    mode: 0755
     state: directory
 - name: "生成etcd配置文件"
   template:

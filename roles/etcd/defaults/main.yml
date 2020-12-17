@@ -1,0 +1,2 @@
+---
+etcd_data_dir: "/var/lib/etcd"

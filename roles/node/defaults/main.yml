@@ -1,0 +1,2 @@
+---
+kubelet_dir: "/var/lib/kubelet"

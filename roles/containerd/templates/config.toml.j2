@@ -1,0 +1,134 @@
+version = 2
+root = "{{ containerd_root | default("/var/lib/containerd") }}"
+state = "{{ containerd_state | default("/run/containerd") }}"
+plugin_dir = ""
+# Kubernetes doesn't use containerd restart manager.
+disabled_plugins = ["restart"]
+required_plugins = []
+oom_score = 0
+
+{% if 'grpc' in containerd_config %}
+[grpc]
+  tcp_address = ""
+  tcp_tls_cert = ""
+  tcp_tls_key = ""
+  uid = 0
+  gid = 0
+{% for param, value in containerd_config.grpc.items() %}
+  {{ param }} = {{ value }}
+{% endfor %}
+{% endif %}
+
+[ttrpc]
+  address = ""
+  uid = 0
+  gid = 0
+
+[debug]
+  address = ""
+  uid = 0
+  gid = 0
+  level = "{{ containerd_config.debug.level | default("") }}"
+
+{% if 'metrics' in containerd_config %}
+[metrics]
+  address = "{{ containerd_config.metrics.address | default('') }}"
+  grpc_histogram = {{ containerd_config.metrics.grpc_histogram | default(false) | lower }}
+{% endif %}
+
+[cgroup]
+  path = ""
+
+[timeouts]
+  "io.containerd.timeout.shim.cleanup" = "5s"
+  "io.containerd.timeout.shim.load" = "5s"
+  "io.containerd.timeout.shim.shutdown" = "3s"
+  "io.containerd.timeout.task.state" = "2s"
+
+[plugins]
+  [plugins."io.containerd.gc.v1.scheduler"]
+    pause_threshold = 0.02
+    deletion_threshold = 0
+    mutation_threshold = 100
+    schedule_delay = "0s"
+    startup_delay = "100ms"
+  [plugins."io.containerd.grpc.v1.cri"]
+    disable_tcp_service = true
+    stream_server_address = "127.0.0.1"
+    stream_server_port = "0"
+    stream_idle_timeout = "4h0m0s"
+    enable_selinux = false
+    sandbox_image = {{ containerd_config.cri.sandbox_image }}
+    stats_collect_period = 10
+    systemd_cgroup = false
+    enable_tls_streaming = false
+    max_container_log_line_size = {{ containerd_config.cri.max_container_log_line_size }}
+    disable_cgroup = false
+    disable_apparmor = false
+    restrict_oom_score_adj = false
+    max_concurrent_downloads = 3
+    disable_proc_mount = false
+    [plugins."io.containerd.grpc.v1.cri".containerd]
+      snapshotter = "{{ containerd_config.containerd.snapshotter | default("overlayfs") }}"
+      default_runtime_name = "runc"
+      no_pivot = false
+      [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
+        runtime_type = ""
+        runtime_engine = ""
+        runtime_root = ""
+        privileged_without_host_devices = false
+      [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
+        runtime_type = ""
+        runtime_engine = ""
+        runtime_root = ""
+        privileged_without_host_devices = false
+      [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
+          runtime_type = "io.containerd.runc.v1"
+          runtime_engine = ""
+          runtime_root = ""
+          privileged_without_host_devices = false
+          {% if 'options' in containerd_config %}
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+          {% for param, value in containerd_config.options.items() %}
+            {{ param }} = {{ value }}
+          {% endfor %}
+          {% endif %}
+    [plugins."io.containerd.grpc.v1.cri".cni]
+      bin_dir = "/opt/cni/bin"
+      conf_dir = "/etc/cni/net.d"
+      max_conf_num = 1
+      conf_template = ""
+    {% if 'registries' in containerd_config %}
+    [plugins."io.containerd.grpc.v1.cri".registry]
+      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
+        {% for registry, addr in containerd_config.registries.items() %}
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ registry }}"]
+          endpoint = ["{{ ([ addr ] | flatten ) | join('","') }}"]
+        {% endfor %}
+    {% endif %}
+    [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
+      tls_cert_file = ""
+      tls_key_file = ""
+  [plugins."io.containerd.internal.v1.opt"]
+    path = "/opt/containerd"
+  [plugins."io.containerd.internal.v1.restart"]
+    interval = "10s"
+  [plugins."io.containerd.metadata.v1.bolt"]
+    content_sharing_policy = "shared"
+  [plugins."io.containerd.monitor.v1.cgroups"]
+    no_prometheus = false
+  [plugins."io.containerd.runtime.v1.linux"]
+    shim = "containerd-shim"
+    runtime = "runc"
+    runtime_root = ""
+    no_shim = false
+    shim_debug = false
+  [plugins."io.containerd.runtime.v2.task"]
+    platforms = ["linux/amd64"]
+  [plugins."io.containerd.service.v1.diff-service"]
+    default = ["walking"]
+  [plugins."io.containerd.snapshotter.v1.devmapper"]
+    root_path = ""
+    pool_name = ""
+    base_image_size = ""

@@ -16,33 +16,20 @@
     state: installed
 - name: "创建containerd配置目录"
   file:
-    path: "/etc/containerd"
+    path: "{{ item.path }}"
     owner: root
     group: root
+    mode: 0755
     state: directory
-- name: "生成containerd配置"
-  shell: "containerd config default > /etc/containerd/config.toml"
-- name: "修改containerd镜像pause"
-  lineinfile:
+  with_items:
+    - {path: "/etc/containerd"}
+    - {path: "{{ containerd_root }}"}
+- name: "生成containerd配置文件"
+  template:
+    src: "config.toml.j2"
     dest: "/etc/containerd/config.toml"
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - { regexp: 'sandbox_image = "k8s.gcr.io/pause:3.1"', line: '    sandbox_image = "registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.3"' }
-    - { regexp: 'https://registry-1.docker.io', line: '          endpoint = ["https://dockerhub.mirrors.nwafu.edu.cn"]' }
-- name: "修改containerd Cgroup Driver"
-  lineinfile:
-    path: "/etc/containerd/config.toml"
-    insertbefore: '.plugins."io.containerd.grpc.v1.cri".cni.'
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - {line: '          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]' }
-    - {line: '            SystemdCgroup = true' }
-- name: "重启containerd"
-  systemd:
-    daemon_reload: yes
-    name: containerd
-    enabled: yes
-    state: restarted
+    owner: root
+    group: root
+    mode: 0644
+  notify:
+    - restart containerd

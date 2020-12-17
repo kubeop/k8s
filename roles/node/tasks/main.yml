@@ -18,7 +18,7 @@
   with_items:
     - {line: '/etc/kubernetes/pki'}
     - {line: '/etc/kubernetes/manifests'}
-    - {line: '/var/lib/kubelet'}
+    - {line: "{{ kubelet_dir }}"}
     - {line: "/usr/lib/systemd/system/kubelet.service.d/"}
   tags: dir
 - name: "安装node节点"
@@ -154,6 +154,13 @@
   run_once: true
   with_items:
     - "{{ groups['master'] }}"
+  tags: create_label
+- name: "为node节点打标签"
+  shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/node="
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  with_items:
+    - "{{ groups['node'] }}"
   tags: create_label
 - name: "下载calico部署文件"
   get_url:
