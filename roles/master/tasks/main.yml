@@ -170,6 +170,7 @@
   tags: bootstrap
 - name: "检查是否存在bootstrap-token"
   shell: kubectl -n kube-system get secret bootstrap-token-{{ token_id.stdout }}
+  ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: bootstrap_token_ready
@@ -182,6 +183,7 @@
   tags: bootstrap
 - name: "检查system:bootstrappers和system:node-bootstrapper是否绑定"
   shell: kubectl get clusterrolebinding kubelet-bootstrap
+  ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: kubelet_bootstrap_ready
@@ -194,6 +196,7 @@
   tags: bootstrap
 - name: "检查auto-approve-csrs-for-group是否存在"
   shell: kubectl get clusterrolebinding auto-approve-csrs-for-group
+  ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: auto_approve_csrs_for_group_ready
@@ -206,6 +209,7 @@
   tags: bootstrap
 - name: "检查node-client-cert-renewal是否存在"
   shell: kubectl get clusterrolebinding node-client-cert-renewal
+  ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: node_client_cert_renewal_ready
@@ -218,6 +222,7 @@
   tags: bootstrap
 - name: "检查approve-node-server-renewal-csr是否存在"
   shell: kubectl get clusterrole approve-node-server-renewal-csr
+  ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: approve_node_server_renewal_csr_ready
@@ -230,6 +235,7 @@
   tags: bootstrap
 - name: "检查node-server-cert-renewal是否存在"
   shell: kubectl get clusterrolebinding node-server-cert-renewal
+  ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: node_server_cert_renewal_ready
