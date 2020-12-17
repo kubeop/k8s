@@ -55,6 +55,13 @@
   tags: ntp
 - name: "关闭交换分区"
   shell: swapoff -a
+  tags: swap
+- name: "从/etc/fstab移除swapfile"
+  mount:
+    name: "swap"
+    fstype: sqap
+    state: absent
+  tags: swap
 - name: "关闭selinux"
   selinux:
     state: disabled

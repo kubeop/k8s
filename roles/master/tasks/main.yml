@@ -39,6 +39,7 @@
   copy:
     src: "{{ item.line }}"
     dest: "/etc/kubernetes/pki/"
+    mode: 0640
   with_items:
     - {line: '{{ ssl_dir }}/ca.key'}
     - {line: '{{ ssl_dir }}/ca.pem'}
