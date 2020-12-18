@@ -1,6 +1,6 @@
 ---
 - name: Get crictl completion
-  command: "{{ bin_dir }}/crictl completion"
+  command: "/usr/bin/crictl completion"
   changed_when: False
   register: cri_completion
   check_mode: false
