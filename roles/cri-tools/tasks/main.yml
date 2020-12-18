@@ -1,0 +1,16 @@
+- name: "安装cri-tools"
+  yum:
+    name: "{{ cri_tools_package }}"
+    state: installed
+  notify:
+    - Get crictl completion
+    - Install crictl completion
+- name: "生成cri-tools配置文件"
+  template:
+    src: "crictl.yaml.j2"
+    dest: "/etc/crictl.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags: cri_tools_config
+

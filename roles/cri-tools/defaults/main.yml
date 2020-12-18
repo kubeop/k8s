@@ -1,0 +1,3 @@
+---
+cri_socket: "/run/containerd/containerd.sock"
+cri_tools_package: "https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/Packages/14bfe6e75a9efc8eca3f638eb22c7e2ce759c67f95b43b16fae4ebabde1549f3-cri-tools-1.13.0-0.x86_64.rpm"
