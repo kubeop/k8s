@@ -10,25 +10,30 @@
   roles:
     - { role: 'cert', tags: "cert" }
 
-- name: "配置etcd"
-  hosts: etcd
-  roles:
-    - { role: 'etcd', tags: "install_etcd", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"}
-
-- name: "配置haproxy"
+- name: "部署haproxy"
   hosts: haproxy
   roles:
     - { role: 'haproxy', tags: "install_haproxy", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"}
     - { role: 'keepalived', tags: "install_keepalived", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
 
-- name: "配置master"
+- name: "部署etcd"
+  hosts: etcd
+  roles:
+    - { role: 'etcd', tags: "install_etcd", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'"}
+
+- name: "部署master"
   hosts: master
   roles:
     - { role: 'master', tags: "install_master", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
 
-- name: "配置node"
+- name: "部署node"
   hosts: master node
   roles:
     - { role: 'containerd', tags: "install_containerd", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
     - { role: 'cri-tools', tags: "install_critools", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
     - { role: 'node', tags: "install_node", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }
+
+- name: "部署addons"
+  hosts: "{{groups['master'][0]}}"
+  roles:
+    - { role: 'addons', tags: "install_addons", when: "ansible_os_family == 'RedHat' and ansible_distribution_major_version == '7'" }

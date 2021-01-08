@@ -1,18 +1,13 @@
 KUBELET_ARGS="\
     --hostname-override={{ ansible_default_ipv4.address }} \
-    --config=/etc/kubernetes/kubelet.conf \
-    --cgroup-driver=systemd \
-    --pod-infra-container-image=registry.cn-hangzhou.aliyuncs.com/google_containers/pause:3.3 \
     --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
     --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
-    --cert-dir=/etc/kubernetes/pki \
-    --root-dir=/var/lib/kubelet \
-    --network-plugin=cni \
-    --rotate-certificates \
+    --config=/etc/kubernetes/kubelet.conf \
     --runtime-cgroups=/system.slice/containerd.service \
     --container-runtime=remote \
-    --runtime-request-timeout=15m \
     --container-runtime-endpoint=unix:///run/containerd/containerd.sock \
-    --container-log-max-files=10 \
-    --container-log-max-size=200Mi \
+    --image-service-endpoint=unix:///run/containerd/containerd.sock \
+    --cert-dir=/etc/kubernetes/pki \
+    --root-dir={{ kubelet_dir | default("/var/lib/kubelet") }} \
+    --network-plugin=cni \
     --v=2"

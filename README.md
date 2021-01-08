@@ -9,10 +9,10 @@
 ### 1.1、下载二进制包
 
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.18.10/kubernetes-server-linux-amd64.tar.gz
+wget https://storage.googleapis.com/kubernetes-release/release/v1.18.14/kubernetes-server-linux-amd64.tar.gz
 ```
 
-- url中v1.18.10替换为需要下载的版本即可。
+- url中v1.18.14替换为需要下载的版本即可。
 
 
 
@@ -89,12 +89,12 @@ vip=172.16.100.200
 | 配置项                | 说明                                                         |
 | --------------------- | ------------------------------------------------------------ |
 | ssl_dir               | 签发ssl证书保存路径，ansible控制端机器上的路径。默认签发10年有效期的证书 |
-| kubernetes_url        | kubernetes 二进制文件下载链接，请修改为自己的下载服务器地址  |
+| etcd_version          | etcd-server版本                                              |
 | containerd_version    | 可通过查看版本yum list containerd.io --showduplicates\|sort -rn |
+| kubernetes_url        | kubernetes 二进制文件下载链接，请修改为自己的下载服务器地址  |
 | apiserver_domain_name | kube-apiserver的访问域名，需提前配置解析。不使用域名时，可以指定为负载均衡的IP（本Playbook需指定为haproxy的VIP） |
-| service_ip_range      | 指定k8s集群service的网段                                     |
 | pod_ip_range          | 指定k8s集群pod的网段                                         |
-| calico_ipv4pool_ipip  | 指定k8s集群使用calico的ipip模式或者bgp模式，Always为ipip模式，off为bgp模式。注意bgp模式不适用于公有云环境。当值为off的时候，切记使用引号`""`引起来。 |
+| service_ip_range      | 指定k8s集群service的网段                                     |
 
 - 请将etcd安装在独立的服务器上，不建议跟master安装在一起。数据盘尽量使用SSD盘。
 - Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复，同时也避免与docker0网卡的网段冲突。）：
@@ -147,7 +147,7 @@ ansible-playbook k8s.yml -i inventory
 ```
 
 - 成功执行结束后，既kubernetes集群部署成功。
-- 后续部署其他基础插件可以参考[部署集群插件](http://www.k8sre.com/#/kubernetes/2.1.binary?id=%e5%8d%81%e3%80%81%e9%83%a8%e7%bd%b2%e9%9b%86%e7%be%a4%e6%8f%92%e4%bb%b6)。
+- 后续部署其他基础插件可以参考[部署集群插件](https://www.k8sre.com/#/kubernetes/2.3.addons)。
 
 
 
@@ -196,7 +196,7 @@ ansible-playbook k8s.yml -i inventory -l master -t init
 执行节点扩容
 
 ```
-ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_containerd,install_node,install_ceph --skip-tags=bootstrap,cni
+ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_containerd,install_node --skip-tags=bootstrap
 ```
 
 
@@ -220,7 +220,7 @@ ansible-playbook k8s.yml -i inventory -l node -t init
 执行节点扩容
 
 ```
-ansible-playbook k8s.yml -i inventory -l node -t install_containerd,install_node,install_ceph --skip-tags=create_label,cni
+ansible-playbook k8s.yml -i inventory -l node -t install_containerd,install_node,install_ceph --skip-tags=create_label
 ```
 
 
@@ -244,7 +244,7 @@ ansible -i inventory etcd -m systemd -a "name=etcd state=restarted"
 验证etcd
 
 ```
-ETCDCTL_API=3 etcdctl \
+etcdctl \
   --endpoints=https://172.16.100.201:2379,https://172.16.100.202:2379,https://172.16.100.203:2379 \
   --cacert=/etc/kubernetes/pki/etcd-ca.pem \
   --cert=/etc/kubernetes/pki/etcd-client.pem \
@@ -263,7 +263,7 @@ ansible -i inventory master,node -l master-01 -m shell -a "rm -rf /etc/kubernete
 逐个重启节点
 
 ```
-ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck,approve_node
+ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
 ```
 
 - 如calico、metrics-server等服务也使用了etcd，请记得一起更新相关证书。

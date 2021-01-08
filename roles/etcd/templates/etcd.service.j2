@@ -6,26 +6,27 @@ Wants=network-online.target
 
 [Service]
 Type=notify
-WorkingDirectory={{ etcd_data_dir | default("/var/lib/etcd") }}
-EnvironmentFile=-/etc/etcd/etcd.conf
-User=etcd
+User=root
 
-ExecStart=/bin/bash -c "GOMAXPROCS=$(nproc) /usr/bin/etcd \
-    --name=\"${ETCD_NAME}\" \
-    --cert-file=\"${ETCD_CERT_FILE}\" \
-    --key-file=\"${ETCD_KEY_FILE}\" \
-    --peer-cert-file=\"${ETCD_PEER_CERT_FILE}\" \
-    --peer-key-file=\"${ETCD_PEER_KEY_FILE}\" \
-    --trusted-ca-file=\"${ETCD_TRUSTED_CA_FILE}\" \
-    --peer-trusted-ca-file=\"${ETCD_PEER_TRUSTED_CA_FILE}\" \
-    --initial-advertise-peer-urls=\"${ETCD_INITIAL_ADVERTISE_PEER_URLS}\" \
-    --listen-peer-urls=\"${ETCD_LISTEN_PEER_URLS}\" \
-    --listen-client-urls=\"${ETCD_LISTEN_CLIENT_URLS}\" \
-    --advertise-client-urls=\"${ETCD_ADVERTISE_CLIENT_URLS}\" \
-    --initial-cluster-token=\"${ETCD_INITIAL_CLUSTER_TOKEN}\" \
-    --initial-cluster=\"${ETCD_INITIAL_CLUSTER}\" \
-    --initial-cluster-state=\"${ETCD_INITIAL_CLUSTER_STATE}\" \
-    --data-dir=\"${ETCD_DATA_DIR}\""
+ExecStart=/usr/local/bin/etcd \
+         --name={{ hostname | split_hostname }} \
+         --data-dir={{ etcd_data_dir | default("/var/lib/etcd") }} \
+         --advertise-client-urls=https://{{ ansible_default_ipv4.address }}:2379 \
+         --initial-advertise-peer-urls=https://{{ ansible_default_ipv4.address }}:2380 \
+         --listen-peer-urls=https://{{ ansible_default_ipv4.address }}:2380 \
+         --listen-client-urls=https://{{ ansible_default_ipv4.address }}:2379 \
+         --listen-metrics-urls=http://{{ ansible_default_ipv4.address }}:2381 \
+         --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname | split_hostname }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
+         --client-cert-auth=true \
+         --peer-client-cert-auth=true \
+         --cert-file=/etc/kubernetes/pki/etcd-server.pem \
+         --key-file=/etc/kubernetes/pki/etcd-server.key \
+         --peer-cert-file=/etc/kubernetes/pki/etcd-peer.pem \
+         --peer-key-file=/etc/kubernetes/pki/etcd-peer.key \
+         --peer-trusted-ca-file=/etc/kubernetes/pki/etcd-ca.pem \
+         --trusted-ca-file=/etc/kubernetes/pki/etcd-ca.pem \
+         --snapshot-count=10000 \
+         --logger=zap
 
 Restart=on-failure
 LimitNOFILE=65536

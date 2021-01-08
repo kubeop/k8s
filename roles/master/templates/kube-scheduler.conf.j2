@@ -1,7 +1,7 @@
 KUBE_SCHEDULER_ARGS="\
-    --kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig \
-    --authorization-kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig \
-    --authentication-kubeconfig=/etc/kubernetes/kube-scheduler.kubeconfig \
+    --bind-address=0.0.0.0 \
+    --kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
+    --authorization-kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
+    --authentication-kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
     --leader-elect=true \
-    --logtostderr=true \
     --v=2"

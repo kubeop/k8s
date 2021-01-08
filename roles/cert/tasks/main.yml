@@ -1,30 +1,34 @@
-- name: "创建ssl证书目录"
+- name: "创建证书目录"
   file:
-    path: "{{ ssl_dir }}"
+    path: "{{ ssl_dir }}/{{ item }}"
     state: directory
+  with_items:
+    - "{{ groups['etcd'] }}"
+    - "{{ groups['master'] }}"
+    - "{{ groups['node'] }}"
 
+#etcd-ca
 - stat:
     path: "{{ ssl_dir }}/etcd-ca.key"
   register: etcd_ca_key
-- name: "Generate Etcd CA private key"
+
+- name: "Generate etcd_ca private key"
   when: not etcd_ca_key.stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/etcd-ca.key"
     type: RSA
-    size: 4096
+    size: "{{ cert_size }}"
+
 - stat:
     path: "{{ ssl_dir }}/etcd-ca.csr"
   register: etcd_ca_csr
-- name: "Generate Etcd CA request"
+
+- name: "Generate etcd_ca request"
   when: not etcd_ca_csr.stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/etcd-ca.csr"
     privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
     use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: k8sre
     common_name: etcd-ca
     basic_constraints_critical: yes
     basic_constraints:
@@ -32,510 +36,584 @@
     key_usage_critical: yes
     key_usage:
       - digitalSignature
-      - keyCertSign
       - keyEncipherment
+      - keyCertSign
+
 - stat:
     path: "{{ ssl_dir }}/etcd-ca.pem"
   register: etcd_ca_pem
-- name: "Generate Etcd CA certificate"
+
+- name: "Generate etcd_ca certificate"
   when: not etcd_ca_pem.stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/etcd-ca.pem"
     provider: selfsigned
+    selfsigned_create_subject_key_identifier: never_create
     privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
     csr_path: "{{ ssl_dir }}/etcd-ca.csr"
 
-- stat:
-    path: "{{ ssl_dir }}/etcd-server.key"
-  register: etcd_server_key
-- name: "Generate Etcd Server private key"
-  when: not etcd_server_key.stat.exists
+# etcd-server
+- name: "Generate etcd-server private key"
   openssl_privatekey:
-    path: "{{ ssl_dir }}/etcd-server.key"
+    path: "{{ ssl_dir }}/{{ item }}/etcd-server.key"
     type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/etcd-server.csr"
-  register: etcd_server_csr 
-- name: "Generate Etcd Server request"
-  when: not etcd_server_csr.stat.exists
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-server request"
   openssl_csr:
-    path: "{{ ssl_dir }}/etcd-server.csr"
-    privatekey_path: "{{ ssl_dir }}/etcd-server.key"
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: k8sre
-    common_name: etcd-server
+    path: "{{ ssl_dir }}/{{ item }}/etcd-server.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/etcd-server.key"
+    common_name: "{{ item }}"
     key_usage_critical: yes
     key_usage:
       - digitalSignature
       - keyEncipherment
     extended_key_usage:
-      - clientAuth
       - serverAuth
-    subject_alt_name: "{{ item | map('regex_replace', '^', 'IP:') | list }}"
-  with_list:
+      - clientAuth
+    subject_alt_name:
+      - DNS:localhost
+      - DNS:{{ item }}
+      - IP:127.0.0.1
+      - IP:{{ item }}
+  with_items:
     - "{{ groups['etcd'] }}"
-- stat:
-    path: "{{ ssl_dir }}/etcd-server.pem"
-  register: etcd_server_pem 
-- name: "Generate Etcd Server certificate"
-  when: not etcd_server_pem.stat.exists
+
+- name: "Generate etcd-server certificate"
   openssl_certificate:
-    path: "{{ ssl_dir }}/etcd-server.pem"
+    path: "{{ ssl_dir }}/{{ item }}/etcd-server.pem"
     provider: ownca
-    privatekey_path: "{{ ssl_dir }}/etcd-server.key"
-    csr_path: "{{ ssl_dir }}/etcd-server.csr"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/etcd-server.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/etcd-server.csr"
     ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
 
-- stat:
-    path: "{{ ssl_dir }}/etcd-client.key"
-  register: etcd_client_key 
-- name: "Generate Etcd Client private key"
-  when: not etcd_client_key.stat.exists
+# etcd-peer
+- name: "Generate etcd-peer private key"
   openssl_privatekey:
-    path: "{{ ssl_dir }}/etcd-client.key"
+    path: "{{ ssl_dir }}/{{ item }}/etcd-peer.key"
     type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/etcd-client.csr"
-  register: etcd_client_csr 
-- name: "Generate Etcd Client request"
-  when: not etcd_client_csr.stat.exists
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-peer request"
   openssl_csr:
-    path: "{{ ssl_dir }}/etcd-client.csr"
-    privatekey_path: "{{ ssl_dir }}/etcd-client.key"
-    use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
+    path: "{{ ssl_dir }}/{{ item }}/etcd-peer.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/etcd-peer.key"
+    common_name: "{{ item }}"
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+    subject_alt_name:
+      - DNS:localhost
+      - DNS:{{ item }}
+      - IP:127.0.0.1
+      - IP:{{ item }}
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-peer certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/{{ item }}/etcd-peer.pem"
+    provider: ownca
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/etcd-peer.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/etcd-peer.csr"
+    ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+# apiserver-etcd-client
+- name: "Generate apiserver-etcd-client private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/{{ item }}/apiserver-etcd-client.key"
+    type: RSA
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver-etcd-client request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/{{ item }}/apiserver-etcd-client.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/apiserver-etcd-client.key"
     organization_name: system:masters
-    common_name: etcd-client
+    common_name: kube-apiserver-etcd-client
+    use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
       - digitalSignature
       - keyEncipherment
     extended_key_usage:
       - clientAuth
-- stat:
-    path: "{{ ssl_dir }}/etcd-client.pem"
-  register: etcd_client_pem 
-- name: "Generate Etcd Client certificate"
-  when: not etcd_client_pem.stat.exists
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver-etcd-client certificate"
   openssl_certificate:
-    path: "{{ ssl_dir }}/etcd-client.pem"
+    path: "{{ ssl_dir }}/{{ item }}/apiserver-etcd-client.pem"
     provider: ownca
-    privatekey_path: "{{ ssl_dir }}/etcd-client.key"
-    csr_path: "{{ ssl_dir }}/etcd-client.csr"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/apiserver-etcd-client.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/apiserver-etcd-client.csr"
     ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
 
-- stat:
-    path: "{{ ssl_dir }}/etcd-peer.key"
-  register: etcd_peer_key 
-- name: "Generate Etcd Peer private key"
-  when: not etcd_peer_key.stat.exists
+# etcd-healthcheck-client
+- name: "Generate etcd-healthcheck-client private key"
   openssl_privatekey:
-    path: "{{ ssl_dir }}/etcd-peer.key"
+    path: "{{ ssl_dir }}/{{ item }}/etcd-healthcheck-client.key"
     type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/etcd-peer.csr"
-  register: etcd_peer_csr 
-- name: "Generate Etcd Peer request"
-  when: not etcd_peer_csr.stat.exists
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-healthcheck-client request"
   openssl_csr:
-    path: "{{ ssl_dir }}/etcd-peer.csr"
-    privatekey_path: "{{ ssl_dir }}/etcd-peer.key"
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: k8sre
-    common_name: etcd-peer
+    path: "{{ ssl_dir }}/{{ item }}/etcd-healthcheck-client.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/etcd-healthcheck-client.key"
+    organization_name: system:masters
+    common_name: kube-etcd-healthcheck-client
+    use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
       - digitalSignature
       - keyEncipherment
     extended_key_usage:
       - clientAuth
-      - serverAuth
-    subject_alt_name: "{{ item | map('regex_replace', '^', 'IP:') | list }}"
-  with_list:
+  with_items:
     - "{{ groups['etcd'] }}"
-- stat:
-    path: "{{ ssl_dir }}/etcd-peer.pem"
-  register: etcd_peer_pem 
-- name: "Generate Etcd Peer certificate"
-  when: not etcd_peer_pem.stat.exists
+
+- name: "Generate etcd-healthcheck-client certificate"
   openssl_certificate:
-    path: "{{ ssl_dir }}/etcd-peer.pem"
+    path: "{{ ssl_dir }}/{{ item }}/etcd-healthcheck-client.pem"
     provider: ownca
-    privatekey_path: "{{ ssl_dir }}/etcd-peer.key"
-    csr_path: "{{ ssl_dir }}/etcd-peer.csr"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/etcd-healthcheck-client.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/etcd-healthcheck-client.csr"
     ownca_path: "{{ ssl_dir }}/etcd-ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
 
+#ca
 - stat:
     path: "{{ ssl_dir }}/ca.key"
-  register: ca_key 
+  register: ca_key
+
 - name: "Generate CA private key"
   when: not ca_key.stat.exists
   openssl_privatekey:
     path: "{{ ssl_dir }}/ca.key"
     type: RSA
-    size: 4096
+    size: "{{ cert_size }}"
+
 - stat:
     path: "{{ ssl_dir }}/ca.csr"
-  register: ca_csr 
+  register: ca_csr
+
 - name: "Generate CA request"
   when: not ca_csr.stat.exists
   openssl_csr:
     path: "{{ ssl_dir }}/ca.csr"
     privatekey_path: "{{ ssl_dir }}/ca.key"
     use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: k8sre
     common_name: kubernetes
     basic_constraints_critical: yes
     basic_constraints:
       - CA:TRUE
     key_usage_critical: yes
     key_usage:
-      - cRLSign
-      - keyCertSign
       - digitalSignature
       - keyEncipherment
+      - keyCertSign
+
 - stat:
     path: "{{ ssl_dir }}/ca.pem"
-  register: ca_pem 
+  register: ca_pem
+
 - name: "Generate CA certificate"
   when: not ca_pem.stat.exists
   openssl_certificate:
     path: "{{ ssl_dir }}/ca.pem"
     provider: selfsigned
+    selfsigned_create_subject_key_identifier: never_create
     privatekey_path: "{{ ssl_dir }}/ca.key"
     csr_path: "{{ ssl_dir }}/ca.csr"
 
-- stat:
-    path: "{{ ssl_dir }}/admin.key"
-  register: admin_key 
-- name: "Generate kubectl private key"
-  when: not admin_key.stat.exists
+# apiserver
+- name: "Generate apiserver private key"
   openssl_privatekey:
-    path: "{{ ssl_dir }}/admin.key"
+    path: "{{ ssl_dir }}/{{ item }}/apiserver.key"
     type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/admin.csr"
-  register: admin_csr
-- name: "Generate kubectl request"
-  when: not admin_csr.stat.exists
-  openssl_csr:
-    path: "{{ ssl_dir }}/admin.csr"
-    privatekey_path: "{{ ssl_dir }}/admin.key"
-    use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: system:masters
-    common_name: admin
-    key_usage_critical: yes
-    key_usage:
-      - digitalSignature
-      - keyEncipherment
-    extended_key_usage:
-      - clientAuth
-- stat:
-    path: "{{ ssl_dir }}/admin.pem"
-  register: admin_pem
-- name: "Generate kubectl certificate"
-  when: not admin_pem.stat.exists
-  openssl_certificate:
-    path: "{{ ssl_dir }}/admin.pem"
-    provider: ownca
-    privatekey_path: "{{ ssl_dir }}/admin.key"
-    csr_path: "{{ ssl_dir }}/admin.csr"
-    ownca_path: "{{ ssl_dir }}/ca.pem"
-    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['master'] }}"
 
-- include_vars: apiserver.yml
-  when: apiserver_domain_name is defined and apiserver_domain_name | ipaddr == false
-- include_vars: kube.yml
-  when: apiserver_domain_name is defined and apiserver_domain_name | ipaddr != false
-- name: "merge lists"
-  set_fact:
-    lists_merged: "{{ groups['master'] | union(k8s_ip) | map('regex_replace', '^', 'IP:') | list }} + {{ k8s_domain | map('regex_replace', '^', 'DNS:') | list}}"
-- stat:
-    path: "{{ ssl_dir }}/kube-apiserver.key"
-  register: kube_apiserver_key
-- name: "Generate kube-apiserver private key"
-  when: not kube_apiserver_key.stat.exists
-  openssl_privatekey:
-    path: "{{ ssl_dir }}/kube-apiserver.key"
-    type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/kube-apiserver.csr"
-  register: kube_apiserver_csr
-- name: "Generate kube-apiserver request"
-  when: not kube_apiserver_csr.stat.exists
+- name: "Generate apiserver request"
   openssl_csr:
-    path: "{{ ssl_dir }}/kube-apiserver.csr"
-    privatekey_path: "{{ ssl_dir }}/kube-apiserver.key"
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: k8sre
+    path: "{{ ssl_dir }}/{{ item }}/apiserver.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/apiserver.key"
     common_name: kube-apiserver
+    use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
       - digitalSignature
       - keyEncipherment
     extended_key_usage:
       - serverAuth
-    subject_alt_name: "{{ lists_merged }}"
-- stat:
-    path: "{{ ssl_dir }}/kube-apiserver.pem"
-  register: kube_apiserver_pem
-- name: "Generate kube-apiserver certificate"
-  when: not kube_apiserver_pem.stat.exists
+    subject_alt_name:
+      - DNS:localhost
+      - DNS:kubernetes
+      - DNS:kubernetes.default
+      - DNS:kubernetes.default.svc
+      - DNS:kubernetes.default.svc.cluster
+      - DNS:kubernetes.default.svc.cluster.local
+      - DNS:{{ apiserver_domain_name }}
+      - IP:127.0.0.1
+      - IP:{{ item }}
+      - IP:{{ service_ip_range | next_nth_usable(1) }}
+      - IP:{{ vip }}
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver certificate"
   openssl_certificate:
-    path: "{{ ssl_dir }}/kube-apiserver.pem"
+    path: "{{ ssl_dir }}/{{ item }}/apiserver.pem"
     provider: ownca
-    privatekey_path: "{{ ssl_dir }}/kube-apiserver.key"
-    csr_path: "{{ ssl_dir }}/kube-apiserver.csr"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/apiserver.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/apiserver.csr"
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
 
-- stat:
-    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
-  register: kube_apiserver_kubelet_client_key
-- name: "Generate kube-apiserver-kubelet-client private key"
-  when: not kube_apiserver_kubelet_client_key.stat.exists
+# apiserver-kubelet-client
+- name: "Generate apiserver-kubelet-client private key"
   openssl_privatekey:
-    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
+    path: "{{ ssl_dir }}/{{ item }}/apiserver-kubelet-client.key"
     type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.csr"
-  register: kube_apiserver_kubelet_client_csr
-- name: "Generate kube-apiserver-kubelet-client request"
-  when: not kube_apiserver_kubelet_client_csr.stat.exists
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver-kubelet-client request"
   openssl_csr:
-    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.csr"
-    privatekey_path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
-    use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
+    path: "{{ ssl_dir }}/{{ item }}/apiserver-kubelet-client.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/apiserver-kubelet-client.key"
     organization_name: system:masters
     common_name: kube-apiserver-kubelet-client
+    use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
       - digitalSignature
       - keyEncipherment
     extended_key_usage:
       - clientAuth
-- stat:
-    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.pem"
-  register: kube_apiserver_kubelet_client_pem
-- name: "Generate kube-apiserver-kubelet-client certificate"
-  when: not kube_apiserver_kubelet_client_pem.stat.exists
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver-kubelet-client certificate"
   openssl_certificate:
-    path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.pem"
+    path: "{{ ssl_dir }}/{{ item }}/apiserver-kubelet-client.pem"
     provider: ownca
-    privatekey_path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.key"
-    csr_path: "{{ ssl_dir }}/kube-apiserver-kubelet-client.csr"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/apiserver-kubelet-client.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/apiserver-kubelet-client.csr"
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
 
-- stat:
-    path: "{{ ssl_dir }}/proxy-client.key"
-  register: proxy_client_key
-- name: "Generate proxy-client private key"
-  when: not proxy_client_key.stat.exists
+# admin
+- name: "Generate admin private key"
   openssl_privatekey:
-    path: "{{ ssl_dir }}/proxy-client.key"
+    path: "{{ ssl_dir }}/{{ item }}/admin.key"
     type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/proxy-client.csr"
-  register: proxy_client_csr
-- name: "Generate proxy-client request"
-  when: not proxy_client_csr.stat.exists
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate admin request"
   openssl_csr:
-    path: "{{ ssl_dir }}/proxy-client.csr"
-    privatekey_path: "{{ ssl_dir }}/proxy-client.key"
+    path: "{{ ssl_dir }}/{{ item }}/admin.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/admin.key"
+    organization_name: system:masters
+    common_name: kubernetes-admin
     use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: k8sre
-    common_name: aggregator
     key_usage_critical: yes
     key_usage:
       - digitalSignature
       - keyEncipherment
     extended_key_usage:
       - clientAuth
-- stat:
-    path: "{{ ssl_dir }}/proxy-client.pem"
-  register: proxy_client_pem
-- name: "Generate proxy-client certificate"
-  when: not proxy_client_pem.stat.exists
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate admin certificate"
   openssl_certificate:
-    path: "{{ ssl_dir }}/proxy-client.pem"
+    path: "{{ ssl_dir }}/{{ item }}/admin.pem"
     provider: ownca
-    privatekey_path: "{{ ssl_dir }}/proxy-client.key"
-    csr_path: "{{ ssl_dir }}/proxy-client.csr"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/admin.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/admin.csr"
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
 
-- stat:
-    path: "{{ ssl_dir }}/kube-controller-manager.key"
-  register: kube_controller_manager_key
-- name: "Generate kube-controller-manager private key"
-  when: not kube_controller_manager_key.stat.exists
+# controller-manager
+- name: "Generate controller-manager private key"
   openssl_privatekey:
-    path: "{{ ssl_dir }}/kube-controller-manager.key"
+    path: "{{ ssl_dir }}/{{ item }}/controller-manager.key"
     type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/kube-controller-manager.csr"
-  register: kube_controller_manager_csr
-- name: "Generate kube-controller-manager request"
-  when: not kube_controller_manager_csr.stat.exists
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate controller-manager request"
   openssl_csr:
-    path: "{{ ssl_dir }}/kube-controller-manager.csr"
-    privatekey_path: "{{ ssl_dir }}/kube-controller-manager.key"
-    use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: system:kube-controller-manager
+    path: "{{ ssl_dir }}/{{ item }}/controller-manager.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/controller-manager.key"
     common_name: system:kube-controller-manager
+    use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
       - digitalSignature
       - keyEncipherment
     extended_key_usage:
       - clientAuth
-- stat:
-    path: "{{ ssl_dir }}/kube-controller-manager.pem"
-  register: kube_controller_manager_pem
-- name: "Generate kube-controller-manager certificate"
-  when: not kube_controller_manager_pem.stat.exists
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate controller-manager certificate"
   openssl_certificate:
-    path: "{{ ssl_dir }}/kube-controller-manager.pem"
+    path: "{{ ssl_dir }}/{{ item }}/controller-manager.pem"
     provider: ownca
-    privatekey_path: "{{ ssl_dir }}/kube-controller-manager.key"
-    csr_path: "{{ ssl_dir }}/kube-controller-manager.csr"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/controller-manager.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/controller-manager.csr"
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
 
-- stat:
-    path: "{{ ssl_dir }}/kube-scheduler.key"
-  register: kube_scheduler_key
-- name: "Generate kube-scheduler private key"
-  when: not kube_scheduler_key.stat.exists
+# scheduler
+- name: "Generate scheduler private key"
   openssl_privatekey:
-    path: "{{ ssl_dir }}/kube-scheduler.key"
+    path: "{{ ssl_dir }}/{{ item }}/scheduler.key"
     type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/kube-scheduler.csr"
-  register: kube_scheduler_csr
-- name: "Generate kube-scheduler request"
-  when: not kube_scheduler_csr.stat.exists
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate scheduler request"
   openssl_csr:
-    path: "{{ ssl_dir }}/kube-scheduler.csr"
-    privatekey_path: "{{ ssl_dir }}/kube-scheduler.key"
-    use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: system:kube-scheduler
+    path: "{{ ssl_dir }}/{{ item }}/scheduler.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/scheduler.key"
     common_name: system:kube-scheduler
-    key_usage_critical: yes
-    key_usage:
-      - digitalSignature
-      - keyEncipherment
-    extended_key_usage:
-      - clientAuth
-- stat:
-    path: "{{ ssl_dir }}/kube-scheduler.pem"
-  register: kube_scheduler_pem
-- name: "Generate kube-scheduler certificate"
-  when: not kube_scheduler_pem.stat.exists
-  openssl_certificate:
-    path: "{{ ssl_dir }}/kube-scheduler.pem"
-    provider: ownca
-    privatekey_path: "{{ ssl_dir }}/kube-scheduler.key"
-    csr_path: "{{ ssl_dir }}/kube-scheduler.csr"
-    ownca_path: "{{ ssl_dir }}/ca.pem"
-    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
-
-- stat:
-    path: "{{ ssl_dir }}/kube-proxy.key"
-  register: kube_proxy_key
-- name: "Generate kube-proxy private key"
-  when: not kube_proxy_key.stat.exists
-  openssl_privatekey:
-    path: "{{ ssl_dir }}/kube-proxy.key"
-    type: RSA
-    size: 4096
-- stat:
-    path: "{{ ssl_dir }}/kube-proxy.csr"
-  register: kube_proxy_csr
-- name: "Generate kube-proxy request"
-  when: not kube_proxy_csr.stat.exists
-  openssl_csr:
-    path: "{{ ssl_dir }}/kube-proxy.csr"
-    privatekey_path: "{{ ssl_dir }}/kube-proxy.key"
     use_common_name_for_san: no
-    country_name: CN
-    state_or_province_name: Shanghai
-    locality_name: Shanghai
-    organization_name: k8sre
-    common_name: system:kube-proxy
     key_usage_critical: yes
     key_usage:
       - digitalSignature
       - keyEncipherment
     extended_key_usage:
       - clientAuth
-- stat:
-    path: "{{ ssl_dir }}/kube-proxy.pem"
-  register: kube_proxy_pem
-- name: "Generate kube-proxy certificate"
-  when: not kube_proxy_pem.stat.exists
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate scheduler certificate"
   openssl_certificate:
-    path: "{{ ssl_dir }}/kube-proxy.pem"
+    path: "{{ ssl_dir }}/{{ item }}/scheduler.pem"
     provider: ownca
-    privatekey_path: "{{ ssl_dir }}/kube-proxy.key"
-    csr_path: "{{ ssl_dir }}/kube-proxy.csr"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/scheduler.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/scheduler.csr"
     ownca_path: "{{ ssl_dir }}/ca.pem"
     ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
 
+# kube-proxy
+- name: "Generate kube-proxy private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/{{ item }}/kube-proxy.key"
+    type: RSA
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['node'] }}"
+
+- name: "Generate kube-proxy request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/{{ item }}/kube-proxy.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/kube-proxy.key"
+    common_name: system:kube-proxy
+    use_common_name_for_san: no
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['node'] }}"
+
+- name: "Generate kube-proxy certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/{{ item }}/kube-proxy.pem"
+    provider: ownca
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/kube-proxy.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/kube-proxy.csr"
+    ownca_path: "{{ ssl_dir }}/ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['node'] }}"
+
+
+#front-proxy-ca
+- stat:
+    path: "{{ ssl_dir }}/front-proxy-ca.key"
+  register: front_proxy_ca_key
+
+- name: "Generate front proxy CA private key"
+  when: not front_proxy_ca_key.stat.exists
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/front-proxy-ca.key"
+    type: RSA
+    size: "{{ cert_size }}"
+
+- stat:
+    path: "{{ ssl_dir }}/front-proxy-ca.csr"
+  register: front_proxy_ca_csr
+
+- name: "Generate front proxy CA request"
+  when: not front_proxy_ca_csr.stat.exists
+  openssl_csr:
+    path: "{{ ssl_dir }}/front-proxy-ca.csr"
+    privatekey_path: "{{ ssl_dir }}/front-proxy-ca.key"
+    use_common_name_for_san: no
+    common_name: front-proxy-ca
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+      - keyCertSign
+
+- stat:
+    path: "{{ ssl_dir }}/front-proxy-ca.pem"
+  register: front_proxy_ca_pem
+
+- name: "Generate front proxy CA certificate"
+  when: not front_proxy_ca_pem.stat.exists
+  openssl_certificate:
+    path: "{{ ssl_dir }}/front-proxy-ca.pem"
+    provider: selfsigned
+    selfsigned_create_subject_key_identifier: never_create
+    privatekey_path: "{{ ssl_dir }}/front-proxy-ca.key"
+    csr_path: "{{ ssl_dir }}/front-proxy-ca.csr"
+
+# front-proxy-client
+- name: "Generate front-proxy-client private key"
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/{{ item }}/front-proxy-client.key"
+    type: RSA
+    size: "{{ cert_size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate front-proxy-client request"
+  openssl_csr:
+    path: "{{ ssl_dir }}/{{ item }}/front-proxy-client.csr"
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/front-proxy-client.key"
+    common_name: front-proxy-client
+    use_common_name_for_san: no
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate front-proxy-client certificate"
+  openssl_certificate:
+    path: "{{ ssl_dir }}/{{ item }}/front-proxy-client.pem"
+    provider: ownca
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ ssl_dir }}/{{ item }}/front-proxy-client.key"
+    csr_path: "{{ ssl_dir }}/{{ item }}/front-proxy-client.csr"
+    ownca_path: "{{ ssl_dir }}/front-proxy-ca.pem"
+    ownca_privatekey_path: "{{ ssl_dir }}/front-proxy-ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+#sa
+- stat:
+    path: "{{ ssl_dir }}/sa.key"
+  register: sa_key
+
+- name: "Generate sa private key"
+  when: not sa_key.stat.exists
+  openssl_privatekey:
+    path: "{{ ssl_dir }}/sa.key"
+    type: RSA
+    size: "{{ cert_size }}"
+
+- stat:
+    path: "{{ ssl_dir }}/sa.pub"
+  register: sa_pub
+
+- name: "Generate sa pub certificate"
+  when: not sa_pub.stat.exists
+  openssl_publickey:
+    path: "{{ ssl_dir }}/sa.pub"
+    privatekey_path: "{{ ssl_dir }}/sa.key"
+
+# token
 - stat:
     path: "{{ ssl_dir }}/token"
   register: token
-- name: "生成bootstrap-token-id"
+
+- name: "生成bootstrap-token"
   when: not token.stat.exists
-  shell: openssl rand -hex 3
-  register: token_id
-- name: "生成bootstrap-token-secret"
-  when: not token.stat.exists
-  shell: openssl rand -hex 8
-  register: token_secret
+  shell: echo $(openssl rand -hex 3).$(openssl rand -hex 8)
+  register: bootstrap_token
+
 - name: "创建bootstrap-token文件"
   when: not token.stat.exists
   blockinfile:
     path: "{{ ssl_dir }}/token"
-    block: "{{ token_id.stdout }}.{{ token_secret.stdout }}"
+    block: "{{ bootstrap_token.stdout }}"
     create: true
-
