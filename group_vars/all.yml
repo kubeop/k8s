@@ -1,8 +1,8 @@
 #k8s
 ssl_dir: /etc/ssl/k8s
 etcd_version: 3.4.13
-containerd_version: 1.3.9
-kubernetes_url: http://dl.k8sre.com/1.18.14
+containerd_version: 1.4.3
+kubernetes_url: http://dl.k8sre.com
 
 #集群配置
 apiserver_domain_name: apiserver.k8sre.com

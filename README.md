@@ -9,10 +9,10 @@
 ### 1.1、下载二进制包
 
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.18.14/kubernetes-server-linux-amd64.tar.gz
+wget https://storage.googleapis.com/kubernetes-release/release/v1.20.2/kubernetes-server-linux-amd64.tar.gz
 ```
 
-- url中v1.18.14替换为需要下载的版本即可。
+- url中v1.20.2替换为需要下载的版本即可。
 
 
 
