@@ -54,28 +54,28 @@ git clone https://github.com/k8sre/k8s.git
 ```
 #本组内填写etcd服务器及主机名
 [etcd]
-172.16.100.201 hostname=etcd-01
-172.16.100.202 hostname=etcd-02
-172.16.100.203 hostname=etcd-03
+172.16.90.201 hostname=etcd-01
+172.16.90.202 hostname=etcd-02
+172.16.90.203 hostname=etcd-03
 
 #本组内填写master服务器及主机名
 [master]
-172.16.100.204 hostname=master-01
-172.16.100.205 hostname=master-02
-172.16.100.206 hostname=master-03
+172.16.90.204 hostname=master-01
+172.16.90.205 hostname=master-02
+172.16.90.206 hostname=master-03
 
 [haproxy]
-172.16.100.198 hostname=haproxy-01 type=MASTER priority=100
-172.16.100.199 hostname=haproxy-02 type=BACKUP priority=90
+172.16.90.198 hostname=haproxy-01 type=MASTER priority=100
+172.16.90.199 hostname=haproxy-02 type=BACKUP priority=90
 [all:vars]
 lb_port=6443
-vip=172.16.100.200
+vip=172.16.90.200
 
 #本组内填写node服务器及主机名
 [node]
-172.16.100.207 hostname=node-01
-172.16.100.208 hostname=node-02
-172.16.100.209 hostname=node-03
+172.16.90.207 hostname=node-01
+172.16.90.208 hostname=node-02
+172.16.90.209 hostname=node-03
 ```
 
 - 当haproxy和kube-apiserver部署在同一台服务器时，请将`lb_port`修改为其他不冲突的端口。
@@ -96,7 +96,7 @@ vip=172.16.100.200
 | pod_ip_range          | 指定k8s集群pod的网段                                         |
 | service_ip_range      | 指定k8s集群service的网段                                     |
 
-- 请将etcd安装在独立的服务器上，不建议跟master安装在一起。数据盘尽量使用SSD盘。
+- 请尽量将etcd安装在独立的服务器上，不建议跟master安装在一起。数据盘尽量使用SSD盘。
 - Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复，同时也避免与docker0网卡的网段冲突。）：
   - Pod 网段
     - A类地址：10.0.0.0/8
@@ -113,7 +113,7 @@ vip=172.16.100.200
 
 ### 3.1、安装Ansible
 
-在单独的Ansible机器或者master-01执行以下命令安装Ansible
+在单独的Ansible控制机执行以下命令安装Ansible
 
 ```
 yum -y install ansible
@@ -156,9 +156,9 @@ ansible-playbook k8s.yml -i inventory
 ```
 #本组内填写master服务器及主机名
 [master]
-172.16.100.204 hostname=master-01 apiserver_domain_name=172.16.100.204
-172.16.100.205 hostname=master-02 apiserver_domain_name=172.16.100.205
-172.16.100.206 hostname=master-03 apiserver_domain_name=172.16.100.206
+172.16.90.204 hostname=master-01 apiserver_domain_name=172.16.90.204
+172.16.90.205 hostname=master-02 apiserver_domain_name=172.16.90.205
+172.16.90.206 hostname=master-03 apiserver_domain_name=172.16.90.206
 ```
 
 - 在inventory文件中，按照以上格式添加配置，将master节点连接的apiserver地址改为本机IP。
@@ -176,8 +176,6 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 ## 四、扩容节点
 
 ### 4.1、扩容master节点
-
-扩容master前，请将{{ssl_dir}}目录中的kube-apiserver的证书备份并移除。
 
 扩容时，请不要在inventory文件master组中保留旧服务器信息。
 
@@ -245,7 +243,7 @@ ansible -i inventory etcd -m systemd -a "name=etcd state=restarted"
 
 ```
 etcdctl \
-  --endpoints=https://172.16.100.201:2379,https://172.16.100.202:2379,https://172.16.100.203:2379 \
+  --endpoints=https://172.16.90.201:2379,https://172.16.90.202:2379,https://172.16.90.203:2379 \
   --cacert=/etc/kubernetes/pki/etcd-ca.pem \
   --cert=/etc/kubernetes/pki/etcd-client.pem \
   --key=/etc/kubernetes/pki/etcd-client.key \
