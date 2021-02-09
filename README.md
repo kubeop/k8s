@@ -2,9 +2,9 @@
 
 配合kubernetes剔除dockershim，本Playbook将运行时修改为containerd。
 
-如需使用二进制方式一步一步安装，请参考[二进制安装kubernetes集群](https://www.k8sre.com/#/kubernetes/2.1.binary)。
+如需使用二进制方式一步一步安装，请参考[二进制安装kubernetes集群](https://www.k8sre.com/#/kubernetes/binary)。
 
-如需使用kubeadm方式进行安装，请参考[kubeadm安装kubernetes集群](https://www.k8sre.com/#/kubernetes/2.2.kubeadm)。
+如需使用kubeadm方式进行安装，请参考[kubeadm安装kubernetes集群](https://www.k8sre.com/#/kubernetes/kubeadm)。
 
 
 
@@ -151,7 +151,7 @@ ansible-playbook k8s.yml -i inventory
 ```
 
 - 成功执行结束后，既kubernetes集群部署成功。
-- 后续部署其他基础插件可以参考[部署集群插件](https://www.k8sre.com/#/kubernetes/2.3.addons)。
+- 后续部署其他基础插件可以参考[部署集群插件](https://www.k8sre.com/#/kubernetes/addons)。
 
 
 
