@@ -13,7 +13,7 @@ etcd:
   data_dir: "/var/lib/etcd"
 
 # Kubernetes
-# kubernetes 下载服务器地址
+# kubernetes 下载服务器地址，默认的下载服务器比较慢，建议按照文档自建
 kube_down_url: https://dl.k8sre.com/k8s
 kubernetes:
   version: v1.20.4
