@@ -19,7 +19,7 @@
   with_items:
     - {line: '/etc/kubernetes/pki'}
     - {line: '/etc/kubernetes/manifests'}
-    - {line: "{{ kubelet_dir }}"}
+    - {line: "{{ kubernetes.kubelet_dir }}"}
   tags: dir
 
 - name: "安装node节点"
@@ -27,8 +27,8 @@
     url: "{{ item.line }}"
     dest: /usr/bin/
   with_items:
-    - { line: "{{ kubernetes_url }}/kubelet"}
-    - { line: "{{ kubernetes_url }}/kube-proxy"}
+    - { line: "{{ kube_down_url }}/{{ kubernetes.version }}/kubelet"}
+    - { line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-proxy"}
   tags: kube_node
 
 - name: "添加执行权限"
@@ -46,11 +46,11 @@
     dest: "/etc/kubernetes/pki/"
     mode: 0640
   with_items:
-    - {line: "{{ ssl_dir }}/ca.pem"}
-    - {line: "{{ ssl_dir }}/ca.key"}
-    - {line: "{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.pem"}
-    - {line: "{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.key"}
-    - {line: "{{ ssl_dir }}/token"}
+    - {line: "{{ cert.dir }}/ca.pem"}
+    - {line: "{{ cert.dir }}/ca.key"}
+    - {line: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.pem"}
+    - {line: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.key"}
+    - {line: "{{ cert.dir }}/token"}
   tags: dis_certs
 
 - name: "读取当前bootstrap-token"

@@ -1,11 +1,11 @@
 - name: "下载etcd安装包"
   get_url:
-    url: "{{ etcd_download_url }}"
+    url: "https://mirrors.huaweicloud.com/etcd/v{{ etcd.version }}/etcd-v{{ etcd.version }}-linux-amd64.tar.gz"
     dest: /tmp/
 
 - name: "解压etcd安装包"
   unarchive:
-    src: "/tmp/etcd-v{{ etcd_version }}-linux-amd64.tar.gz"
+    src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64.tar.gz"
     dest: /tmp/
     copy: no
 
@@ -18,26 +18,26 @@
     mode: 0755
     remote_src: yes
   with_items:
-    - {src: "/tmp/etcd-v{{ etcd_version }}-linux-amd64/etcd"}
-    - {src: "/tmp/etcd-v{{ etcd_version }}-linux-amd64/etcdctl"}
+    - {src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64/etcd"}
+    - {src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64/etcdctl"}
 
 - name: "分发证书"
   copy:
     src: "{{ item.line }}"
     dest: "/etc/kubernetes/pki/"
   with_items:
-    - {line: '{{ ssl_dir }}/etcd-ca.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/etcd-server.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/etcd-server.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.key'}
+    - {line: '{{ cert_dir }}/etcd-ca.pem'}
+    - {line: '{{ cert_dir }}/{{ ansible_default_ipv4.address }}/etcd-server.pem'}
+    - {line: '{{ cert_dir }}/{{ ansible_default_ipv4.address }}/etcd-server.key'}
+    - {line: '{{ cert_dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.pem'}
+    - {line: '{{ cert_dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.key'}
+    - {line: '{{ cert_dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.pem'}
+    - {line: '{{ cert_dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.key'}
   tags: dis_certs
 
 - name: "创建etcd数据目录"
   file:
-    path: "{{ etcd_data_dir }}"
+    path: "{{ etcd.data_dir }}"
     owner: root
     group: root
     mode: 0755

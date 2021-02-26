@@ -8,12 +8,15 @@
     gpgcheck: yes
     enabled: yes
   tags: docker_repo
+
 - name: "安装containerd"
   yum:
     update_cache: yes
     enablerepo: docker-ce-stable
     name: 'containerd.io{% if containerd_version is defined and containerd_version != ""  %}-{{ containerd_version }}{% endif %}'
     state: installed
+  tags: install_containerd
+
 - name: "创建containerd配置目录"
   file:
     path: "{{ item.path }}"
@@ -24,6 +27,8 @@
   with_items:
     - {path: "/etc/containerd"}
     - {path: "{{ containerd_root }}"}
+  tags: containerd_config
+
 - name: "生成containerd配置文件"
   template:
     src: "config.toml.j2"

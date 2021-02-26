@@ -116,7 +116,7 @@ spec:
       priorityClassName: system-cluster-critical
       containers:
       - name: metrics-server
-        image: registry.aliyuncs.com/k8sxio/metrics-server:{{metrics_server_version}}
+        image: registry.aliyuncs.com/k8sxio/metrics-server:{{metrics_server.version}}
         imagePullPolicy: IfNotPresent
         args:
           - --cert-dir=/tmp

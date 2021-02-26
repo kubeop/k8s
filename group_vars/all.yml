@@ -1,10 +1,57 @@
-#k8s
-ssl_dir: /etc/ssl/k8s
-etcd_version: 3.4.13
-containerd_version: 1.4.3
-kubernetes_url: http://dl.k8sre.com
+# Kubernetes-cert
+cert:
+  dir: /etc/ssl/kube-certs
+  size: 2048
 
-#集群配置
-apiserver_domain_name: apiserver.k8sre.com
-pod_ip_range: 10.64.0.0/12
-service_ip_range: 10.80.0.0/16
+# Etcd
+etcd:
+  version: 3.4.13
+  data_dir: "/var/lib/etcd"
+
+# Kubernetes
+kube_down_url: https://dl.k8sre.com/k8s
+kubernetes:
+  version: v1.20.4
+  podSubnet: 10.64.0.0/12
+  serviceSubnet: 10.80.0.0/16
+  kubelet_dir: "/var/lib/kubelet"
+  apiserver_domain_name: apiserver.k8sre.com
+
+# Containerd
+containerd_version: 1.4.3
+containerd_root: "/var/lib/containerd"
+containerd_state: "/run/containerd"
+containerd_config:
+  grpc:
+    max_recv_message_size: 16777216
+    max_send_message_size: 16777216
+  debug:
+    level: ""
+  cri:
+    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.3"
+    max_container_log_line_size: -1
+  containerd:
+    snapshotter: overlayfs
+  options:
+    SystemdCgroup: "true"
+  registries:
+    "docker.io": "https://dockerhub.mirrors.nwafu.edu.cn"
+    "k8s.gcr.io": "https://registry.aliyuncs.com/k8sxio"
+
+# Network_plugin
+network_plugin: calico
+calico:
+  version: v3.17.0
+  network_mode: ipip
+flannel:
+  version: v0.13.0
+cilium:
+  version: v1.9.4
+
+# Addons
+coredns:
+  version: 1.7.0
+  enable_nodelocaldns: false
+  nodelocaldns_ip: "169.254.20.10"
+metrics_server:
+  version: v0.4.1

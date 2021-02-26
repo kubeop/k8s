@@ -10,7 +10,7 @@ User=root
 
 ExecStart=/usr/local/bin/etcd \
          --name={{ hostname | split_hostname }} \
-         --data-dir={{ etcd_data_dir | default("/var/lib/etcd") }} \
+         --data-dir={{ etcd.data_dir | default("/var/lib/etcd") }} \
          --advertise-client-urls=https://{{ ansible_default_ipv4.address }}:2379 \
          --initial-advertise-peer-urls=https://{{ ansible_default_ipv4.address }}:2380 \
          --listen-peer-urls=https://{{ ansible_default_ipv4.address }}:2380 \

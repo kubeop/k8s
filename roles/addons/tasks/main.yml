@@ -1,34 +1,40 @@
-- name: "获取calico etcd-ca证书"
+- name: "获取etcd-ca证书"
   slurp:
     src: "/etc/kubernetes/pki/etcd-ca.pem"
-  register: calico_etcd_ca
+  register: cni_etcd_ca
 
-- name: "获取calico etcd-cert证书"
+- name: "获取etcd-client证书"
   slurp:
     src: "/etc/kubernetes/pki/apiserver-etcd-client.pem"
-  register: calico_etcd_cert
+  register: cni_etcd_cert
 
-- name: "获取calico etcd-key证书"
+- name: "获取etcd-client证书"
   slurp:
     src: "/etc/kubernetes/pki/apiserver-etcd-client.key"
-  register: calico_etcd_key
+  register: cni_etcd_key
 
-- name: "生成addons部署文件"
-  template:
-    src: "{{item.src}}"
-    dest: "{{item.dest}}"
-  with_items:
-    - {src: "calico-etcd.yaml.j2", dest: "/tmp/calico-etcd.yaml"}
-    - {src: "coredns.yaml.j2", dest: "/tmp/coredns.yaml"}
-    - {src: "metrics-server.yaml.j2", dest: "/tmp/metrics-server.yaml"}
-  tags: addons
+- import_tasks: calico.yml
+  when:
+    - network_plugin == 'calico'
+  tags:
+    - calico
 
-- name: "部署addons"
-  shell: "kubectl apply -f {{item}}"
-  delegate_to: "{{ groups['master'][0] }}"
-  run_once: true
-  with_items:
-    - /tmp/calico-etcd.yaml
-    - /tmp/coredns.yaml
-    - /tmp/metrics-server.yaml
-  tags: cni
+- import_tasks: flannel.yml
+  when:
+    - network_plugin == 'flannel'
+  tags:
+    - flannel
+
+- import_tasks: cilium.yml
+  when:
+    - network_plugin == 'cilium'
+  tags:
+    - ciliums
+
+- import_tasks: coredns.yml
+  tags:
+    - coredns
+
+- import_tasks: metrics-server.yml
+  tags:
+    - metrics-server

@@ -10,13 +10,15 @@
 
 ## 一、准备文件服务器
 
+配置文件中指定的文件服务器下载比较慢，可以自行搭建kubernetes二进制文件的文件下载服务器。
+
 ### 1.1、下载二进制包
 
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.20.2/kubernetes-server-linux-amd64.tar.gz
+wget https://storage.googleapis.com/kubernetes-release/release/v1.20.4/kubernetes-server-linux-amd64.tar.gz
 ```
 
-- url中v1.20.2替换为需要下载的版本即可。
+- url中v1.20.4替换为需要下载的版本即可。
 
 
 
@@ -26,13 +28,14 @@ wget https://storage.googleapis.com/kubernetes-release/release/v1.20.2/kubernete
 
 ```
 yum -y install nginx
+mkdir /usr/share/nginx/html/v1.20.4
 ```
 
 将文件拷贝nginx目录
 
 ```
 tar zxvf kubernetes-server-linux-amd64.tar.gz
-cp kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kubelet,kube-proxy} /usr/share/nginx/html/
+cp kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kubelet,kube-proxy} /usr/share/nginx/html/v1.20.4/
 ```
 启动服务
 ```
@@ -88,17 +91,9 @@ vip=172.16.90.200
 
 ### 2.3、配置集群安装信息
 
-编辑group_vars/all.yml文件，填入自己的配置
+编辑group_vars/all.yml文件，填入自己的配置。
 
-| 配置项                | 说明                                                         |
-| --------------------- | ------------------------------------------------------------ |
-| ssl_dir               | 签发ssl证书保存路径，ansible控制端机器上的路径。默认签发10年有效期的证书 |
-| etcd_version          | etcd-server版本                                              |
-| containerd_version    | 可通过查看版本yum list containerd.io --showduplicates\|sort -rn |
-| kubernetes_url        | kubernetes 二进制文件下载链接，请修改为自己的下载服务器地址  |
-| apiserver_domain_name | kube-apiserver的访问域名，需提前配置解析。不使用域名时，可以指定为负载均衡的IP（本Playbook需指定为haproxy的VIP） |
-| pod_ip_range          | 指定k8s集群pod的网段                                         |
-| service_ip_range      | 指定k8s集群service的网段                                     |
+请注意：
 
 - 请尽量将etcd安装在独立的服务器上，不建议跟master安装在一起。数据盘尽量使用SSD盘。
 - Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复，同时也避免与docker0网卡的网段冲突。）：

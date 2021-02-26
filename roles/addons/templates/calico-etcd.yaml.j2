@@ -14,9 +14,9 @@ data:
   # The keys below should be uncommented and the values populated with the base64
   # encoded contents of each file that would be associated with the TLS data.
   # Example command for encoding a file contents: cat <file> | base64 -w 0
-  etcd-key: {{calico_etcd_key.content}}
-  etcd-cert: {{calico_etcd_cert.content}}
-  etcd-ca: {{calico_etcd_ca.content}}
+  etcd-key: {{cni_etcd_key.content}}
+  etcd-cert: {{cni_etcd_cert.content}}
+  etcd-ca: {{cni_etcd_ca.content}}
 ---
 # Source: calico/templates/calico-config.yaml
 # This ConfigMap is used to configure a self-hosted Calico installation.
@@ -224,7 +224,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: dockerhub.mirrors.nwafu.edu.cn/calico/cni:{{calico_version}}
+          image: dockerhub.mirrors.nwafu.edu.cn/calico/cni:{{ calico.version }}
           command: ["/opt/cni/bin/install"]
           envFrom:
           - configMapRef:
@@ -268,7 +268,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: dockerhub.mirrors.nwafu.edu.cn/calico/pod2daemon-flexvol:{{calico_version}}
+          image: dockerhub.mirrors.nwafu.edu.cn/calico/pod2daemon-flexvol:{{ calico.version }}
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -279,7 +279,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: dockerhub.mirrors.nwafu.edu.cn/calico/node:{{calico_version}}
+          image: dockerhub.mirrors.nwafu.edu.cn/calico/node:{{ calico.version }}
           envFrom:
           - configMapRef:
               # Allow KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT to be overridden for eBPF mode.
@@ -329,7 +329,7 @@ spec:
               value: "autodetect"
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
-{% if 'bpg' in calico_network_mode %}
+{% if 'bpg' in calico.network_mode %}
               value: "off"
 {% else %}
               value: "Always"
@@ -359,7 +359,7 @@ spec:
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
             - name: CALICO_IPV4POOL_CIDR
-              value: "{{ pod_ip_range }}"
+              value: "{{ kubernetes.podSubnet }}"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -516,7 +516,7 @@ spec:
       hostNetwork: true
       containers:
         - name: calico-kube-controllers
-          image: dockerhub.mirrors.nwafu.edu.cn/calico/kube-controllers:{{calico_version}}
+          image: dockerhub.mirrors.nwafu.edu.cn/calico/kube-controllers:{{ calico.version }}
           env:
             # The location of the etcd cluster.
             - name: ETCD_ENDPOINTS

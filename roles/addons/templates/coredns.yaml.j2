@@ -119,7 +119,7 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: registry.aliyuncs.com/k8sxio/coredns:{{coredns_version}}
+        image: registry.aliyuncs.com/k8sxio/coredns:{{coredns.version}}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
@@ -189,7 +189,7 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: {{service_ip_range | next_nth_usable(2)}}
+  clusterIP: {{kubernetes.serviceSubnet | next_nth_usable(2)}}
   ports:
   - name: dns
     port: 53

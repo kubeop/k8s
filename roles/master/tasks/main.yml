@@ -23,10 +23,10 @@
     url: "{{ item.line }}"
     dest: /usr/bin/
   with_items:
-    - {line: "{{ kubernetes_url }}/kube-apiserver"}
-    - {line: "{{ kubernetes_url }}/kube-controller-manager"}
-    - {line: "{{ kubernetes_url }}/kube-scheduler"}
-    - {line: "{{ kubernetes_url }}/kubectl"}
+    - {line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-apiserver"}
+    - {line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-controller-manager"}
+    - {line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-scheduler"}
+    - {line: "{{ kube_down_url }}/{{ kubernetes.version }}/kubectl"}
   tags: kube_master
 
 - name: "添加执行权限"
@@ -46,27 +46,27 @@
     dest: "/etc/kubernetes/pki/"
     mode: 0640
   with_items:
-    - {line: '{{ ssl_dir }}/ca.key'}
-    - {line: '{{ ssl_dir }}/ca.pem'}
-    - {line: '{{ ssl_dir }}/sa.key'}
-    - {line: '{{ ssl_dir }}/sa.pub'}
-    - {line: '{{ ssl_dir }}/etcd-ca.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/apiserver.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/apiserver.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/apiserver-etcd-client.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/apiserver-etcd-client.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/apiserver-kubelet-client.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/apiserver-kubelet-client.pem'}
-    - {line: '{{ ssl_dir }}/front-proxy-ca.key'}
-    - {line: '{{ ssl_dir }}/front-proxy-ca.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/front-proxy-client.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/front-proxy-client.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/controller-manager.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/controller-manager.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/scheduler.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/scheduler.pem'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/admin.key'}
-    - {line: '{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/admin.pem'}
+    - {line: '{{ cert.dir }}/ca.key'}
+    - {line: '{{ cert.dir }}/ca.pem'}
+    - {line: '{{ cert.dir }}/sa.key'}
+    - {line: '{{ cert.dir }}/sa.pub'}
+    - {line: '{{ cert.dir }}/etcd-ca.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver-etcd-client.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver-etcd-client.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver-kubelet-client.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver-kubelet-client.pem'}
+    - {line: '{{ cert.dir }}/front-proxy-ca.key'}
+    - {line: '{{ cert.dir }}/front-proxy-ca.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/front-proxy-client.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/front-proxy-client.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/controller-manager.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/controller-manager.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/scheduler.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/scheduler.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.pem'}
   tags: dis_certs
 
 - name: "分发kubeconfig"
@@ -145,8 +145,8 @@
     url: "https://{{ ansible_default_ipv4.address }}:6443/healthz"
     return_content: yes
     validate_certs: no
-    client_cert: "{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/admin.pem"
-    client_key: "{{ ssl_dir }}/{{ ansible_default_ipv4.address }}/admin.key"
+    client_cert: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.pem"
+    client_key: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.key"
   register: apiserver
   failed_when: "'ok' not in apiserver.content"
   connection: local

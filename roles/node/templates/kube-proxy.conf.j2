@@ -5,7 +5,7 @@ hostnameOverride: "{{ ansible_default_ipv4.address }}"
 clientConnection:
   contentType: application/vnd.kubernetes.protobuf
   kubeconfig: /etc/kubernetes/proxy.kubeconfig
-clusterCIDR: {{ pod_ip_range }}
+clusterCIDR: {{ kubernetes.podSubnet }}
 configSyncPeriod: 0s
 conntrack:
   maxPerCore: 32768

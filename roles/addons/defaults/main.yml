@@ -1,6 +1,0 @@
----
-calico_version: v3.17.0
-# ipip or bgp
-calico_network_mode: ipip
-coredns_version: 1.7.0
-metrics_server_version: v0.4.1
