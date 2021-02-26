@@ -55,4 +55,4 @@
         fstype: xfs
         opts: defaults,noatime,nodiratime,nobarrier,pquota
         state: mounted
-      tags: fdisk 
+      tags: fdisk

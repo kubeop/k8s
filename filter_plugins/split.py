@@ -1,6 +1,6 @@
 
 #   {{ hostname | split_hostname }}
-# 
+#
 
 def split_hostname(hostname):
     return "".join(hostname.split("-")[-2:])
