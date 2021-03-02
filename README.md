@@ -14,8 +14,26 @@
 
 ### 1.1、下载二进制包
 
+下载kubernetes
+
 ```
 wget https://storage.googleapis.com/kubernetes-release/release/v1.20.4/kubernetes-server-linux-amd64.tar.gz
+```
+
+- url中v1.20.4替换为需要下载的版本即可。
+
+下载cri-tools
+
+```
+wget https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.20.0/crictl-v1.20.0-linux-amd64.tar.gz
+```
+
+- url中v1.20.4替换为需要下载的版本即可。
+
+下载cni-plugins
+
+```
+wget https://github.com/containernetworking/plugins/releases/download/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
 ```
 
 - url中v1.20.4替换为需要下载的版本即可。
@@ -28,14 +46,20 @@ wget https://storage.googleapis.com/kubernetes-release/release/v1.20.4/kubernete
 
 ```
 yum -y install nginx
-mkdir /usr/share/nginx/html/v1.20.4
+mkdir /usr/share/nginx/html/{cni-plugins,cri-tools,v1.20.4}
 ```
 
 将文件拷贝nginx目录
 
 ```
+# 解压
 tar zxvf kubernetes-server-linux-amd64.tar.gz
+# 拷贝kubernetes二进制文件到nginx目录
 cp kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kubelet,kube-proxy} /usr/share/nginx/html/v1.20.4/
+# 拷贝cri-tools文件到nginx目录
+cp crictl-v1.20.0-linux-amd64.tar.gz /usr/share/nginx/html/cri-tools
+# 拷贝cni-plugins文件到nginx目录
+cp cni-plugins-linux-amd64-v0.8.7.tgz /usr/share/nginx/html/cni-plugins
 ```
 启动服务
 ```
