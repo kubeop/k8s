@@ -26,8 +26,11 @@ kubernetes:
   kubelet_dir: "/var/lib/kubelet"
   # kube-apiserver的访问域名，需提前配置解析。不使用域名时，可以指定为负载均衡的IP（本Playbook需指定为haproxy的VIP）
   apiserver_domain_name: apiserver.k8sre.com
+  # cni-plugins: https://github.com/containernetworking/plugins
+  cni_plugins_version: v0.8.7
 
 # Containerd
+critools_version: v1.20.0
 # containerd 版本
 containerd_version: 1.4.3
 containerd_root: "/var/lib/containerd"
