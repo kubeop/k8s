@@ -56,8 +56,10 @@ calico:
   network_mode: ipip
 flannel:
   version: v0.13.0
+  network_mode: vxlan
+# cilium need linux kernel >= 4.9.17
 cilium:
-  version: v1.9.4
+  version: v1.9.3
 
 # Addons
 coredns:
