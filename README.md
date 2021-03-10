@@ -2,9 +2,7 @@
 
 配合kubernetes剔除dockershim，本Playbook将运行时修改为containerd。
 
-如需使用二进制方式一步一步安装，请参考[二进制安装kubernetes集群](https://www.k8sre.com/#/kubernetes/binary)。
-
-如需使用kubeadm方式进行安装，请参考[kubeadm安装kubernetes集群](https://www.k8sre.com/#/kubernetes/kubeadm)。
+如需使用二进制方式一步一步安装，请参考[二进制安装kubernetes集群](https://www.k8sre.com/#/k8s/cluster/started)。
 
 
 
