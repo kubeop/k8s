@@ -53,6 +53,6 @@
         path: "{{ dir }}"
         src: "UUID={{device_uuid[0]}}"
         fstype: xfs
-        opts: defaults,noatime,nodiratime,nobarrier,pquota
+        opts: defaults,noatime,nodiratime,pquota
         state: mounted
       tags: fdisk
