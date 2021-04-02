@@ -1,6 +1,6 @@
 - name: Get cri-tools
   get_url:
-    url: "{{ kube_down_url }}/cri-tools/{{critools_version}}/crictl-{{critools_version}}-linux-amd64.tar.gz"
+    url: "{{ kube_down_url }}/cri-tools/crictl-{{critools_version}}-linux-amd64.tar.gz"
     dest: /tmp/
   tags: cri_tools
 
