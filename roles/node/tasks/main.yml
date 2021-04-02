@@ -25,7 +25,7 @@
 
 - name: Get cni-plugins
   get_url:
-    url: "{{ kube_down_url }}/cni-plugins/{{kubernetes.cni_plugins_version}}/cni-plugins-linux-amd64-{{kubernetes.cni_plugins_version}}.tgz"
+    url: "{{ kube_down_url }}/cni-plugins/cni-plugins-linux-amd64-{{kubernetes.cni_plugins_version}}.tgz"
     dest: /tmp/
   tags: cni_plugins
 
