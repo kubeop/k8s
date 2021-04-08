@@ -1,17 +1,17 @@
-- name: "安装依赖"
+- name: "Install dependency"
   yum:
     name: "{{ item.line }}"
     state: installed
   with_items:
-    - {line: 'libnetfilter_conntrack-devel'}
-    - {line: 'libnetfilter_conntrack'}
+    - {line: 'libnetfilter_cthelper'}
+    - {line: 'libnetfilter_cttimeout'}
+    - {line: 'libnetfilter_queue'}
     - {line: 'conntrack-tools'}
-    - {line: 'conntrack'}
-    - {line: 'socat'}
     - {line: 'ipvsadm'}
+    - {line: 'socat'}
   tags: node_app
 
-- name: "创建kubernetes目录"
+- name: "Create kubernetes directory"
   file:
     path: "{{ item.line }}"
     state: directory
@@ -36,7 +36,7 @@
     remote_src: yes
   tags: cni_plugins
 
-- name: "安装node节点"
+- name: "Install Node"
   get_url:
     url: "{{ item.line }}"
     dest: /usr/bin/
@@ -45,7 +45,7 @@
     - { line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-proxy"}
   tags: kube_node
 
-- name: "添加执行权限"
+- name: "Add permissions"
   file:
     dest: "{{ item.line }}"
     mode: 0755
@@ -54,7 +54,7 @@
     - {line: '/usr/bin/kube-proxy'}
   tags: kube_node
 
-- name: "分发node证书文件"
+- name: "Distribution certs"
   copy:
     src: "{{ item.line }}"
     dest: "/etc/kubernetes/pki/"
@@ -214,7 +214,7 @@
   run_once: true
   with_items:
     - "{{ groups['master'] }}"
-  tags: create_label
+  tags: create_master_label
 
 - name: "为master节点打标签"
   shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/master="
@@ -222,7 +222,7 @@
   run_once: true
   with_items:
     - "{{ groups['master'] }}"
-  tags: create_label
+  tags: create_master_label
 
 - name: "为node节点打标签"
   shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/node="
@@ -230,4 +230,4 @@
   run_once: true
   with_items:
     - "{{ groups['node'] }}"
-  tags: create_label
+  tags: create_node_label

@@ -1,21 +1,21 @@
 version = 2
-root = "{{ containerd_root | default("/var/lib/containerd") }}"
-state = "/run/containerd"
+root = "{{ containerd.root | default("/var/lib/containerd") }}"
+state = "{{ containerd.state | default("/run/containerd") }}"
 plugin_dir = ""
 # Kubernetes doesn't use containerd restart manager.
 disabled_plugins = ["io.containerd.internal.v1.restart"]
 required_plugins = []
 oom_score = 0
 
-{% if 'grpc' in containerd_config %}
+{% if 'grpc' in containerd %}
 [grpc]
-  address = "/run/containerd/containerd.sock"
+  address = "{{ containerd.state | default("/run/containerd") }}/containerd.sock"
   tcp_address = ""
   tcp_tls_cert = ""
   tcp_tls_key = ""
   uid = 0
   gid = 0
-{% for param, value in containerd_config.grpc.items() %}
+{% for param, value in containerd.grpc.items() %}
   {{ param }} = {{ value }}
 {% endfor %}
 {% endif %}
@@ -29,12 +29,12 @@ oom_score = 0
   address = ""
   uid = 0
   gid = 0
-  level = "{{ containerd_config.debug.level | default("") }}"
+  level = "{{ containerd.debug.level | default("") }}"
 
-{% if 'metrics' in containerd_config %}
+{% if 'metrics' in containerd %}
 [metrics]
-  address = "{{ containerd_config.metrics.address | default('') }}"
-  grpc_histogram = {{ containerd_config.metrics.grpc_histogram | default(false) | lower }}
+  address = "{{ containerd.metrics.address | default('') }}"
+  grpc_histogram = {{ containerd.metrics.grpc_histogram | default(false) | lower }}
 {% endif %}
 
 [cgroup]
@@ -59,18 +59,18 @@ oom_score = 0
     stream_server_port = "0"
     stream_idle_timeout = "4h0m0s"
     enable_selinux = false
-    sandbox_image = "{{ containerd_config.cri.sandbox_image }}"
+    sandbox_image = "{{ containerd.cri.sandbox_image }}"
     stats_collect_period = 10
     systemd_cgroup = false
     enable_tls_streaming = false
-    max_container_log_line_size = {{ containerd_config.cri.max_container_log_line_size }}
+    max_container_log_line_size = {{ containerd.cri.max_container_log_line_size }}
     disable_cgroup = false
     disable_apparmor = false
     restrict_oom_score_adj = false
     max_concurrent_downloads = 3
     disable_proc_mount = false
     [plugins."io.containerd.grpc.v1.cri".containerd]
-      snapshotter = "{{ containerd_config.containerd.snapshotter | default("overlayfs") }}"
+      snapshotter = "{{ containerd.containerd.snapshotter | default("overlayfs") }}"
       default_runtime_name = "runc"
       no_pivot = false
       [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
@@ -89,9 +89,9 @@ oom_score = 0
           runtime_engine = ""
           runtime_root = ""
           privileged_without_host_devices = false
-{% if 'options' in containerd_config %}
+{% if 'options' in containerd %}
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-{% for param, value in containerd_config.options.items() %}
+{% for param, value in containerd.options.items() %}
             {{ param }} = {{ value }}
 {% endfor %}
 {% endif %}
@@ -100,10 +100,10 @@ oom_score = 0
       conf_dir = "/etc/cni/net.d"
       max_conf_num = 1
       conf_template = ""
-{% if 'registries' in containerd_config %}
+{% if 'registries' in containerd %}
     [plugins."io.containerd.grpc.v1.cri".registry]
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-{% for registry, addr in containerd_config.registries.items() %}
+{% for registry, addr in containerd.registries.items() %}
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ registry }}"]
           endpoint = ["{{ ([ addr ] | flatten ) | join('","') }}"]
 {% endfor %}

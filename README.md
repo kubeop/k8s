@@ -2,8 +2,6 @@
 
 配合kubernetes剔除dockershim，本Playbook将运行时修改为containerd。
 
-如需使用二进制方式一步一步安装，请参考[二进制安装kubernetes集群](https://www.k8sre.com/#/k8s/cluster/started)。
-
 
 
 ## 一、准备文件服务器
@@ -15,10 +13,10 @@
 下载kubernetes
 
 ```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.20.4/kubernetes-server-linux-amd64.tar.gz
+wget https://storage.googleapis.com/kubernetes-release/release/v1.20.5/kubernetes-server-linux-amd64.tar.gz
 ```
 
-- url中v1.20.4替换为需要下载的版本即可。
+- url中v1.20.5替换为需要下载的版本即可。
 
 下载cri-tools
 
@@ -26,15 +24,15 @@ wget https://storage.googleapis.com/kubernetes-release/release/v1.20.4/kubernete
 wget https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.20.0/crictl-v1.20.0-linux-amd64.tar.gz
 ```
 
-- url中v1.20.4替换为需要下载的版本即可。
+- url中v1.20.0替换为需要下载的版本即可。
 
-下载cni-plugins
+下载containernetworking-plugins
 
 ```
 wget https://github.com/containernetworking/plugins/releases/download/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
 ```
 
-- url中v1.20.4替换为需要下载的版本即可。
+- url中v0.8.7替换为需要下载的版本即可。
 
 
 
@@ -44,7 +42,7 @@ wget https://github.com/containernetworking/plugins/releases/download/v0.8.7/cni
 
 ```
 yum -y install nginx
-mkdir /usr/share/nginx/html/{cni-plugins,cri-tools,v1.20.4}
+mkdir /usr/share/nginx/html/{cni-plugins,cri-tools,v1.20.5}
 ```
 
 将文件拷贝nginx目录
@@ -53,7 +51,7 @@ mkdir /usr/share/nginx/html/{cni-plugins,cri-tools,v1.20.4}
 # 解压
 tar zxvf kubernetes-server-linux-amd64.tar.gz
 # 拷贝kubernetes二进制文件到nginx目录
-cp kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kubelet,kube-proxy} /usr/share/nginx/html/v1.20.4/
+cp kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kubelet,kube-proxy} /usr/share/nginx/html/v1.20.5/
 # 拷贝cri-tools文件到nginx目录
 cp crictl-v1.20.0-linux-amd64.tar.gz /usr/share/nginx/html/cri-tools
 # 拷贝cni-plugins文件到nginx目录
@@ -215,7 +213,7 @@ ansible-playbook k8s.yml -i inventory -l master -t init
 执行节点扩容
 
 ```
-ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_containerd,install_node --skip-tags=bootstrap
+ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_containerd,install_node --skip-tags=bootstrap,create_node_label
 ```
 
 
@@ -239,7 +237,7 @@ ansible-playbook k8s.yml -i inventory -l node -t init
 执行节点扩容
 
 ```
-ansible-playbook k8s.yml -i inventory -l node -t install_containerd,install_node,install_ceph --skip-tags=create_label
+ansible-playbook k8s.yml -i inventory -l node -t install_containerd,install_node --skip-tags=bootstrap,create_master_label
 ```
 
 
@@ -292,7 +290,7 @@ ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_
 
 ## 六、升级kubernetes版本
 
-请先将`kubernetes_url`修改为新版本下载链接。
+请先在`kube_down_url`指定的文件服务器增加新版本下载链接。
 
 安装kubernetes组件
 

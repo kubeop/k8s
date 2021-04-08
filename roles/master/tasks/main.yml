@@ -1,4 +1,4 @@
-- name: "创建kubernetes证书目录"
+- name: "Create kubernetes directory"
   file:
     path: "/etc/kubernetes/pki/"
     owner: root
