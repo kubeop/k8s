@@ -260,12 +260,11 @@ ansible -i inventory etcd -m systemd -a "name=etcd state=restarted"
 验证etcd
 
 ```
-etcdctl \
-  --endpoints=https://172.16.90.201:2379,https://172.16.90.202:2379,https://172.16.90.203:2379 \
-  --cacert=/etc/kubernetes/pki/etcd-ca.pem \
-  --cert=/etc/kubernetes/pki/etcd-client.pem \
-  --key=/etc/kubernetes/pki/etcd-client.key \
-  endpoint health 
+etcdctl endpoint health \
+        --cacert=/etc/etcd/pki/etcd-ca.pem \
+        --cert=/etc/etcd/pki/etcd-healthcheck-client.pem \
+        --key=/etc/etcd/pki/etcd-healthcheck-client.key \
+        --endpoints=https://172.16.90.201:2379,https://172.16.90.202:2379,https://172.16.90.203:2379
 ```
 
 逐个删除旧的kubelet证书
