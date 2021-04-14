@@ -5,7 +5,7 @@ plugin_dir = ""
 # Kubernetes doesn't use containerd restart manager.
 disabled_plugins = ["io.containerd.internal.v1.restart"]
 required_plugins = []
-oom_score = 0
+oom_score = -999
 
 {% if 'grpc' in containerd %}
 [grpc]
