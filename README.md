@@ -81,28 +81,28 @@ git clone https://github.com/k8sre/k8s.git
 ```
 #本组内填写etcd服务器及主机名
 [etcd]
-172.16.90.201 hostname=etcd-01
-172.16.90.202 hostname=etcd-02
-172.16.90.203 hostname=etcd-03
+172.16.90.201 hostname=sh-etcd-01
+172.16.90.202 hostname=sh-etcd-02
+172.16.90.203 hostname=sh-etcd-03
 
 #本组内填写master服务器及主机名
 [master]
-172.16.90.204 hostname=master-01
-172.16.90.205 hostname=master-02
-172.16.90.206 hostname=master-03
+172.16.90.204 hostname=sh-master-01
+172.16.90.205 hostname=sh-master-02
+172.16.90.206 hostname=sh-master-03
 
 [haproxy]
-172.16.90.198 hostname=haproxy-01 type=MASTER priority=100
-172.16.90.199 hostname=haproxy-02 type=BACKUP priority=90
+172.16.90.198 hostname=sh-haproxy-01 type=MASTER priority=100
+172.16.90.199 hostname=sh-haproxy-02 type=BACKUP priority=90
 [all:vars]
 lb_port=6443
 vip=172.16.90.200
 
 #本组内填写node服务器及主机名
-[node]
-172.16.90.207 hostname=node-01
-172.16.90.208 hostname=node-02
-172.16.90.209 hostname=node-03
+[worker]
+172.16.90.207 hostname=sh-worker-01
+172.16.90.208 hostname=sh-worker-02
+172.16.90.209 hostname=sh-worker-03
 ```
 
 - 当haproxy和kube-apiserver部署在同一台服务器时，请将`lb_port`修改为其他不冲突的端口。
@@ -154,7 +154,7 @@ ansible-playbook fdisk.yml -i inventory -l etcd -e "disk=sdb dir=/var/lib/etcd"
 containerd数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=sdb dir=/var/lib/containerd"
+ansible-playbook fdisk.yml -i inventory -l master,worker -e "disk=sdb dir=/var/lib/containerd"
 ```
 
 
@@ -162,11 +162,10 @@ ansible-playbook fdisk.yml -i inventory -l master,node -e "disk=sdb dir=/var/lib
 ### 3.3、部署集群
 
 ```
-ansible-playbook k8s.yml -i inventory
+ansible-playbook cluster.yml -i inventory
 ```
 
 - 成功执行结束后，既kubernetes集群部署成功。
-- 后续部署其他基础插件可以参考[部署集群插件](https://www.k8sre.com/#/kubernetes/addons)。
 
 
 
@@ -175,9 +174,9 @@ ansible-playbook k8s.yml -i inventory
 ```
 #本组内填写master服务器及主机名
 [master]
-172.16.90.204 hostname=master-01 apiserver_domain_name=172.16.90.204
-172.16.90.205 hostname=master-02 apiserver_domain_name=172.16.90.205
-172.16.90.206 hostname=master-03 apiserver_domain_name=172.16.90.206
+172.16.90.204 hostname=master-01 apiserver_loadbalance_domain_name=172.16.90.204
+172.16.90.205 hostname=master-02 apiserver_loadbalance_domain_name=172.16.90.205
+172.16.90.206 hostname=master-03 apiserver_loadbalance_domain_name=172.16.90.206
 ```
 
 - 在inventory文件中，按照以上格式添加配置，将master节点连接的apiserver地址改为本机IP。
@@ -185,7 +184,7 @@ ansible-playbook k8s.yml -i inventory
 执行部署
 
 ```
-ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepalived
+ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 ```
 
 ⚠️：默认使用calico ipip网络，部署成功后，可以自行修改。
@@ -196,58 +195,58 @@ ansible-playbook k8s.yml -i inventory --skip-tags=install_haproxy,install_keepal
 
 ### 4.1、扩容master节点
 
-扩容时，请不要在inventory文件master组中保留旧服务器信息。
+扩容时，请不要在inventory文件master组中保留旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/containerd"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/var/lib/containerd"
 ```
 
 执行节点初始化
 
 ```
-ansible-playbook k8s.yml -i inventory -l master -t init
+ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t verify,cert,init
 ```
 
 执行节点扩容
 
 ```
-ansible-playbook k8s.yml -i inventory -l master -t cert,install_master,install_containerd,install_node --skip-tags=bootstrap,create_node_label
+ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,containerd,cri-tools,cni-plugins,worker --skip-tags=bootstrap,create_worker_label
 ```
 
 
 
 ### 4.2、扩容node节点
 
-扩容时，请不要在inventory文件node组中保留旧服务器信息。
+扩容时，请不要在inventory文件worker组中保留旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l node -e "disk=sdb dir=/var/lib/containerd"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_WORKER_IP} -e "disk=sdb dir=/var/lib/containerd"
 ```
 
 执行节点初始化
 
 ```
-ansible-playbook k8s.yml -i inventory -l node -t init
+ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t verify,cert,init
 ```
 
 执行节点扩容
 
 ```
-ansible-playbook k8s.yml -i inventory -l node -t install_containerd,install_node --skip-tags=bootstrap,create_master_label
+ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t containerd,cri-tools,cni-plugins,worker --skip-tags=bootstrap,create_master_label
 ```
 
 
 
 ## 五、替换集群证书
 
-先备份并删除证书目录{{ssl_dir}}，然后执行以下步骤重新生成证书并分发证书。
+先备份并删除证书目录{{cert.dir}}，然后执行以下步骤重新生成证书并分发证书。
 
 ```
-ansible-playbook k8s.yml -i inventory -t cert,dis_certs
+ansible-playbook cluster.yml -i inventory -t cert,dis_certs
 ```
 
 然后依次重启每个节点。
@@ -272,7 +271,7 @@ etcdctl \
 逐个删除旧的kubelet证书
 
 ```
-ansible -i inventory master,node -l master-01 -m shell -a "rm -rf /etc/kubernetes/pki/kubelet-*"
+ansible -i inventory master,node -l ${IP} -m shell -a "rm -rf /etc/kubernetes/pki/kubelet-*"
 ```
 
 - `-l`参数更换为具体节点IP。
@@ -280,7 +279,7 @@ ansible -i inventory master,node -l master-01 -m shell -a "rm -rf /etc/kubernete
 逐个重启节点
 
 ```
-ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
+ansible-playbook cluster.yml -i inventory -l ${IP} -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
 ```
 
 - 如calico、metrics-server等服务也使用了etcd，请记得一起更新相关证书。
@@ -290,18 +289,24 @@ ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_
 
 ## 六、升级kubernetes版本
 
-请先在`kube_down_url`指定的文件服务器增加新版本下载链接。
+请先在`fileserver`指定的文件服务器增加新版本下载链接。
 
 安装kubernetes组件
 
 ```
-ansible-playbook k8s.yml -i inventory -t kube_master,kube_node
+ansible-playbook cluster.yml -i inventory -t install_kubectl,install_master,install_worker
+```
+
+更新配置文件
+
+```
+ansible-playbook cluster.yml -i inventory -t dis_master_config,dis_worker_config
 ```
 
 然后依次重启每个kubernetes组件。
 
 ```
-ansible-playbook k8s.yml -i inventory -l master-01 -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
+ansible-playbook cluster.yml -i inventory -l ${IP} -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
 ```
 
 - `-l`参数更换为具体节点IP。

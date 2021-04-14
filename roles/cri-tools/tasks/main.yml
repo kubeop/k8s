@@ -1,6 +1,7 @@
+---
 - name: Get cri-tools
   get_url:
-    url: "{{ kube_down_url }}/cri-tools/crictl-{{critools_version}}-linux-amd64.tar.gz"
+    url: "{{ fileserver }}/cri-tools/crictl-{{critools.version}}-linux-amd64.tar.gz"
     dest: /tmp/
   tags: cri_tools
 
@@ -15,7 +16,7 @@
 
 - name: Install cri-tools
   unarchive:
-    src: "/tmp/crictl-{{critools_version}}-linux-amd64.tar.gz"
+    src: "/tmp/crictl-{{critools.version}}-linux-amd64.tar.gz"
     dest: /usr/bin/
     remote_src: yes
   tags: cri_tools

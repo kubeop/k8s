@@ -1,4 +1,5 @@
-- name: "生成calico部署文件"
+---
+- name: "Generate calico yaml"
   template:
     src: "{{item.src}}"
     dest: "{{item.dest}}"
@@ -6,7 +7,7 @@
     - {src: "calico-etcd.yaml.j2", dest: "/tmp/calico-etcd.yaml"}
   tags: calico
 
-- name: "部署calico"
+- name: "Deploy calico"
   shell: "kubectl apply -f /tmp/calico-etcd.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true

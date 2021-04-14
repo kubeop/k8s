@@ -1,35 +1,33 @@
-- name: "添加Docker软件源"
+---
+- name: "Add containerd repo"
   yum_repository:
-    file: docker-ce
-    name: "docker-ce-stable"
-    description: "Docker CE Stable - $basearch"
-    baseurl: "https://mirrors.aliyun.com/docker-ce/linux/centos/7/$basearch/stable"
-    gpgkey: "https://mirrors.aliyun.com/docker-ce/linux/centos/gpg"
+    file: containerd
+    name: "containerd"
+    description: "Containerd Stable - $basearch"
+    baseurl: "https://mirrors.bfsu.edu.cn/docker-ce/linux/centos/7/$basearch/stable"
+    gpgkey: "https://mirrors.bfsu.edu.cn/docker-ce/linux/centos/gpg"
     gpgcheck: yes
     enabled: yes
-  tags: docker_repo
+  tags: containerd_repo
 
-- name: "安装containerd"
+- name: "Install containerd"
   yum:
     update_cache: yes
-    enablerepo: docker-ce-stable
+    enablerepo: containerd
     name: 'containerd.io{% if containerd.version is defined and containerd.version != ""  %}-{{ containerd.version }}{% endif %}'
     state: installed
   tags: install_containerd
 
-- name: "创建containerd配置目录"
+- name: "Create containerd directory"
   file:
-    path: "{{ item.path }}"
+    path: "{{ containerd.root }}"
     owner: root
     group: root
     mode: 0755
     state: directory
-  with_items:
-    - {path: "/etc/containerd"}
-    - {path: "{{ containerd.root }}"}
   tags: containerd_config
 
-- name: "生成containerd配置文件"
+- name: "Set containerd config"
   template:
     src: "config.toml.j2"
     dest: "/etc/containerd/config.toml"

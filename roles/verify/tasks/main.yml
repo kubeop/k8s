@@ -1,0 +1,85 @@
+---
+- name: Fail if not supported OS
+  assert:
+    that: ansible_os_family in ['RedHat', 'CentOS']
+    msg: "{{ ansible_os_family }} is not a supported OS"
+
+- name: Fail when hostname is not specified
+  assert:
+    that: hostname is defined
+    msg: "inventory hostname not specified"
+
+- name: Fail if bad hostname
+  assert:
+    that: hostname is match("[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$")
+    msg: "Hostname must consist of lower case alphanumeric characters, '.' or '-', and must start and end with an alphanumeric character"
+  when: hostname is defined
+
+- name: Fail if etcd or master or worker group is empty
+  assert:
+    that: "groups.get('{{ item }}')"
+    fail_msg: "Group 'etcd' or 'master' or 'worker' cannot be empty"
+  with_items:
+    - etcd
+    - master
+    - worker
+  run_once: yes
+
+- name: Fail if non systemd OS type
+  assert:
+    that: ansible_service_mgr == "systemd"
+
+- name: Fail if even number of etcd hosts
+  assert:
+    that: groups.etcd|length is not divisibleby 2
+  when:
+    - inventory_hostname in groups.get('etcd',[])
+
+- name: Fail if unknown network plugin
+  assert:
+    that: network_plugin in ['calico', 'flannel', 'cilium']
+    msg: "{{ network_plugin }} is not supported"
+  when:
+    - network_plugin is defined
+
+- name: Fail if flannel incompatible network plugin
+  assert:
+    that: flannel.network_mode in ['ipip', 'bgp']
+    msg: "When using network_plugin flannel network_mode must be 'vxlan' or 'host-gw'"
+  when:
+    - network_plugin == 'flannel'
+
+- name: Fail if calico incompatible network plugin
+  assert:
+    that: calico.network_mode in ['ipip', 'bgp']
+    msg: "When using network_plugin calico network_mode must be 'ipip' or 'bgp'"
+  when:
+    - network_plugin == 'calico'
+
+- name: Stop if cilium kernel version is too low
+  assert:
+    that: ansible_kernel.split('-')[0] is version('4.9.17', '>=')
+    msg: "When using network_plugin cilium kernel version must be >= 4.9.17 "
+  when:
+    - network_plugin == 'cilium'
+
+- name: "Check that serviceSubnet is a network range"
+  assert:
+    that:
+      - kubernetes.serviceSubnet | ipaddr('net')
+    msg: "kubernetes.serviceSubnet = '{{ kubernetes.serviceSubnet }}' is not a valid network range"
+  run_once: yes
+
+- name: "Check that podSubnet is a network range"
+  assert:
+    that:
+      - kubernetes.podSubnet | ipaddr('net')
+    msg: "kubernetes.podSubnet = '{{ kubernetes.podSubnet }}' is not a valid network range"
+  run_once: yes
+
+- name: "Check that podSubnet does not collide with serviceSubnet"
+  assert:
+    that:
+      - kubernetes.podSubnet | ipaddr(kubernetes.serviceSubnet) | string == 'None'
+    msg: "podSubnet cannot be the same network segment as serviceSubnet"
+  run_once: yes

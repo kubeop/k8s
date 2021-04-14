@@ -1,30 +1,51 @@
-- name: "下载etcd安装包"
+---
+- name: "Create etcd user group"
+  group:
+    name: etcd
+    gid: 201
+    system: yes
+
+- name: Create etcd user
+  user:
+    name: etcd
+    uid: 201
+    group: etcd
+    comment: "Etcd User"
+    createhome: no
+    home: "{{ etcd.data_dir }}"
+    shell: /sbin/nologin
+    system: yes
+
+- name: "Download etcd binary"
   get_url:
     url: "https://mirrors.huaweicloud.com/etcd/v{{ etcd.version }}/etcd-v{{ etcd.version }}-linux-amd64.tar.gz"
     dest: /tmp/
 
-- name: "解压etcd安装包"
+- name: "Unarchive etcd"
   unarchive:
     src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64.tar.gz"
     dest: /tmp/
     copy: no
 
-- name: "安装etcd"
+- name: "Install etcd"
   copy:
     src: "{{ item.src }}"
-    dest: "/usr/local/bin/"
-    owner: root
-    group: root
-    mode: 0755
+    dest: "/usr/bin/"
+    owner: etcd
+    group: etcd
+    mode: 0750
     remote_src: yes
   with_items:
     - {src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64/etcd"}
     - {src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64/etcdctl"}
 
-- name: "分发证书"
+- name: "Distribution certs"
   copy:
     src: "{{ item.line }}"
-    dest: "/etc/kubernetes/pki/"
+    dest: "/etc/etcd/pki/"
+    owner: etcd
+    group: etcd
+    mode: 0640
   with_items:
     - {line: '{{ cert.dir }}/etcd-ca.pem'}
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-server.pem'}
@@ -35,15 +56,15 @@
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.key'}
   tags: dis_certs
 
-- name: "创建etcd数据目录"
+- name: "Create etcd data directory"
   file:
     path: "{{ etcd.data_dir }}"
-    owner: root
-    group: root
-    mode: 0755
+    owner: etcd
+    group: etcd
+    mode: 0750
     state: directory
 
-- name: "生成etcd配置文件"
+- name: "Generate etcd configure"
   template:
     src: "etcd.service.j2"
     dest: "/usr/lib/systemd/system/etcd.service"

@@ -6,9 +6,9 @@ Wants=network-online.target
 
 [Service]
 Type=notify
-User=root
+User=etcd
 
-ExecStart=/usr/local/bin/etcd \
+ExecStart=/usr/bin/etcd \
          --name={{ hostname | split_hostname }} \
          --data-dir={{ etcd.data_dir | default("/var/lib/etcd") }} \
          --advertise-client-urls=https://{{ ansible_default_ipv4.address }}:2379 \
@@ -19,12 +19,12 @@ ExecStart=/usr/local/bin/etcd \
          --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname | split_hostname }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
          --client-cert-auth=true \
          --peer-client-cert-auth=true \
-         --cert-file=/etc/kubernetes/pki/etcd-server.pem \
-         --key-file=/etc/kubernetes/pki/etcd-server.key \
-         --peer-cert-file=/etc/kubernetes/pki/etcd-peer.pem \
-         --peer-key-file=/etc/kubernetes/pki/etcd-peer.key \
-         --peer-trusted-ca-file=/etc/kubernetes/pki/etcd-ca.pem \
-         --trusted-ca-file=/etc/kubernetes/pki/etcd-ca.pem \
+         --cert-file=/etc/etcd/pki/etcd-server.pem \
+         --key-file=/etc/etcd/pki/etcd-server.key \
+         --peer-cert-file=/etc/etcd/pki/etcd-peer.pem \
+         --peer-key-file=/etc/etcd/pki/etcd-peer.key \
+         --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
+         --trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
          --snapshot-count=10000 \
          --logger=zap
 

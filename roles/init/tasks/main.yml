@@ -1,78 +1,57 @@
-- name: fail when hostname is not specified
-  fail:
-    msg: "hostname not specified"
-  when:
-    - hostname is not defined
-- name: "修改主机名"
+---
+- name: "Set hostname"
   hostname:
     name: "{{ hostname|quote }}"
   tags: hostname
-- name: "设置主机名ip高亮显示"
+
+- name: "Set env"
   copy:
     src: "ipenv.sh"
     dest: "/etc/profile.d/"
   tags: os_env
-- name: "设置时区"
+
+- name: "Set timezone"
   timezone:
     name: Asia/Shanghai
-- name: "添加阿里云软件源"
-  yum_repository:
-    file: CentOS-Base
-    name: '{{ item.name }}'
-    description: '{{ item.description}}'
-    baseurl: '{{ item.baseurl }}'
-    gpgkey: "https://mirrors.aliyun.com/centos/RPM-GPG-KEY-CentOS-7"
-    failovermethod: priority
-    gpgcheck: yes
-    enabled: yes
-  with_items:
-    - { name: "base",description: "CentOS-$releasever",baseurl: "https://mirrors.aliyun.com/centos/$releasever/os/$basearch/" }
-    - { name: "updates",description: "CentOS-$releasever",baseurl: "https://mirrors.aliyun.com/centos/$releasever/updates/$basearch/" }
-    - { name: "extras",description: "CentOS-$releasever",baseurl: "https://mirrors.aliyun.com/centos/$releasever/extras/$basearch/" }
-  tags: CentOS-Base
-- name: "添加EPEL软件源"
-  yum_repository:
-    file: epel
-    name: epel
-    description: Extra Packages for Enterprise Linux 7 - $basearch
-    baseurl: "https://mirrors.aliyun.com/epel/7/$basearch"
-    gpgkey: "file:///etc/pki/rpm-gpg/RPM-GPG-KEY-EPEL-7"
-    failovermethod: priority
-    gpgcheck: no
-    enabled: yes
-  tags: epel
-- name: "安装chrony"
+
+- name: "Install chrony"
   yum:
     name: "chrony"
     state: installed
   tags: ntp
-- name: "配置chrony服务"
+
+- name: "Set chrony"
   copy:
     src: "chrony.conf"
     dest: "/etc/chrony.conf"
   notify:
     - restart chrony
   tags: ntp
-- name: "关闭交换分区"
+
+- name: "Disable swap"
   shell: swapoff -a
   tags: swap
-- name: "从/etc/fstab移除swapfile"
+
+- name: "Remove swapfile from /etc/fstab"
   mount:
     name: "swap"
     fstype: sqap
     state: absent
   tags: swap
-- name: "关闭selinux"
+
+- name: "Disable selinux"
   selinux:
     state: disabled
   tags: selinux
-- name: "关闭防火墙"
+
+- name: "Stop firewalld"
   systemd:
     name: firewalld
     enabled: no
     state: stopped
   tags: firewalld
-- name: "修改ssh配置"
+
+- name: "Set ssh"
   lineinfile:
     dest: "/etc/ssh/sshd_config"
     regexp: "{{ item.regexp }}"
@@ -87,7 +66,8 @@
   notify:
     - restart sshd
   tags: sshd
-- name: "更改系统limits"
+
+- name: "Set limits"
   pam_limits:
     dest: "/etc/security/limits.conf"
     domain: '{{ item.limit_domain }}'
@@ -106,7 +86,8 @@
     - { limit_domain: '*',limit_type: 'soft',limit_item: 'nofile', value: '655360' }
     - { limit_domain: '*',limit_type: 'hard',limit_item: 'nofile', value: '655360' }
   tags: limits
-- name: "更改systemd limits"
+
+- name: "Set systemd limits"
   lineinfile:
     dest: "/etc/systemd/system.conf"
     line: "{{ item.line }}"
@@ -115,15 +96,37 @@
     - {line: 'DefaultLimitNOFILE=65535' }
     - {line: 'DefaultLimitNPROC=65535' }
   tags: limits
-- name: "启用依赖内核模块"
+
+- name: "Enabled modlue"
   modprobe:
     name: "{{ item.line }}"
     state: present
   with_items:
-    - {line: 'overlay' }
+    - {line: 'ip_vs' }
+    - {line: 'ip_vs_sh' }
+    - {line: 'ip_vs_rr' }
+    - {line: 'ip_vs_wrr' }
+    - {line: 'ip_vs_wlc' }
     - {line: 'bridge' }
+    - {line: 'overlay' }
+    - {line: 'br_netfilter' }
   tags: mod
-- name: "修改内核参数"
+
+- name: "Enabled conntrack modlue"
+  modprobe:
+    name: "nf_conntrack_ipv4"
+    state: present
+  when: ansible_kernel.split('-')[0] is version('4.19.0', '<')
+  tags: mod
+
+- name: "Enabled conntrack modlue"
+  modprobe:
+    name: "nf_conntrack"
+    state: present
+  when: ansible_kernel.split('-')[0] is version('4.19.0', '>=')
+  tags: mod
+
+- name: "Modify sysctl"
   sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
@@ -149,7 +152,8 @@
     - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
     - {name: 'net.bridge.bridge-nf-call-ip6tables',value: '1' }
   tags: sysctl
-- name: "安装基础应用"
+
+- name: "Install base application"
   yum:
     name: "{{ item.line }}"
     state: installed

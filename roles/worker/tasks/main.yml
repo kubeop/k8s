@@ -1,3 +1,4 @@
+---
 - name: "Install dependency"
   yum:
     name: "{{ item.line }}"
@@ -8,90 +9,115 @@
     - {line: 'libnetfilter_queue'}
     - {line: 'conntrack-tools'}
     - {line: 'ipvsadm'}
+    - {line: 'ipset'}
     - {line: 'socat'}
-  tags: node_app
+  tags: worker_app
 
 - name: "Create kubernetes directory"
   file:
     path: "{{ item.line }}"
+    owner: root
+    group: root
+    mode: 0755
     state: directory
-    mode: '0755'
   with_items:
     - {line: '/etc/kubernetes/pki'}
     - {line: '/etc/kubernetes/manifests'}
     - {line: "{{ kubernetes.kubelet_dir }}"}
-    - {line: '/opt/cni/bin'}
   tags: dir
 
-- name: Get cni-plugins
-  get_url:
-    url: "{{ kube_down_url }}/cni-plugins/cni-plugins-linux-amd64-{{kubernetes.cni_plugins_version}}.tgz"
-    dest: /tmp/
-  tags: cni_plugins
-
-- name: Install cni-plugins
-  unarchive:
-    src: "/tmp/cni-plugins-linux-amd64-{{kubernetes.cni_plugins_version}}.tgz"
-    dest: /opt/cni/bin
-    remote_src: yes
-  tags: cni_plugins
-
-- name: "Install Node"
+- name: "Install worker node"
   get_url:
     url: "{{ item.line }}"
     dest: /usr/bin/
+    owner: root
+    group: root
+    mode: 0750
   with_items:
-    - { line: "{{ kube_down_url }}/{{ kubernetes.version }}/kubelet"}
-    - { line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-proxy"}
-  tags: kube_node
+    - { line: "{{ fileserver }}/{{ kubernetes.version }}/kubelet"}
+    - { line: "{{ fileserver }}/{{ kubernetes.version }}/kube-proxy"}
+  tags: install_worker
 
-- name: "Add permissions"
-  file:
-    dest: "{{ item.line }}"
-    mode: 0755
-  with_items:
-    - {line: '/usr/bin/kubelet'}
-    - {line: '/usr/bin/kube-proxy'}
-  tags: kube_node
-
-- name: "Distribution certs"
+- name: "Distribution worker certs"
   copy:
     src: "{{ item.line }}"
     dest: "/etc/kubernetes/pki/"
-    mode: 0640
+    owner: root
+    group: root
+    mode: 0644
   with_items:
     - {line: "{{ cert.dir }}/ca.pem"}
     - {line: "{{ cert.dir }}/ca.key"}
     - {line: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.pem"}
     - {line: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.key"}
     - {line: "{{ cert.dir }}/token"}
-  tags: dis_certs
+  tags:
+    - dis_worker_certs
+    - dis_certs
 
-- name: "读取当前bootstrap-token"
+- name: "Get bootstrap-token"
+  copy:
+    src: "{{ cert.dir }}/token"
+    dest: "/etc/kubernetes/pki/"
+    owner: root
+    group: root
+    mode: 0640
+  tags:
+    - get_token
+    - bootstrap_token
+
+- name: "Get bootstrap-token-id"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
   register: token_id
-  tags: dis_node_config
+  tags:
+    - get_token_id
+    - bootstrap_token
 
-- name: "读取当前bootstrap-token-secret"
+- name: "Get bootstrap-token-secret"
   shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
   register: token_secret
-  tags: dis_node_config
+  tags:
+    - get_token_secret
+    - bootstrap_token
 
-- name: "生成kubelet配置文件"
+- name: "Distribution worker kubeconfig"
   template:
     src: "{{ item.src }}"
+    owner: root
+    group: root
+    mode: 0640
     dest: "{{ item.dest }}"
   with_items:
     - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
     - {src: "proxy.kubeconfig.j2",dest: "/etc/kubernetes/proxy.kubeconfig" }
-    - {src: "kubelet.service.j2",dest: "/usr/lib/systemd/system/kubelet.service" }
-    - {src: "kube-proxy.service.j2",dest: "/usr/lib/systemd/system/kube-proxy.service" }
+  tags: dis_worker_kubeconfig
+
+- name: "Distribution worker config"
+  template:
+    src: "{{ item.src }}"
+    owner: root
+    group: root
+    mode: 0640
+    dest: "{{ item.dest }}"
+  with_items:
     - {src: "kubelet.conf.j2",dest: "/etc/kubernetes/kubelet.conf" }
     - {src: "10-kubelet.conf.j2",dest: "/etc/sysconfig/kubelet" }
     - {src: "kube-proxy.conf.j2",dest: "/etc/kubernetes/kube-proxy.conf" }
-  tags: dis_node_config
+  tags: dis_worker_config
 
-- name: "检查是否存在bootstrap-token"
+- name: "Distribution worker system unit"
+  template:
+    src: "{{ item.src }}"
+    owner: root
+    group: root
+    mode: 0644
+    dest: "{{ item.dest }}"
+  with_items:
+    - {src: "kubelet.service.j2",dest: "/usr/lib/systemd/system/kubelet.service" }
+    - {src: "kube-proxy.service.j2",dest: "/usr/lib/systemd/system/kube-proxy.service" }
+  tags: dis_worker_systemd
+
+- name: "Check if bootstrap-token exists"
   shell: kubectl -n kube-system get secret bootstrap-token-{{ token_id.stdout }}
   ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
@@ -99,14 +125,14 @@
   register: bootstrap_token_ready
   tags: bootstrap
 
-- name: "创建bootstrap-token secret"
+- name: "Create bootstrap-token secret"
   when: bootstrap_token_ready.rc != 0
   shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
 
-- name: "检查 clusterrolebinding kubelet-bootstrap 是否存在"
+- name: "Check if clusterrolebinding kubelet-bootstrap exists"
   shell: kubectl get clusterrolebinding kubelet-bootstrap
   ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
@@ -114,14 +140,14 @@
   register: kubelet_bootstrap_ready
   tags: bootstrap
 
-- name: "创建 clusterrolebinding kubelet-bootstrap"
+- name: "Create clusterrolebinding kubelet-bootstrap"
   when: kubelet_bootstrap_ready.rc != 0
   shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
 
-- name: "检查 node-autoapprove-bootstrap 是否存在"
+- name: "Check if node-autoapprove-bootstrap exists"
   shell: kubectl get clusterrolebinding node-autoapprove-bootstrap
   ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
@@ -129,14 +155,14 @@
   register: node_autoapprove_bootstrap_ready
   tags: bootstrap
 
-- name: "创建 clusterrolebinding node-autoapprove-bootstrap"
+- name: "Create clusterrolebinding node-autoapprove-bootstrap"
   when: node_autoapprove_bootstrap_ready.rc != 0
   shell: kubectl create clusterrolebinding node-autoapprove-bootstrap --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
 
-- name: "检查 clusterrolebinding node-autoapprove-certificate-rotation 是否存在"
+- name: "Check if clusterrolebinding node-autoapprove-certificate-rotation exists"
   shell: kubectl get clusterrolebinding node-autoapprove-certificate-rotation
   ignore_errors: yes
   delegate_to: "{{ groups['master'][0] }}"
@@ -144,19 +170,22 @@
   register: node_autoapprove_certificate_rotation_ready
   tags: bootstrap
 
-- name: "创建 clusterrolebinding node-autoapprove-certificate-rotation"
+- name: "Create clusterrolebinding node-autoapprove-certificate-rotation"
   when: node_autoapprove_certificate_rotation_ready.rc != 0
   shell: kubectl create clusterrolebinding node-autoapprove-certificate-rotation --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient --group=system:nodes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
 
-- name: "删除bootstrap-token文件"
+- name: "Delete bootstrap-token"
   file:
     path: "/etc/kubernetes/pki/token"
     state: absent
+  tags:
+    - delete_token
+    - bootstrap_token
 
-- name: "重启kubelet"
+- name: "Restart kubelet"
   systemd:
     name: kubelet
     state: restarted
@@ -164,7 +193,7 @@
     enabled: yes
   tags: restart_kubelet
 
-- name: "等待kubelet启动成功"
+- name: "Waiting kubelet starting"
   wait_for:
     host: "{{ ansible_default_ipv4.address }}"
     port: 10250
@@ -172,7 +201,7 @@
     sleep: 2
   tags: healthcheck
 
-- name: "kubelet健康检查"
+- name: "kubelet health check"
   uri:
     url: "http://{{ ansible_default_ipv4.address }}:10248/healthz"
     return_content: yes
@@ -182,7 +211,7 @@
   connection: local
   tags: healthcheck
 
-- name: "重启kube-proxy"
+- name: "Restart kube-proxy"
   systemd:
     name: kube-proxy
     state: restarted
@@ -190,7 +219,7 @@
     enabled: yes
   tags: restart_proxy
 
-- name: "等待kube-proxy启动成功"
+- name: "Waiting kube-proxy starting"
   wait_for:
     host: "{{ ansible_default_ipv4.address }}"
     port: 10256
@@ -198,7 +227,7 @@
     sleep: 2
   tags: healthcheck
 
-- name: "kube-proxy健康检查"
+- name: "kube-proxy health check"
   uri:
     url: "http://{{ ansible_default_ipv4.address }}:10256/healthz"
     return_content: yes
@@ -208,26 +237,33 @@
   connection: local
   tags: healthcheck
 
-- name: "为master节点打污点"
+- name: "Create taint for master"
   shell: "kubectl taint nodes {{ item }} node-role.kubernetes.io/master=:NoSchedule"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
     - "{{ groups['master'] }}"
-  tags: create_master_label
+  tags:
+    - create_master_label
+    - create_master_taint
+    - create_label
 
-- name: "为master节点打标签"
+- name: "Create label for master"
   shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/master="
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
     - "{{ groups['master'] }}"
-  tags: create_master_label
+  tags:
+    - create_master_label
+    - create_label
 
-- name: "为node节点打标签"
+- name: "Create label for worker"
   shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/node="
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
-    - "{{ groups['node'] }}"
-  tags: create_node_label
+    - "{{ groups['worker'] }}"
+  tags:
+    - create_worker_label
+    - create_label
