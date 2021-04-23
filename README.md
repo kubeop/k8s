@@ -94,9 +94,6 @@ git clone https://github.com/k8sre/k8s.git
 [haproxy]
 172.16.90.198 hostname=sh-haproxy-01 type=MASTER priority=100
 172.16.90.199 hostname=sh-haproxy-02 type=BACKUP priority=90
-[all:vars]
-lb_port=6443
-vip=172.16.90.200
 
 #本组内填写node服务器及主机名
 [worker]
@@ -105,7 +102,7 @@ vip=172.16.90.200
 172.16.90.209 hostname=sh-worker-03
 ```
 
-- 当haproxy和kube-apiserver部署在同一台服务器时，请将`lb_port`修改为其他不冲突的端口。
+- 当haproxy和kube-apiserver部署在同一台服务器时，请确保端口不冲突。
 
 
 
@@ -165,29 +162,11 @@ ansible-playbook fdisk.yml -i inventory -l master,worker -e "disk=sdb dir=/var/l
 ansible-playbook cluster.yml -i inventory
 ```
 
-- 成功执行结束后，既kubernetes集群部署成功。
-
-
-
-如是公有云环境，使用公有云的负载均衡即可，无需安装haproxy和keepalived。另外，因公有云负载均衡不支持同时作为客户端和服务端，所以公有云负载均衡四层监听的后端服务器无法访问SLB。故做以下改造支持公有云环境：
-
-```
-#本组内填写master服务器及主机名
-[master]
-172.16.90.204 hostname=master-01 apiserver_loadbalance_domain_name=172.16.90.204
-172.16.90.205 hostname=master-02 apiserver_loadbalance_domain_name=172.16.90.205
-172.16.90.206 hostname=master-03 apiserver_loadbalance_domain_name=172.16.90.206
-```
-
-- 在inventory文件中，按照以上格式添加配置，将master节点连接的apiserver地址改为本机IP。
-
-执行部署
+如是公有云环境，使用公有云的负载均衡即可，无需安装haproxy和keepalived。
 
 ```
 ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 ```
-
-⚠️：默认使用calico ipip网络，部署成功后，可以自行修改。
 
 
 

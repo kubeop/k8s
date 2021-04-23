@@ -286,11 +286,11 @@
       - DNS:kubernetes.default.svc
       - DNS:kubernetes.default.svc.cluster
       - DNS:kubernetes.default.svc.cluster.local
-      - DNS:{{ apiserver_loadbalance_domain_name }}
+      - DNS:{% if 'domain_name' in loadbalance %}{{ loadbalance.domain_name }}{% else %}{{ loadbalance.ip }}{% endif %}
       - IP:127.0.0.1
       - IP:{{ item }}
       - IP:{{ kubernetes.serviceSubnet | next_nth_usable(1) }}
-      - IP:{{ vip }}
+      - IP:{{ loadbalance.ip }}
   with_items:
     - "{{ groups['master'] }}"
 

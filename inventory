@@ -13,9 +13,6 @@
 [haproxy]
 172.16.90.198 hostname=sh-haproxy-01 type=MASTER priority=100
 172.16.90.199 hostname=sh-haproxy-02 type=BACKUP priority=90
-[all:vars]
-lb_port=6443
-vip=172.16.90.200
 
 #本组内填写node服务器及主机名
 [worker]
