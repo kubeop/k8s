@@ -238,7 +238,7 @@
   tags: healthcheck
 
 - name: "Create taint for master"
-  shell: "kubectl taint nodes {{ item }} node-role.kubernetes.io/master=:NoSchedule"
+  shell: "kubectl taint nodes {{ hostvars[item].hostname }}-{{ item }} node-role.kubernetes.io/master=:NoSchedule"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
@@ -249,7 +249,7 @@
     - create_label
 
 - name: "Create label for master"
-  shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/master="
+  shell: "kubectl label nodes {{ hostvars[item].hostname }}-{{ item }} node-role.kubernetes.io/master="
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
@@ -259,7 +259,7 @@
     - create_label
 
 - name: "Create label for worker"
-  shell: "kubectl label nodes {{ item }} node-role.kubernetes.io/worker="
+  shell: "kubectl label nodes {{ hostvars[item].hostname }}-{{ item }} node-role.kubernetes.io/worker="
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:

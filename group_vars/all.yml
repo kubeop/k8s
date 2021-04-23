@@ -16,8 +16,11 @@ etcd:
   data_dir: "/var/lib/etcd"
 
 # High Availability
-# kube-apiserver负载均衡的信息。如使用域名，需提前配置解析。不使用域名时，可以请注释掉。
-# 如使用haproxy + keepalived ，并且跟master节点部署在一起时，请修改port以避免端口冲突。
+# kube-apiserver负载均衡的信息
+# 如使用haproxy + keepalived请填写VIP及端口
+# 如使用公有云负载均衡请填写负载均衡IP及端口（需再安装之前自行配置）
+# 如使用域名，需提前配置解析。不使用域名时，请注释掉
+# 如使用haproxy + keepalived ，并且跟master节点部署在一起时，请修改port以避免端口冲突
 loadbalance:
   ip: 172.16.90.200
   port: 6443
