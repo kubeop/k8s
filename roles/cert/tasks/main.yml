@@ -286,7 +286,7 @@
       - DNS:kubernetes.default.svc
       - DNS:kubernetes.default.svc.cluster
       - DNS:kubernetes.default.svc.cluster.local
-      - DNS:{{ kubernetes.apiserver_loadbalance_domain_name }}
+      - DNS:{{ apiserver_loadbalance_domain_name }}
       - IP:127.0.0.1
       - IP:{{ item }}
       - IP:{{ kubernetes.serviceSubnet | next_nth_usable(1) }}
