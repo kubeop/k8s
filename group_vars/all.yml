@@ -79,7 +79,7 @@ cilium:
 
 # Addons
 dns:
-  coredns_version: 1.7.0
+  coredns_version: 1.8.0
   enable_nodelocaldns: false
   nodelocaldns_version: 1.17.0
   nodelocaldns_ip: 169.254.20.10
