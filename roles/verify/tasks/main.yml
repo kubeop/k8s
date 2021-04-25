@@ -29,6 +29,12 @@
   assert:
     that: ansible_service_mgr == "systemd"
 
+- name: Fail if loadbalance domain name is None
+  assert:
+    that: loadbalance.domain_name != None
+    msg: "loadbalance domain name can not null"
+  when: loadbalance.domain_name is defined
+
 - name: Fail if even number of etcd hosts
   assert:
     that: groups.etcd|length is not divisibleby 2
