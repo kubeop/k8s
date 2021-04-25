@@ -119,7 +119,7 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: registry.aliyuncs.com/k8sxio/coredns:{{coredns.version}}
+        image: registry.aliyuncs.com/k8sxio/coredns:{{dns.coredns_version}}
         imagePullPolicy: IfNotPresent
         resources:
           limits:

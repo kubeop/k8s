@@ -6,3 +6,8 @@
 - import_tasks: metrics-server.yml
   tags:
     - metrics-server
+
+- import_tasks: nodelocaldns.yml
+  when: dns.enable_nodelocaldns == true
+  tags:
+    - nodelocaldns

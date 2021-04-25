@@ -78,9 +78,10 @@ cilium:
   version: v1.9.5
 
 # Addons
-coredns:
-  version: 1.7.0
+dns:
+  coredns_version: 1.7.0
   enable_nodelocaldns: false
-  nodelocaldns_ip: "169.254.20.10"
+  nodelocaldns_version: 1.17.0
+  nodelocaldns_ip: 169.254.20.10
 metrics_server:
   version: v0.4.1
