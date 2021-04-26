@@ -2,6 +2,7 @@
 - name: "Set hostname"
   hostname:
     name: "{{ hostname|quote }}"
+    use: systemd
   tags: hostname
 
 - name: "Set env"
