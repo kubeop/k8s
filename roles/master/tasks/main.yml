@@ -91,6 +91,17 @@
     - dis_master_certs
     - dis_certs
 
+- name: "Distribution kubectl kubeconfig"
+  template:
+    src: "admin.kubeconfig.j2"
+    owner: kube
+    group: kube
+    mode: 0600
+    dest: "~/.kube/config"
+  tags:
+    - dis_kubectl_kubeconfig
+    - dis_master_kubeconfig
+
 - name: "Distribution master kubeconfig"
   template:
     src: "{{ item.src }}"
