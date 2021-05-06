@@ -10,7 +10,7 @@
 
 - name: Get cni-plugins
   get_url:
-    url: "{{ fileserver }}/cni-plugins/cni-plugins-linux-amd64-{{kubernetes.cni_plugins_version}}.tgz"
+    url: "https://mirror.azure.cn/kubernetes/containernetworking-plugins/cni-plugins-linux-amd64-{{kubernetes.cni_plugins_version}}.tgz"
     dest: /tmp/
 
 - name: Install cni-plugins

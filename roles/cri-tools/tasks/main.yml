@@ -1,7 +1,7 @@
 ---
 - name: Get cri-tools
   get_url:
-    url: "{{ fileserver }}/cri-tools/crictl-{{critools.version}}-linux-amd64.tar.gz"
+    url: "https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz"
     dest: /tmp/
   tags: cri_tools
 

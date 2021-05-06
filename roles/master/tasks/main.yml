@@ -38,7 +38,7 @@
 
 - name: "Install kubectl"
   get_url:
-    url: "{{ fileserver }}/{{ kubernetes.version }}/kubectl"
+    url: "https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release/{{ kubernetes.version }}/bin/linux/amd64/kubectl"
     owner: kube
     group: kube
     mode: 0755
@@ -53,9 +53,9 @@
     mode: 0750
     dest: /usr/bin/
   with_items:
-    - {line: "{{ fileserver }}/{{ kubernetes.version }}/kube-apiserver"}
-    - {line: "{{ fileserver }}/{{ kubernetes.version }}/kube-controller-manager"}
-    - {line: "{{ fileserver }}/{{ kubernetes.version }}/kube-scheduler"}
+    - {line: "https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release/{{ kubernetes.version }}/bin/linux/amd64/kube-apiserver"}
+    - {line: "https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release/{{ kubernetes.version }}/bin/linux/amd64/kube-controller-manager"}
+    - {line: "https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release/{{ kubernetes.version }}/bin/linux/amd64/kube-scheduler"}
   tags: install_master
 
 - name: "Distribution master certs"

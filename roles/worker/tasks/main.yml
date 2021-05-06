@@ -34,8 +34,8 @@
     group: root
     mode: 0750
   with_items:
-    - { line: "{{ fileserver }}/{{ kubernetes.version }}/kubelet"}
-    - { line: "{{ fileserver }}/{{ kubernetes.version }}/kube-proxy"}
+    - { line: "https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release/{{ kubernetes.version }}/bin/linux/amd64/kubelet"}
+    - { line: "https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release/{{ kubernetes.version }}/bin/linux/amd64/kube-proxy"}
   tags: install_worker
 
 - name: "Distribution worker certs"

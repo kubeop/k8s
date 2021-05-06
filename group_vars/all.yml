@@ -1,6 +1,3 @@
-# kubernetes 组件二进制包下载服务器地址
-fileserver: http://dl.k8sre.com
-
 # Kubernetes Cert
 cert:
   # 签发集群整数保存目录，默认签发10年有限期证书

@@ -4,69 +4,9 @@
 
 
 
-## 一、准备文件服务器
+## 一、配置Playbook
 
-配置文件中指定的文件服务器下载比较慢，可以自行搭建kubernetes二进制文件的文件下载服务器。
-
-### 1.1、下载二进制包
-
-下载kubernetes
-
-```
-wget https://storage.googleapis.com/kubernetes-release/release/v1.20.5/kubernetes-server-linux-amd64.tar.gz
-```
-
-- url中v1.20.5替换为需要下载的版本即可。
-
-下载cri-tools
-
-```
-wget https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.20.0/crictl-v1.20.0-linux-amd64.tar.gz
-```
-
-- url中v1.20.0替换为需要下载的版本即可。
-
-下载containernetworking-plugins
-
-```
-wget https://github.com/containernetworking/plugins/releases/download/v0.8.7/cni-plugins-linux-amd64-v0.8.7.tgz
-```
-
-- url中v0.8.7替换为需要下载的版本即可。
-
-
-
-### 1.2、配置文件服务器
-
-安装nginx
-
-```
-yum -y install nginx
-mkdir /usr/share/nginx/html/{cni-plugins,cri-tools,v1.20.5}
-```
-
-将文件拷贝nginx目录
-
-```
-# 解压
-tar zxvf kubernetes-server-linux-amd64.tar.gz
-# 拷贝kubernetes二进制文件到nginx目录
-cp kubernetes/server/bin/{kube-apiserver,kube-controller-manager,kube-scheduler,kubectl,kubelet,kube-proxy} /usr/share/nginx/html/v1.20.5/
-# 拷贝cri-tools文件到nginx目录
-cp crictl-v1.20.0-linux-amd64.tar.gz /usr/share/nginx/html/cri-tools
-# 拷贝cni-plugins文件到nginx目录
-cp cni-plugins-linux-amd64-v0.8.7.tgz /usr/share/nginx/html/cni-plugins
-```
-启动服务
-```
-systemctl start nginx
-```
-
-
-
-## 二、配置Playbook
-
-### 2.1、拉取Playbook代码
+### 1.1、拉取Playbook代码
 
 ```
 git clone https://github.com/k8sre/k8s.git
@@ -74,7 +14,7 @@ git clone https://github.com/k8sre/k8s.git
 
 
 
-### 2.2、配置inventory
+### 1.2、配置inventory
 
 请按照inventory模板格式修改对应资源
 
@@ -106,7 +46,7 @@ git clone https://github.com/k8sre/k8s.git
 
 
 
-### 2.3、配置集群安装信息
+### 1.3、配置集群安装信息
 
 编辑group_vars/all.yml文件，填入自己的配置。
 
@@ -125,9 +65,9 @@ git clone https://github.com/k8sre/k8s.git
 
 
 
-## 三、安装步骤
+## 二、安装步骤
 
-### 3.1、安装Ansible
+### 2.1、安装Ansible
 
 在单独的Ansible控制机执行以下命令安装Ansible
 
@@ -138,7 +78,7 @@ pip install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 
 
 
-### 3.2、格式化并挂载数据盘
+### 2.2、格式化并挂载数据盘
 
 如已经自行格式化并挂载目录完成，可以跳过此步骤。
 
@@ -156,7 +96,7 @@ ansible-playbook fdisk.yml -i inventory -l master,worker -e "disk=sdb dir=/var/l
 
 
 
-### 3.3、部署集群
+### 2.3、部署集群
 
 ```
 ansible-playbook cluster.yml -i inventory
@@ -170,9 +110,9 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 
 
 
-## 四、扩容节点
+## 三、扩容节点
 
-### 4.1、扩容master节点
+### 3.1、扩容master节点
 
 扩容时，请不要在inventory文件master组中保留旧服务器信息，仅保留扩容节点的信息。
 
@@ -196,7 +136,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 
 
 
-### 4.2、扩容node节点
+### 3.2、扩容node节点
 
 扩容时，请不要在inventory文件worker组中保留旧服务器信息，仅保留扩容节点的信息。
 
@@ -220,7 +160,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t containerd,cr
 
 
 
-## 五、替换集群证书
+## 四、替换集群证书
 
 先备份并删除证书目录{{cert.dir}}，然后执行以下步骤重新生成证书并分发证书。
 
@@ -265,9 +205,9 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t restart_apiserver,restart_
 
 
 
-## 六、升级kubernetes版本
+## 五、升级kubernetes版本
 
-请先在`fileserver`指定的文件服务器增加新版本下载链接。
+请先编辑group_vars/all.yml，修改kubernetes.version为新版本。
 
 安装kubernetes组件
 
