@@ -69,11 +69,19 @@ git clone https://github.com/k8sre/k8s.git
 
 ### 2.1、安装Ansible
 
+CentOS7等系统需安装以下依赖才能安装ansible
+
+```
+yum -y install python36-PyYAML python36-asn1crypto python36-cffi python36-cryptography python36-idna python36-jinja2 python36-jmespath python36-markupsafe python36-paramiko python36-ply python36-pyasn1 python36-pycparser python36-six sshpass
+```
+
+- 需要配置epel源
+
 在单独的Ansible控制机执行以下命令安装Ansible
 
 ```
-yum -y install ansible
-pip install netaddr -i https://mirrors.aliyun.com/pypi/simple/
+pip3 install ansible==2.9.21
+pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 ```
 
 

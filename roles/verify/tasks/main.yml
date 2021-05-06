@@ -50,7 +50,7 @@
 
 - name: Fail if flannel incompatible network plugin
   assert:
-    that: flannel.network_mode in ['ipip', 'bgp']
+    that: flannel.network_mode in ['vxlan', 'host-gw']
     msg: "When using network_plugin flannel network_mode must be 'vxlan' or 'host-gw'"
   when:
     - network_plugin == 'flannel'
