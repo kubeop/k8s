@@ -59,6 +59,7 @@ oom_score = -999
     stream_server_port = "0"
     stream_idle_timeout = "4h0m0s"
     enable_selinux = false
+    selinux_category_range = 1024
     sandbox_image = "{{ containerd.cri.sandbox_image }}"
     stats_collect_period = 10
     systemd_cgroup = false
@@ -69,30 +70,39 @@ oom_score = -999
     restrict_oom_score_adj = false
     max_concurrent_downloads = 3
     disable_proc_mount = false
+    unset_seccomp_profile = ""
+    tolerate_missing_hugetlb_controller = true
+    disable_hugetlb_controller = true
+    ignore_image_defined_volumes = false
     [plugins."io.containerd.grpc.v1.cri".containerd]
       snapshotter = "{{ containerd.containerd.snapshotter | default("overlayfs") }}"
       default_runtime_name = "runc"
       no_pivot = false
+      disable_snapshot_annotations = true
+      discard_unpacked_layers = false
       [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
         runtime_type = ""
         runtime_engine = ""
         runtime_root = ""
         privileged_without_host_devices = false
+        base_runtime_spec = ""
       [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
         runtime_type = ""
         runtime_engine = ""
         runtime_root = ""
         privileged_without_host_devices = false
+        base_runtime_spec = ""
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
         [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
-          runtime_type = "io.containerd.runc.v1"
+          runtime_type = "io.containerd.runc.v2"
           runtime_engine = ""
           runtime_root = ""
           privileged_without_host_devices = false
-{% if 'options' in containerd %}
+          base_runtime_spec = ""
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+{% if 'options' in containerd %}
 {% for param, value in containerd.options.items() %}
-            {{ param }} = {{ value }}
+            {{ param }} = {{ value | lower }}
 {% endfor %}
 {% endif %}
     [plugins."io.containerd.grpc.v1.cri".cni]
@@ -108,6 +118,8 @@ oom_score = -999
           endpoint = ["{{ ([ addr ] | flatten ) | join('","') }}"]
 {% endfor %}
 {% endif %}
+    [plugins."io.containerd.grpc.v1.cri".image_decryption]
+      key_model = ""
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
       tls_cert_file = ""
       tls_key_file = ""
@@ -133,3 +145,4 @@ oom_score = -999
     root_path = ""
     pool_name = ""
     base_image_size = ""
+    async_remove = false

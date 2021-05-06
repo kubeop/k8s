@@ -51,15 +51,18 @@ containerd:
     max_send_message_size: 16777216
   debug:
     level: ""
+  metrics:
+    address: ""
+    grpc_histogram: false
   cri:
     sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.3"
     max_container_log_line_size: -1
   containerd:
     snapshotter: overlayfs
   options:
-    SystemdCgroup: "true"
+    SystemdCgroup: true
   registries:
-    "docker.io": "https://dockerhub.mirrors.nwafu.edu.cn"
+    "docker.io": "https://registry-1.docker.io"
     "k8s.gcr.io": "https://registry.aliyuncs.com/k8sxio"
 
 # Network Plugin
