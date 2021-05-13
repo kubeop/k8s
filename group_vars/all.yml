@@ -26,7 +26,7 @@ loadbalance:
 # Kubernetes
 kubernetes:
   # kubernetes 版本
-  version: v1.20.5
+  version: v1.21.0
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 集群Service网段
@@ -38,10 +38,10 @@ kubernetes:
 
 # Containerd
 critools:
-  version: v1.20.0
+  version: v1.21.0
 containerd:
   # containerd 版本
-  version: 1.4.3
+  version: 1.4.4
   # containerd 持久化数据目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -68,14 +68,14 @@ containerd:
 # Network Plugin
 network_plugin: calico
 calico:
-  version: v3.17.0
+  version: v3.19.0
   network_mode: ipip
 flannel:
   version: v0.13.0
   network_mode: vxlan
 # cilium need linux kernel >= 4.9.17
 cilium:
-  version: v1.9.5
+  version: v1.9.6
 
 # Addons
 dns:
