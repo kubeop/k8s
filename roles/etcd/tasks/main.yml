@@ -61,7 +61,7 @@
     path: "{{ etcd.data_dir }}"
     owner: etcd
     group: etcd
-    mode: 0750
+    mode: 0700
     state: directory
 
 - name: "Generate etcd configure"
