@@ -54,7 +54,9 @@
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.key'}
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.pem'}
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.key'}
-  tags: dis_certs
+  tags:
+    - dis_etcd_certs
+    - dis_certs
 
 - name: "Create etcd data directory"
   file:
