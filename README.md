@@ -130,10 +130,16 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/var/lib/containerd"
 ```
 
+执行生成节点证书
+
+```
+ansible-playbook cluster.yml -i inventory -t cert
+```
+
 执行节点初始化
 
 ```
-ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t verify,cert,init
+ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t verify,init
 ```
 
 执行节点扩容
@@ -154,10 +160,16 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 ansible-playbook fdisk.yml -i inventory -l ${SCALE_WORKER_IP} -e "disk=sdb dir=/var/lib/containerd"
 ```
 
+执行生成节点证书
+
+```
+ansible-playbook cluster.yml -i inventory -t cert
+```
+
 执行节点初始化
 
 ```
-ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t verify,cert,init
+ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t verify,init
 ```
 
 执行节点扩容
