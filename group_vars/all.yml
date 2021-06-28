@@ -25,8 +25,11 @@ loadbalance:
 
 # Kubernetes
 kubernetes:
+  # kubernetes 二进制安装包下载地址，默认为阿里云从Google同步过来的镜像，更新较慢，最新版本可能未同步过来。
+  # 如使用自建文件服务器，请保证下载路径为:http://xxx.xxx.xxx/v1.21.2/bin/linux/amd64/kube-apiserver。
+  download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.21.0
+  version: v1.21.2
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 集群Service网段

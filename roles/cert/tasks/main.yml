@@ -31,6 +31,7 @@
     privatekey_path: "{{ cert.dir }}/etcd-ca.key"
     use_common_name_for_san: no
     common_name: etcd-ca
+    create_subject_key_identifier: yes
     basic_constraints_critical: yes
     basic_constraints:
       - CA:TRUE
@@ -67,6 +68,9 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-server.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
     common_name: "{{ item }}"
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -109,6 +113,9 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-peer.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
     common_name: "{{ item }}"
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -152,6 +159,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
     organization_name: system:masters
     common_name: kube-apiserver-etcd-client
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
@@ -190,6 +200,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
     organization_name: system:masters
     common_name: kube-etcd-healthcheck-client
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
@@ -236,6 +249,7 @@
     privatekey_path: "{{ cert.dir }}/ca.key"
     use_common_name_for_san: no
     common_name: kubernetes
+    create_subject_key_identifier: yes
     basic_constraints_critical: yes
     basic_constraints:
       - CA:TRUE
@@ -273,6 +287,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
     common_name: kube-apiserver
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -323,6 +340,9 @@
     organization_name: system:masters
     common_name: kube-apiserver-kubelet-client
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -360,6 +380,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/admin.key"
     organization_name: system:masters
     common_name: kubernetes-admin
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
@@ -398,6 +421,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
     common_name: system:kube-controller-manager
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -435,6 +461,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/scheduler.key"
     common_name: system:kube-scheduler
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -473,6 +502,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
     common_name: system:kube-proxy
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -521,6 +553,7 @@
     privatekey_path: "{{ cert.dir }}/front-proxy-ca.key"
     use_common_name_for_san: no
     common_name: front-proxy-ca
+    create_subject_key_identifier: yes
     basic_constraints_critical: yes
     basic_constraints:
       - CA:TRUE
@@ -558,6 +591,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
     common_name: front-proxy-client
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
