@@ -44,7 +44,7 @@ critools:
   version: v1.21.0
 containerd:
   # containerd 版本
-  version: 1.4.4
+  version: 1.4.6
   # containerd 持久化数据目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -58,7 +58,7 @@ containerd:
     address: ""
     grpc_histogram: false
   cri:
-    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.3"
+    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.4.1"
     max_container_log_line_size: -1
   containerd:
     snapshotter: overlayfs
