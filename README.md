@@ -18,30 +18,6 @@ git clone https://github.com/k8sre/k8s.git
 
 请按照inventory模板格式修改对应资源
 
-```
-#本组内填写etcd服务器及主机名
-[etcd]
-172.16.90.101 hostname=sh-etcd-01
-172.16.90.102 hostname=sh-etcd-02
-172.16.90.103 hostname=sh-etcd-03
-
-#本组内填写master服务器及主机名
-[master]
-172.16.90.110 hostname=sh-master-01
-172.16.90.111 hostname=sh-master-02
-172.16.90.112 hostname=sh-master-03
-
-[haproxy]
-172.16.90.98 hostname=sh-haproxy-01 type=MASTER priority=100
-172.16.90.99 hostname=sh-haproxy-02 type=BACKUP priority=90
-
-#本组内填写node服务器及主机名
-[worker]
-172.16.90.120 hostname=sh-worker-01
-172.16.90.121 hostname=sh-worker-02
-172.16.90.122 hostname=sh-worker-03
-```
-
 - 当haproxy和kube-apiserver部署在同一台服务器时，请确保端口不冲突。
 
 
