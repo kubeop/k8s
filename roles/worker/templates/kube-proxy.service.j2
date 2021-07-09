@@ -2,7 +2,6 @@
 Description=Kubernetes Kube-Proxy Server
 Documentation=https://github.com/kubernetes/kubernetes
 After=network.target
-Requires=network.service
 
 [Service]
 ExecStartPre=-/usr/sbin/modprobe ip_vs
