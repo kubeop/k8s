@@ -60,6 +60,8 @@
     state: present
   with_items:
     - { regexp: "UseDNS", line: "UseDNS no" }
+    - { regexp: "ClientAliveInterval", line: "ClientAliveInterval 600" }
+    - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }
     - { regexp: "AddressFamily", line: "AddressFamily inet" }
     - { regexp: "PermitRootLogin", line: "PermitRootLogin yes" }
     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
@@ -67,6 +69,38 @@
   notify:
     - restart sshd
   tags: sshd
+
+- name: "Set password expiration time"
+  lineinfile:
+    dest: "/etc/login.defs"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: "PASS_MIN_DAYS", line: "PASS_MIN_DAYS 7" }
+    - { regexp: "PASS_MAX_DAYS", line: "PASS_MAX_DAYS 90" }
+  tags: passwd
+
+- name: "Set password complexity"
+  lineinfile:
+    dest: "/etc/security/pwquality.conf"
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    state: present
+  with_items:
+    - { regexp: "minlen", line: "minlen=10" }
+    - { regexp: "minclass", line: "minclass=3" }
+  tags: passwd
+
+- name: "Set password remember"
+  replace:
+    path: "{{ item.path }}"
+    regexp: "use_authtok$"
+    replace: "use_authtok remember=5"
+  with_items:
+    - { path: "/etc/pam.d/password-auth" }
+    - { path: "/etc/pam.d/system-auth" }
+  tags: passwd
 
 - name: "Set limits"
   pam_limits:
