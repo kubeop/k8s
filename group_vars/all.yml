@@ -4,6 +4,8 @@ cert:
   dir: /opt/certs/pro
   # 签发证书大小
   size: 2048
+  # 签发证书的时间
+  day: 3650d
 
 # Etcd
 etcd:

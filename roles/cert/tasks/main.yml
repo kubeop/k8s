@@ -50,6 +50,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/etcd-ca.pem"
     provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
     selfsigned_create_subject_key_identifier: never_create
     privatekey_path: "{{ cert.dir }}/etcd-ca.key"
     csr_path: "{{ cert.dir }}/etcd-ca.csr"
@@ -90,6 +91,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/etcd-server.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
@@ -135,6 +137,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/etcd-peer.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
@@ -176,6 +179,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
@@ -217,6 +221,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
@@ -268,6 +273,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/ca.pem"
     provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
     selfsigned_create_subject_key_identifier: never_create
     privatekey_path: "{{ cert.dir }}/ca.key"
     csr_path: "{{ cert.dir }}/ca.csr"
@@ -315,6 +321,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/apiserver.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
@@ -356,6 +363,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.key"
@@ -397,6 +405,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/admin.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/admin.key"
@@ -437,6 +446,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/controller-manager.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
@@ -477,6 +487,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/scheduler.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/scheduler.key"
@@ -519,6 +530,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/kube-proxy.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
@@ -572,6 +584,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/front-proxy-ca.pem"
     provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
     selfsigned_create_subject_key_identifier: never_create
     privatekey_path: "{{ cert.dir }}/front-proxy-ca.key"
     csr_path: "{{ cert.dir }}/front-proxy-ca.csr"
@@ -607,6 +620,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/front-proxy-client.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
