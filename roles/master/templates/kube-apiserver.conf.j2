@@ -1,6 +1,6 @@
 KUBE_API_ARGS="\
     --advertise-address={{ ansible_default_ipv4.address }} \
-    --allow-privileged=false \
+    --allow-privileged=true \
     --audit-log-format=json \
     --audit-log-maxage=7 \
     --audit-log-maxbackup=10 \

@@ -11,11 +11,14 @@
 172.16.90.112 hostname=sh-master-03
 
 [haproxy]
-172.16.90.198 hostname=sh-haproxy-01 type=MASTER priority=100
-172.16.90.199 hostname=sh-haproxy-02 type=BACKUP priority=90
+172.16.90.98 hostname=sh-haproxy-01 type=MASTER priority=100
+172.16.90.99 hostname=sh-haproxy-02 type=BACKUP priority=90
 
 #本组内填写worker服务器及主机名
 [worker]
 172.16.90.120 hostname=sh-worker-01
 172.16.90.121 hostname=sh-worker-02
 172.16.90.122 hostname=sh-worker-03
+172.16.90.123 hostname=sh-worker-04
+172.16.90.124 hostname=sh-worker-05
+172.16.90.125 hostname=sh-worker-06
