@@ -84,7 +84,7 @@ calico:
 
 # Addons
 coredns:
-  version: 1.8.4
+  version: 1.8.0
 nodelocaldns:
   enabled: true
   version: 1.17.0
