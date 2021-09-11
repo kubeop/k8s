@@ -1,7 +1,7 @@
 ---
 - name: "Download Helm binary"
   get_url:
-    url: "hhttps://mirrors.huaweicloud.com/helm/{{helm.version}}/helm-{{helm.version}}-linux-amd64.tar.gz"
+    url: "https://mirrors.huaweicloud.com/helm/{{helm.version}}/helm-{{helm.version}}-linux-amd64.tar.gz"
     dest: /tmp/
 
 - name: "Unarchive Helm"
