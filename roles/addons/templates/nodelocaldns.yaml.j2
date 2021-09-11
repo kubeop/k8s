@@ -62,19 +62,19 @@ data:
         }
         reload
         loop
-        bind {{dns.nodelocaldns_ip}}
+        bind {{nodelocaldns.ip}}
         forward . {{ kubernetes.serviceSubnet | next_nth_usable(2) }} {
                 force_tcp
         }
         prometheus :9253
-        health {{dns.nodelocaldns_ip}}:8080
+        health {{nodelocaldns.ip}}:8080
         }
     in-addr.arpa:53 {
         errors
         cache 30
         reload
         loop
-        bind {{dns.nodelocaldns_ip}}
+        bind {{nodelocaldns.ip}}
         forward . {{ kubernetes.serviceSubnet | next_nth_usable(2) }} {
                 force_tcp
         }
@@ -85,7 +85,7 @@ data:
         cache 30
         reload
         loop
-        bind {{dns.nodelocaldns_ip}}
+        bind {{nodelocaldns.ip}}
         forward . {{ kubernetes.serviceSubnet | next_nth_usable(2) }} {
                 force_tcp
         }
@@ -96,7 +96,7 @@ data:
         cache 30
         reload
         loop
-        bind {{dns.nodelocaldns_ip}}
+        bind {{nodelocaldns.ip}}
         forward . /etc/resolv.conf {
                 force_tcp
         }
@@ -140,12 +140,12 @@ spec:
         operator: "Exists"
       containers:
       - name: node-cache
-        image: registry.aliyuncs.com/k8sxio/k8s-dns-node-cache:{{dns.nodelocaldns_version}}
+        image: registry.aliyuncs.com/k8sxio/k8s-dns-node-cache:{{nodelocaldns.version}}
         resources:
           requests:
             cpu: 25m
             memory: 5Mi
-        args: [ "-localip", "{{dns.nodelocaldns_ip}}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+        args: [ "-localip", "{{nodelocaldns.ip}}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
         securityContext:
           privileged: true
         ports:
@@ -160,7 +160,7 @@ spec:
           protocol: TCP
         livenessProbe:
           httpGet:
-            host: {{dns.nodelocaldns_ip}}
+            host: {{nodelocaldns.ip}}
             path: /health
             port: 8080
           initialDelaySeconds: 60

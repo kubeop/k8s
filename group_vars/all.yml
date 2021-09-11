@@ -45,7 +45,7 @@ kubernetes:
 critools:
   version: v1.22.0
 containerd:
-  # containerd 版本
+  # containerd 版本,由yum list containerd.io --showduplicates | sort -r命令查询
   version: 1.4.9
   # containerd 持久化数据目录
   root: "/var/lib/containerd"
@@ -72,21 +72,29 @@ containerd:
 
 # Network Plugin
 network_plugin: cilium
-calico:
-  version: v3.19.2
-  network_mode: ipip
+# cilium need linux kernel >= 4.9.17
+cilium:
+  version: v1.9.10
 flannel:
   version: v0.14.0
   network_mode: vxlan
-# cilium need linux kernel >= 4.9.17
-cilium:
-  version: v1.10.4
+calico:
+  version: v3.20.0
+  network_mode: ipip
 
 # Addons
-dns:
-  coredns_version: 1.8.4
-  enable_nodelocaldns: true
-  nodelocaldns_version: 1.17.0
-  nodelocaldns_ip: 169.254.20.10
+coredns:
+  version: 1.8.4
+nodelocaldns:
+  enabled: true
+  version: 1.17.0
+  ip: 169.254.20.10
 metrics_server:
+  enabled: true
   version: v0.5.0
+helm:
+  enabled: true
+  version: v3.6.3
+dashboard:
+  enabled: true
+  version: v2.3.1

@@ -4,10 +4,22 @@
     - coredns
 
 - import_tasks: metrics-server.yml
+  when: metrics_server.enabled == true
   tags:
     - metrics-server
 
 - import_tasks: nodelocaldns.yml
-  when: dns.enable_nodelocaldns == true
+  when: nodelocaldns.enabled == true
   tags:
     - nodelocaldns
+
+- import_tasks: helm.yml
+  when: helm.enabled == true
+  tags:
+    - helm
+
+- import_tasks: dashboard.yml
+  when: dashboard.enabled == true
+  tags:
+    - dashboard
+

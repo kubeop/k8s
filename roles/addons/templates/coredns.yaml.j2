@@ -1,5 +1,3 @@
-# __MACHINE_GENERATED_WARNING__
-
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -109,9 +107,10 @@ spec:
     metadata:
       labels:
         k8s-app: kube-dns
-      annotations:
-        seccomp.security.alpha.kubernetes.io/pod: 'runtime/default'
     spec:
+      securityContext:
+        seccompProfile:
+          type: RuntimeDefault
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
       affinity:
@@ -132,14 +131,15 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: coredns/coredns:{{dns.coredns_version}}
+        image: coredns/coredns:{{coredns.version}}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
-            memory: 170Mi
+            cpu: 100m
+            memory: 256Mi
           requests:
             cpu: 100m
-            memory: 70Mi
+            memory: 256Mi
         args: [ "-conf", "/etc/coredns/Corefile" ]
         volumeMounts:
         - name: config-volume

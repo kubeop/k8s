@@ -1,0 +1,14 @@
+---
+- name: "Generate dashboard yaml"
+  template:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+  with_items:
+    - {src: "dashboard.yaml.j2", dest: "/tmp/dashboard.yaml"}
+  tags: dashboard
+
+- name: "Deploy dashboard"
+  shell: "kubectl apply -f /tmp/dashboard.yaml"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: dashboard

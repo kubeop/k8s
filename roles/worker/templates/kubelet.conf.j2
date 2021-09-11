@@ -17,8 +17,8 @@ authorization:
     cacheUnauthorizedTTL: 0s
 clusterDomain: "cluster.local"
 clusterDNS:
-{% if dns.enable_nodelocaldns %}
-  - "{{ dns.nodelocaldns_ip }}"
+{% if nodelocaldns.enabled %}
+  - "{{ nodelocaldns.ip }}"
 {% else %}
   - "{{ kubernetes.serviceSubnet | next_nth_usable(2) }}"
 {% endif %}
