@@ -97,7 +97,7 @@ data:
         reload
         loop
         bind {{nodelocaldns.ip}}
-        forward . /etc/resolv.conf {
+        forward . {{ kubernetes.serviceSubnet | next_nth_usable(2) }} {
                 force_tcp
         }
         prometheus :9253
