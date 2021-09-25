@@ -65,6 +65,8 @@ pip3 install ansible==2.9.25
 pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 ```
 
+- 如使用Python3，请在ansible.cfg的defaults配置下添加`interpreter_python = /usr/bin/python3`。
+
 
 
 ### 2.2、格式化并挂载数据盘
