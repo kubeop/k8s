@@ -46,7 +46,7 @@ critools:
   version: v1.22.0
 containerd:
   # containerd 版本,由yum list containerd.io --showduplicates | sort -r命令查询
-  version: 1.4.9
+  version: 1.4.11
   # containerd 持久化数据目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
