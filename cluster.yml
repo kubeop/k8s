@@ -43,14 +43,10 @@
   roles:
     - role: containerd
       tags: containerd
-    - role: cri-tools
-      tags: cri-tools
 
 - name: "Set Worker Nodes"
   hosts: master worker
   roles:
-    - role: cni-plugins
-      tags: cni-plugins
     - role: worker
       tags: worker
 

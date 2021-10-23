@@ -1,22 +1,19 @@
 ---
-- name: "Add containerd repo"
-  yum_repository:
-    file: containerd
-    name: "containerd"
-    description: "Containerd Stable - $basearch"
-    baseurl: "https://mirrors.bfsu.edu.cn/docker-ce/linux/centos/7/$basearch/stable"
-    gpgkey: "https://mirrors.bfsu.edu.cn/docker-ce/linux/centos/gpg"
-    gpgcheck: yes
-    enabled: yes
-  tags: containerd_repo
-
-- name: "Install containerd"
-  yum:
-    update_cache: yes
-    enablerepo: containerd
-    name: 'containerd.io{% if containerd.version is defined and containerd.version != ""  %}-{{ containerd.version }}{% endif %}'
-    state: installed
+- name: Get cri-containerd-cni
+  get_url:
+    url: "https://ghproxy.com/https://github.com/containerd/containerd/releases/download/v{{ containerd.version }}/cri-containerd-cni-{{ containerd.version }}-linux-amd64.tar.gz"
+    dest: /tmp/
   tags: install_containerd
+
+- name: Install cri-containerd-cni
+  unarchive:
+    src: "/tmp/cri-containerd-cni-{{ containerd.version }}-linux-amd64.tar.gz"
+    dest: /
+    remote_src: yes
+  tags: install_containerd
+  notify:
+    - Get crictl completion
+    - Install crictl completion
 
 - name: "Create containerd directory"
   file:
@@ -37,3 +34,13 @@
   tags: containerd_config
   notify:
     - restart containerd
+
+- name: "Config cri-tools"
+  template:
+    src: "crictl.yaml.j2"
+    dest: "/etc/crictl.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags: cri_tools
+  

@@ -38,12 +38,9 @@ kubernetes:
   serviceSubnet: 10.80.0.0/16
   # kubelet 数据目录
   kubelet_dir: "/var/lib/kubelet"
-  # cni-plugins: https://github.com/containernetworking/plugins
-  cni_plugins_version: v1.0.1
 
 # Containerd
-critools:
-  version: v1.22.0
+# Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
   # containerd 版本,由yum list containerd.io --showduplicates | sort -r命令查询
   version: 1.4.11
@@ -76,7 +73,7 @@ network_plugin: cilium
 cilium:
   version: v1.9.10
 flannel:
-  version: v0.14.1
+  version: v0.15.0
   network_mode: vxlan
 calico:
   version: v3.20.2
