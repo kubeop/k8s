@@ -1,7 +1,7 @@
 ---
 - name: "Install dependency"
   yum:
-    name: "{{ item.line }}"
+    name:
       - libnetfilter_cthelper
       - libnetfilter_cttimeout
       - libnetfilter_queue
