@@ -15,9 +15,18 @@
     - Get crictl completion
     - Install crictl completion
 
-- name: "Create containerd directory"
+- name: "Create containerd data directory"
   file:
     path: "{{ containerd.root }}"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  tags: containerd_config
+
+- name: "Create containerd config directory"
+  file:
+    path: "/etc/containerd"
     owner: root
     group: root
     mode: 0755
