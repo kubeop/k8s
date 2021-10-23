@@ -2,15 +2,14 @@
 - name: "Install dependency"
   yum:
     name: "{{ item.line }}"
+      - libnetfilter_cthelper
+      - libnetfilter_cttimeout
+      - libnetfilter_queue
+      - conntrack-tools
+      - ipvsadm
+      - ipset
+      - socat
     state: installed
-  with_items:
-    - {line: 'libnetfilter_cthelper'}
-    - {line: 'libnetfilter_cttimeout'}
-    - {line: 'libnetfilter_queue'}
-    - {line: 'conntrack-tools'}
-    - {line: 'ipvsadm'}
-    - {line: 'ipset'}
-    - {line: 'socat'}
   tags: worker_app
 
 - name: "Create kubernetes directory"

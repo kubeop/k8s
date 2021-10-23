@@ -190,20 +190,19 @@
 
 - name: "Install base application"
   yum:
-    name: "{{ item.line }}"
+    name:
+      - vim
+      - mtr
+      - curl
+      - wget
+      - lsof
+      - lrzsz
+      - rsync
+      - telnet
+      - bash-completion
+      - nmap-ncat
+      - net-tools
+      - nfs-utils
+      - yum-utils
     state: installed
-  with_items:
-    - {line: 'vim'}
-    - {line: 'mtr'}
-    - {line: 'curl'}
-    - {line: 'wget'}
-    - {line: 'lsof'}
-    - {line: 'lrzsz'}
-    - {line: 'rsync'}
-    - {line: 'telnet'}
-    - {line: 'bash-completion'}
-    - {line: 'nmap-ncat'}
-    - {line: 'net-tools'}
-    - {line: 'nfs-utils'}
-    - {line: 'yum-utils'}
   tags: install_app
