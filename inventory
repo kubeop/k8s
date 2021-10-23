@@ -1,24 +1,24 @@
 #本组内填写etcd服务器及主机名
 [etcd]
-172.16.90.101 hostname=sh-etcd-01
-172.16.90.102 hostname=sh-etcd-02
-172.16.90.103 hostname=sh-etcd-03
+172.16.90.101 hostname=etcd-01
+172.16.90.102 hostname=etcd-02
+172.16.90.103 hostname=etcd-03
 
 [haproxy]
-172.16.90.98 hostname=sh-haproxy-01 type=MASTER priority=100
-172.16.90.99 hostname=sh-haproxy-02 type=BACKUP priority=90
+172.16.90.98 hostname=haproxy-01 type=MASTER priority=100
+172.16.90.99 hostname=haproxy-02 type=BACKUP priority=90
 
 #本组内填写master服务器及主机名
 [master]
-172.16.90.110 hostname=sh-master-01
-172.16.90.111 hostname=sh-master-02
-172.16.90.112 hostname=sh-master-03
+172.16.90.110 hostname=master-01
+172.16.90.111 hostname=master-02
+172.16.90.112 hostname=master-03
 
 #本组内填写worker服务器及主机名
 [worker]
-172.16.90.120 hostname=sh-worker-01
-172.16.90.121 hostname=sh-worker-02
-172.16.90.122 hostname=sh-worker-03
-172.16.90.123 hostname=sh-worker-04
-172.16.90.124 hostname=sh-worker-05
-172.16.90.125 hostname=sh-worker-06
+172.16.90.120 hostname=worker-01
+172.16.90.121 hostname=worker-02
+172.16.90.122 hostname=worker-03
+172.16.90.123 hostname=worker-04
+172.16.90.124 hostname=worker-05
+172.16.90.125 hostname=worker-06
