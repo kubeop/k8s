@@ -60,7 +60,7 @@ containerd:
     address: ""
     grpc_histogram: false
   cri:
-    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.4.1"
+    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.6"
     max_container_log_line_size: -1
   containerd:
     snapshotter: overlayfs
@@ -76,10 +76,10 @@ network_plugin: cilium
 cilium:
   version: v1.9.10
 flannel:
-  version: v0.14.0
+  version: v0.14.1
   network_mode: vxlan
 calico:
-  version: v3.20.0
+  version: v3.20.2
   network_mode: ipip
 
 # Addons
@@ -91,10 +91,10 @@ nodelocaldns:
   ip: 169.254.20.10
 metrics_server:
   enabled: true
-  version: v0.5.0
+  version: v0.5.1
 helm:
   enabled: true
-  version: v3.6.3
+  version: v3.7.1
 dashboard:
   enabled: true
-  version: v2.3.1
+  version: v2.4.0
