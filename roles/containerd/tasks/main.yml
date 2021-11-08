@@ -3,6 +3,7 @@
   get_url:
     url: "https://ghproxy.com/https://github.com/containerd/containerd/releases/download/v{{ containerd.version }}/cri-containerd-cni-{{ containerd.version }}-linux-amd64.tar.gz"
     dest: /tmp/
+    timeout: 60
   tags: install_containerd
 
 - name: Install cri-containerd-cni
