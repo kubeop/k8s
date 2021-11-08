@@ -1,4 +1,11 @@
 ---
+- name: "Install dependency"
+  yum:
+    name:
+      - libseccomp-devel
+    state: installed
+  tags: containerd_app
+
 - name: Get cri-containerd-cni
   get_url:
     url: "https://ghproxy.com/https://github.com/containerd/containerd/releases/download/v{{ containerd.version }}/cri-containerd-cni-{{ containerd.version }}-linux-amd64.tar.gz"
