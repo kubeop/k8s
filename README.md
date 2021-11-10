@@ -128,7 +128,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t verify,init
 执行节点扩容
 
 ```
-ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,containerd,cri-tools,cni-plugins,worker --skip-tags=bootstrap,create_worker_label
+ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,containerd,worker --skip-tags=bootstrap,create_worker_label
 ```
 
 
@@ -158,7 +158,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t verify,init
 执行节点扩容
 
 ```
-ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t containerd,cri-tools,cni-plugins,worker --skip-tags=bootstrap,create_master_label
+ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t containerd,worker --skip-tags=bootstrap,create_master_label
 ```
 
 
