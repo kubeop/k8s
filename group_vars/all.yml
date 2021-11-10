@@ -42,8 +42,8 @@ kubernetes:
 # Containerd
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
-  # containerd 版本,由yum list containerd.io --showduplicates | sort -r命令查询
-  version: 1.5.7
+  # containerd 版本,当前配置文件做了处理，不支持1.5.0及以上版本
+  version: 1.4.11
   # containerd 持久化数据目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录

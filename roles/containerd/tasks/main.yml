@@ -17,6 +17,9 @@
   unarchive:
     src: "/tmp/cri-containerd-cni-{{ containerd.version }}-linux-amd64.tar.gz"
     dest: /
+    exclude: 
+      - "etc/cni/net.d/10-containerd-net.conflist"
+      - "opt/containerd/cluster"
     remote_src: yes
   tags: install_containerd
   notify:
