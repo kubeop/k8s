@@ -109,7 +109,7 @@ data:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: vxlan
+  tunnel: {{ cilium.network_mode }}
   # Enables L7 proxy for L7 policy enforcement and visibility
   enable-l7-proxy: "true"
 
@@ -147,7 +147,7 @@ data:
   hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
   ipam: "cluster-pool"
-  cluster-pool-ipv4-cidr: "10.0.0.0/8"
+  cluster-pool-ipv4-cidr: "{{ kubernetes.podSubnet }}"
   cluster-pool-ipv4-mask-size: "24"
   disable-cnp-status-updates: "true"
   cgroup-root: "/run/cilium/cgroupv2"

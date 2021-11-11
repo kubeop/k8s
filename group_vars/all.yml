@@ -72,6 +72,7 @@ network_plugin: cilium
 # cilium need linux kernel >= 4.9.17
 cilium:
   version: v1.9.10
+  network_mode: vxlan
 flannel:
   version: v0.15.0
   network_mode: vxlan
