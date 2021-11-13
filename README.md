@@ -61,7 +61,7 @@ dnf -y install libsodium python3-babel python3-bcrypt python3-cffi python3-crypt
 在单独的Ansible控制机执行以下命令安装Ansible
 
 ```
-pip3 install ansible==2.9.25
+pip3 install ansible==2.9.27
 pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 ```
 

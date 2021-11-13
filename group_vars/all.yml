@@ -23,7 +23,7 @@ etcd:
 loadbalance:
   ip: 172.16.90.100
   port: 6443
-  #domain_name: apiserver.k8sre.com
+  #domain_name: apiserver.mafic.com
 
 # Kubernetes
 kubernetes:
