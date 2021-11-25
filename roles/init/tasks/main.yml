@@ -55,7 +55,7 @@
 - name: "Set ssh"
   lineinfile:
     dest: "/etc/ssh/sshd_config"
-    regexp: "{{ item.regexp }}"
+    regexp: "^{{ item.regexp }}"
     line: "{{ item.line }}"
     state: present
   with_items:
