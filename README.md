@@ -192,7 +192,7 @@ etcdctl endpoint health \
 逐个删除旧的kubelet证书
 
 ```
-ansible -i inventory master,node -l ${IP} -m shell -a "rm -rf /etc/kubernetes/pki/kubelet-*"
+ansible -i inventory -l master,worker -m shell -a "rm -rf /etc/kubernetes/pki/kubelet*"
 ```
 
 - `-l`参数更换为具体节点IP。
@@ -203,7 +203,7 @@ ansible -i inventory master,node -l ${IP} -m shell -a "rm -rf /etc/kubernetes/pk
 ansible-playbook cluster.yml -i inventory -l ${IP} -t restart_apiserver,restart_controller,restart_scheduler,restart_kubelet,restart_proxy,healthcheck
 ```
 
-- 如calico、metrics-server等服务也使用了etcd，请记得一起更新相关证书。
+- 如calico、metrics-server等服务也使用了集群证书，请记得一起更新相关证书。
 -  `-l`参数更换为具体节点IP。
 
 
