@@ -165,7 +165,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t containerd,wo
 
 ## 四、替换集群证书
 
-先备份并删除证书目录{{cert.dir}}，重新创建{{cert.dir}}，并将token文件拷贝至新创建的{{cert.dir}}，然后执行以下步骤重新生成证书并分发证书。
+先备份并删除证书目录{{cert.dir}}，重新创建{{cert.dir}}，并将token文件拷贝至新创建的{{cert.dir}}（token文件务必保留，不能更改），然后执行以下步骤重新生成证书并分发证书。
 
 ```
 ansible-playbook cluster.yml -i inventory -t cert,dis_certs
