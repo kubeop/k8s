@@ -206,7 +206,13 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t restart_apiserver,restart_
 - 如calico、metrics-server等服务也使用了集群证书，请记得一起更新相关证书。
 -  `-l`参数更换为具体节点IP。
 
+重启网络插件
 
+```
+kubectl get pod -n kube-system | grep -v NAME | grep cilium | awk '{print $1}' | xargs kubectl -n kube-system delete pod
+```
+-  更新证书可能会导致网络插件异常，建议重启。
+-  示例为重启cilium插件命令，请根据不同网络插件自行替换。
 
 ## 五、升级kubernetes版本
 
