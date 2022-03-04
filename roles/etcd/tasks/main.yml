@@ -16,28 +16,19 @@
     shell: /sbin/nologin
     system: yes
 
-- name: "Download etcd binary"
-  get_url:
-    url: "https://mirrors.huaweicloud.com/etcd/v{{ etcd.version }}/etcd-v{{ etcd.version }}-linux-amd64.tar.gz"
-    dest: /tmp/
-
-- name: "Unarchive etcd"
-  unarchive:
-    src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64.tar.gz"
-    dest: /tmp/
-    copy: no
-
 - name: "Install etcd"
-  copy:
-    src: "{{ item.src }}"
-    dest: "/usr/bin/"
+  unarchive:
+    src: "{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz"
     owner: etcd
     group: etcd
     mode: 0750
-    remote_src: yes
-  with_items:
-    - {src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64/etcd"}
-    - {src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64/etcdctl"}
+    dest: /usr/bin/
+    copy: no
+    extra_opts:
+      - --strip-components=1
+    exclude:
+      - "README*"
+      - "Documentation"
 
 - name: "Distribution certs"
   copy:

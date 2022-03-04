@@ -9,8 +9,11 @@ cert:
 
 # Etcd
 etcd:
+  # etcd 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/etcd-{{version}}-linux-amd64.tar.gz
+  download_url: https://mirrors.huaweicloud.com/etcd
   # etcd 版本
-  version: 3.5.1
+  version: v3.5.2
   # etcd 数据目录
   data_dir: "/var/lib/etcd"
 
@@ -28,10 +31,10 @@ loadbalance:
 # Kubernetes
 kubernetes:
   # kubernetes 二进制安装包下载地址，默认为阿里云从Google同步过来的镜像，更新较慢，最新版本可能未同步过来。
-  # 如使用自建文件服务器，请保证下载路径为:http://xxx.xxx.xxx/v1.21.2/bin/linux/amd64/kube-apiserver。
+  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.22.3
+  version: v1.23.4
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 集群Service网段
@@ -39,15 +42,41 @@ kubernetes:
   # kubelet 数据目录
   kubelet_dir: "/var/lib/kubelet"
 
-# Containerd
+# container runtime
+runc:
+  # runc 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/runc.amd64
+  download_url: https://ghproxy.com/https://github.com/opencontainers/runc/releases/download
+  # runc 版本
+  version: v1.1.0
+
+cniplugins:
+  # cni-plugins 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/cni-plugins-linux-amd64-{{version}}.tgz
+  download_url: https://ghproxy.com/https://github.com/containernetworking/plugins/releases/download
+  # cni-plugins 版本
+  version: v1.1.0
+
+critools:
+  # cri-tools 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/crictl-{{version}}-linux-amd64.tar.gz
+  download_url: https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
+  # cri-tools 版本
+  version: v1.23.0
+
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
-  # containerd 版本,当前配置文件做了处理，不支持1.5.0及以上版本
-  version: 1.4.11
+  # containerd 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/containerd-{{version}}-linux-amd64.tar.gz
+  download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
+  # containerd 版本,建议使用1.5.0以上版本
+  version: 1.5.10
   # containerd 持久化数据目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
   state: "/run/containerd"
+  # containerd oom_score
+  oom_score: -999
   grpc:
     max_recv_message_size: 16777216
     max_send_message_size: 16777216
@@ -62,6 +91,7 @@ containerd:
   containerd:
     snapshotter: overlayfs
   options:
+    #BinaryName = "nvidia-container-runtime"
     SystemdCgroup: true
   registries:
     "docker.io": "https://registry-1.docker.io"
@@ -82,17 +112,17 @@ calico:
 
 # Addons
 coredns:
-  version: 1.8.0
+  version: 1.8.7
 nodelocaldns:
   enabled: true
-  version: 1.17.0
+  version: 1.21.1
   ip: 169.254.20.10
 metrics_server:
   enabled: true
-  version: v0.5.1
+  version: v0.5.2
 helm:
   enabled: true
-  version: v3.7.1
+  version: v3.8.0
 dashboard:
   enabled: true
-  version: v2.4.0
+  version: v2.5.0
