@@ -1,5 +1,6 @@
 KUBE_API_ARGS="\
     --advertise-address={{ ansible_default_ipv4.address }} \
+    --secure-port=6443 \
     --allow-privileged=true \
     --audit-log-format=json \
     --audit-log-maxage=7 \
@@ -15,8 +16,6 @@ KUBE_API_ARGS="\
     --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.pem \
     --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key \
     --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %} \
-    --secure-port=6443 \
-    --insecure-port=0 \
     --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.pem \
     --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key \
     --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname \
