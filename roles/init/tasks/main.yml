@@ -151,14 +151,16 @@
   modprobe:
     name: "nf_conntrack_ipv4"
     state: present
-  when: ansible_kernel.split('-')[0] is version('4.19.0', '<')
+  when: ansible_distribution_major_version != '8' and
+        ansible_kernel.split('-')[0] is version('4.19.0', '<')
   tags: mod
 
 - name: "Enabled conntrack modlue"
   modprobe:
     name: "nf_conntrack"
     state: present
-  when: ansible_kernel.split('-')[0] is version('4.19.0', '>=')
+  when: ansible_distribution_major_version == '8' or
+        ansible_kernel.split('-')[0] is version('4.19.0', '>=')
   tags: mod
 
 - name: "Modify sysctl"

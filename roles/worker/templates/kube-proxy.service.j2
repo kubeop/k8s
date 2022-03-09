@@ -10,7 +10,7 @@ ExecStartPre=-/usr/sbin/modprobe ip_vs_wrr
 ExecStartPre=-/usr/sbin/modprobe ip_vs_sh
 ExecStartPre=-/usr/sbin/modprobe ip_vs_wlc
 ExecStartPre=-/usr/sbin/modprobe br_netfilter
-{% if ansible_kernel.split('-')[0] is version('4.19.0', '>=') %}
+{% if ansible_kernel.split('-')[0] is version('4.19.0', '>=') or ansible_distribution_major_version == '8' %}
 ExecStartPre=-/usr/sbin/modprobe nf_conntrack
 {% else %}
 ExecStartPre=-/usr/sbin/modprobe nf_conntrack_ipv4
