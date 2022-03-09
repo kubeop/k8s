@@ -45,6 +45,15 @@
   notify:
     - restart containerd
 
+- name: "Set containerd service"
+  template:
+    src: "containerd.service.j2"
+    dest: "/usr/lib/systemd/system/containerd.service"
+    owner: root
+    group: root
+    mode: 0644
+  tags: containerd_config
+
 - name: "Create containerd data directory"
   file:
     path: "{{ containerd.root }}"
