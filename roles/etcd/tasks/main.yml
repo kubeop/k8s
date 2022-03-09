@@ -16,19 +16,32 @@
     shell: /sbin/nologin
     system: yes
 
-- name: "Install etcd"
+- name: "Download etcd"
+  get_url:
+    url: "{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz"
+    dest: /tmp/
+  tags: install_etcd
+
+- name: "Unarchive etcd"
   unarchive:
-    src: "{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz"
+    url: "/tmp/etcd-{{etcd.version}}-linux-amd64.tar.gz"
+    dest: /tmp/
+    copy: no
+  tags: install_etcd
+
+- name: "Install etcd"
+  copy:
+    src: "{{ item.src }}"
+    dest: "/usr/bin/"
     owner: etcd
     group: etcd
     mode: 0750
-    dest: /usr/bin/
-    copy: no
-    extra_opts:
-      - --strip-components=1
-    exclude:
-      - "README*"
-      - "Documentation"
+    remote_src: yes
+  with_items:
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcd"}
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdctl"}
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdutl"}
+  tags: install_etcd
 
 - name: "Distribution certs"
   copy:

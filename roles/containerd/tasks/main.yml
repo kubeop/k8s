@@ -18,7 +18,7 @@
     timeout: 60
   tags: install_runc
 
-- name: "Create cni directory"
+- name: Create cni directory
   file:
     path: "/opt/cni/bin"
     owner: root
