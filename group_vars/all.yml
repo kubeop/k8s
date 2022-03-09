@@ -115,7 +115,7 @@ coredns:
   version: 1.8.7
 nodelocaldns:
   enabled: true
-  version: 1.21.1
+  version: 1.19.0
   ip: 169.254.20.10
 metrics_server:
   enabled: true
