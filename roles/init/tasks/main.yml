@@ -198,6 +198,7 @@
       - curl
       - wget
       - lsof
+      - unzip
       - lrzsz
       - rsync
       - telnet
