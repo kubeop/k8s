@@ -17,14 +17,8 @@
     system: yes
 
 - name: "Download etcd"
-  get_url:
-    url: "{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz"
-    dest: /tmp/
-  tags: install_etcd
-
-- name: "Unarchive etcd"
   unarchive:
-    url: "/tmp/etcd-{{etcd.version}}-linux-amd64.tar.gz"
+    src: "{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz"
     dest: /tmp/
     remote_src: yes
   tags: install_etcd
