@@ -15,7 +15,7 @@
     shell: /sbin/nologin
     system: yes
 
-- name: "Create kubernetes directory"
+- name: "Create kubernetes config directory"
   file:
     path: "{{ item }}"
     owner: root
@@ -29,11 +29,14 @@
 
 - name: "Create kubernetes log directory"
   file:
-    path: "/var/log/kubernetes"
+    path: "{{ item }}"
     owner: kube
     group: kube
     mode: 0755
     state: directory
+  with_items:
+    - "/var/log/kubernetes"
+    - "/usr/libexec/kubernetes"
   tags: dir
 
 - name: "Install kubectl"

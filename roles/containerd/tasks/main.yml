@@ -2,29 +2,57 @@
 - name: "Install dependency"
   yum:
     name:
+      - util-linux
+      - libseccomp
       - libseccomp-devel
     state: installed
   tags: containerd_app
 
-- name: Get cri-containerd-cni
+- name: Install runc
   get_url:
-    url: "https://ghproxy.com/https://github.com/containerd/containerd/releases/download/v{{ containerd.version }}/cri-containerd-cni-{{ containerd.version }}-linux-amd64.tar.gz"
-    dest: /tmp/
+    url: "{{runc.download_url}}/{{runc.version}}/runc.amd64"
+    owner: root
+    group: root
+    mode: 0755
+    dest: /usr/local/sbin/runc
     timeout: 60
-  tags: install_containerd
+  tags: install_runc
 
-- name: Install cri-containerd-cni
+- name: Create cni directory
+  file:
+    path: "/opt/cni/bin"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  tags: cni_config
+
+- name: Install cni
   unarchive:
-    src: "/tmp/cri-containerd-cni-{{ containerd.version }}-linux-amd64.tar.gz"
-    dest: /
-    exclude: 
-      - "etc/cni/net.d/10-containerd-net.conflist"
-      - "opt/containerd/cluster"
+    src: "{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz"
+    dest: "/opt/cni/bin/"
     remote_src: yes
+  tags: install_cni
+
+- name: Install containerd
+  unarchive:
+    src: "{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz"
+    dest: "/usr/local/bin/"
+    remote_src: yes
+    extra_opts:
+      - --strip-components=1
   tags: install_containerd
   notify:
-    - Get crictl completion
-    - Install crictl completion
+    - restart containerd
+
+- name: "Set containerd service"
+  template:
+    src: "containerd.service.j2"
+    dest: "/usr/lib/systemd/system/containerd.service"
+    owner: root
+    group: root
+    mode: 0644
+  tags: containerd_config
 
 - name: "Create containerd data directory"
   file:
@@ -54,6 +82,16 @@
   tags: containerd_config
   notify:
     - restart containerd
+
+- name: Install cri-tools
+  unarchive:
+    src: "{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz"
+    dest: "/usr/local/bin/"
+    remote_src: yes
+  tags: install_critools
+  notify:
+    - Get crictl completion
+    - Install crictl completion
 
 - name: "Config cri-tools"
   template:
