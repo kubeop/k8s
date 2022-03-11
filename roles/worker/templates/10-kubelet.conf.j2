@@ -9,5 +9,4 @@ KUBELET_ARGS="\
     --image-service-endpoint=unix://{{containerd.state}}/containerd.sock \
     --cert-dir=/etc/kubernetes/pki \
     --root-dir={{ kubernetes.kubelet_dir | default("/var/lib/kubelet") }} \
-    --network-plugin=cni \
     --v=2"
