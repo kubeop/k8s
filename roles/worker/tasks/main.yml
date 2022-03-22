@@ -1,6 +1,6 @@
 ---
 - name: "Install dependency"
-  yum:
+  package:
     name:
       - libnetfilter_cthelper
       - libnetfilter_cttimeout
@@ -9,7 +9,24 @@
       - ipvsadm
       - ipset
       - socat
-    state: installed
+    state: present
+  when:
+    - ansible_os_family in ["RedHat"]
+  tags: worker_app
+
+- name: "Install dependency"
+  package:
+    name:
+      - libnetfilter-cthelper0
+      - libnetfilter-cttimeout1
+      - libnetfilter-queue1
+      - libnetfilter-conntrack3
+      - ipvsadm
+      - ipset
+      - socat
+    state: present
+  when:
+    - ansible_os_family in ["Debian"]
   tags: worker_app
 
 - name: "Create kubernetes directory"
@@ -23,6 +40,17 @@
     - {line: '/etc/kubernetes/pki'}
     - {line: '/etc/kubernetes/manifests'}
     - {line: "{{ kubernetes.kubelet_dir }}"}
+  tags: dir
+
+- name: "Create kubelet directory"
+  file:
+    path: "/etc/sysconfig"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  when:
+    - ansible_os_family in ["Debian"]
   tags: dir
 
 - name: "Install worker node"

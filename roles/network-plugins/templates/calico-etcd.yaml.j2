@@ -232,7 +232,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: docker.io/calico/cni:{{ calico.version }}
+          image: docker.mirrors.sjtug.sjtu.edu.cn/calico/cni:{{ calico.version }}
           command: ["/opt/cni/bin/install"]
           envFrom:
           - configMapRef:
@@ -276,7 +276,7 @@ spec:
         # Adds a Flex Volume Driver that creates a per-pod Unix Domain Socket to allow Dikastes
         # to communicate with Felix over the Policy Sync API.
         - name: flexvol-driver
-          image: docker.io/calico/pod2daemon-flexvol:{{ calico.version }}
+          image: docker.mirrors.sjtug.sjtu.edu.cn/calico/pod2daemon-flexvol:{{ calico.version }}
           volumeMounts:
           - name: flexvol-driver-host
             mountPath: /host/driver
@@ -287,7 +287,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: docker.io/calico/node:{{ calico.version }}
+          image: docker.mirrors.sjtug.sjtu.edu.cn/calico/node:{{ calico.version }}
           envFrom:
           - configMapRef:
               # Allow KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT to be overridden for eBPF mode.
@@ -529,7 +529,7 @@ spec:
       hostNetwork: true
       containers:
         - name: calico-kube-controllers
-          image: docker.io/calico/kube-controllers:{{ calico.version }}
+          image: docker.mirrors.sjtug.sjtu.edu.cn/calico/kube-controllers:{{ calico.version }}
           env:
             # The location of the etcd cluster.
             - name: ETCD_ENDPOINTS

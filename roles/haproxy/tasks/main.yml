@@ -1,6 +1,6 @@
 ---
 - name: "Install haproxy"
-  yum:
+  package:
     name: haproxy
     state: present
 

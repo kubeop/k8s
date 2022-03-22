@@ -187,7 +187,7 @@ spec:
     spec:
       containers:
         - name: kubernetes-dashboard
-          image: kubernetesui/dashboard:{{dashboard.version}}
+          image: docker.mirrors.sjtug.sjtu.edu.cn/kubernetesui/dashboard:{{dashboard.version}}
           imagePullPolicy: Always
           ports:
             - containerPort: 8443
@@ -271,7 +271,7 @@ spec:
     spec:
       containers:
         - name: dashboard-metrics-scraper
-          image: kubernetesui/metrics-scraper:v1.0.6
+          image: docker.mirrors.sjtug.sjtu.edu.cn/kubernetesui/metrics-scraper:v1.0.7
           ports:
             - containerPort: 8000
               protocol: TCP

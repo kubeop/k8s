@@ -1,11 +1,24 @@
 ---
 - name: "Install dependency"
-  yum:
+  package:
     name:
       - util-linux
       - libseccomp
       - libseccomp-devel
-    state: installed
+    state: present
+  when:
+    - ansible_os_family in ["RedHat"]
+  tags: containerd_app
+
+- name: "Install dependency"
+  package:
+    name:
+      - util-linux
+      - libseccomp2
+      - libseccomp-dev
+    state: present
+  when:
+    - ansible_os_family in ["Debian"]
   tags: containerd_app
 
 - name: Install runc

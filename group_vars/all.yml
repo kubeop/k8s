@@ -11,7 +11,7 @@ cert:
 etcd:
   # etcd 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/etcd-{{version}}-linux-amd64.tar.gz
-  download_url: https://mirrors.huaweicloud.com/etcd
+  download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
   version: v3.5.2
   # etcd 数据目录
@@ -112,17 +112,17 @@ calico:
 
 # Addons
 coredns:
-  version: 1.8.7
+  version: 1.8.6
 nodelocaldns:
   enabled: true
   version: 1.19.0
   ip: 169.254.20.10
 metrics_server:
   enabled: true
-  version: v0.5.2
+  version: v0.5.1
 helm:
   enabled: true
   version: v3.8.0
 dashboard:
   enabled: true
-  version: v2.5.0
+  version: v2.5.1
