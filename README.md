@@ -26,17 +26,6 @@
 
 
 
-## 部署要求
-
-- **Minimum required version of Kubernetes is v1.21**
-- Ansible v2.9.x, Jinja 2.11+ and python-netaddr is installed on the machine that will run Ansible commands
-- The target servers must have **access to the Internet** in order to pull docker images. Otherwise, additional configuration is required
-- The target servers are configured to allow **IPv4 forwarding**
-- If using IPv6 for pods and services, the target servers are configured to allow **IPv6 forwarding**
-- The **firewalls are not managed**, you'll need to implement your own rules the way you used to. in order to avoid any issue during deployment you should disable your firewall
-
-
-
 ## 基础配置
 
 ### 安装Ansible
@@ -58,6 +47,29 @@ pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 
 
 
+### 挂载数据盘
+
+如已经自行格式化并挂载目录，可以跳过此步骤。
+
+```
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
+```
+
+⚠️：
+
+- 此脚本会格式化{{disk}}指定的硬盘，并挂载到{{dir}}目录。
+- 会将`/var/lib/etcd`、`/var/lib/containerd`、`/var/lib/kubelet`、`/var/log/pods`数据目录绑定到此数据盘，以达到多个数据目录共用一个数据盘，而无需修改相关数据目录。
+
+
+
+如需不同目录挂载不同数据盘
+
+```
+ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd" --skip-tags=bind_dir
+```
+
+
+
 ### 配置 group_vars
 
 编辑group_vars/all.yml文件，填入自己的配置。
@@ -74,24 +86,6 @@ pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
     - A类地址：10.0.0.0/16-24
     - B类地址：172.16-31.0.0/16-24
     - C类地址：192.168.0.0/16-24
-
-
-
-### 磁盘分区挂载
-
-如已经自行格式化并挂载目录完成，可以跳过此步骤。
-
-etcd数据盘
-
-```
-ansible-playbook fdisk.yml -i inventory -l etcd -e "disk=sdb dir=/var/lib/etcd"
-```
-
-containerd数据盘
-
-```
-ansible-playbook fdisk.yml -i inventory -l master,worker -e "disk=sdb dir=/var/lib/containerd"
-```
 
 
 

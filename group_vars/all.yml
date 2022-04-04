@@ -14,7 +14,7 @@ etcd:
   download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
   version: v3.5.2
-  # etcd 数据目录
+  # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
 # High Availability
@@ -39,7 +39,7 @@ kubernetes:
   podSubnet: 10.64.0.0/12
   # 集群Service网段
   serviceSubnet: 192.168.0.0/16
-  # kubelet 数据目录
+  # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   kubelet_dir: "/var/lib/kubelet"
 
 # container runtime
@@ -71,7 +71,7 @@ containerd:
   download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.5.0以上版本
   version: 1.5.10
-  # containerd 持久化数据目录
+  # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
   state: "/run/containerd"
