@@ -1,20 +1,45 @@
-使用Ansible Playbook进行生产级别高可用kubernetes集群部署，包含初始化系统配置、自动签发集群证书、安装配置etcd集群、安装配置haproxy及keepalived、calico、coredns、metrics-server等，并使用bootstrap方式认证以及kubernetes组件健康检查。另外支持集群节点扩容、替换集群证书、kubernetes版本升级等。本Playbook使用二进制方式部署。
+## 支持的发型版
 
-配合kubernetes剔除dockershim，本Playbook将运行时修改为containerd。
+- CentOS/RHEL 7，8
+- Ubuntu 18.04，20.04
+- Alma Linux 8
+- Rocky Linux 8
 
 
 
-## 一、配置Playbook
+## 支持组件
 
-### 1.1、拉取Playbook代码
+- Core
+  - [kubernetes](https://github.com/kubernetes/kubernetes)
+  - [etcd](https://github.com/etcd-io/etcd)
+  - [containerd](https://github.com/containerd/containerd)
+- Network Plugin
+  - [cni-plugins](https://github.com/containernetworking/plugins)
+  - [calico](https://github.com/projectcalico/calico)
+  - [cilium](https://github.com/cilium/cilium)
+  - [flanneld](https://github.com/flannel-io/flannel)
+- Application
+  - [coredns](https://github.com/coredns/coredns)
+  - [metrics-server](https://github.com/kubernetes-sigs/metrics-server)
+  - [kubernetes-dashboard](https://github.com/kubernetes/dashboard)
+  - [helm](https://github.com/helm/helm)
+
+
+
+## 基础配置
+
+### 安装Ansible
 
 ```
-git clone https://github.com/k8sre/k8s.git
+pip3 install ansible==2.9.27
+pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 ```
 
+- 如使用Python3，请在ansible.cfg的defaults配置下添加`interpreter_python = /usr/bin/python3`。
 
 
-### 1.2、配置inventory
+
+### 修改 inventory
 
 请按照inventory模板格式修改对应资源
 
@@ -22,7 +47,30 @@ git clone https://github.com/k8sre/k8s.git
 
 
 
-### 1.3、配置集群安装信息
+### 挂载数据盘
+
+如已经自行格式化并挂载目录，可以跳过此步骤。
+
+```
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
+```
+
+⚠️：
+
+- 此脚本会格式化{{disk}}指定的硬盘，并挂载到{{dir}}目录。
+- 会将`/var/lib/etcd`、`/var/lib/containerd`、`/var/lib/kubelet`、`/var/log/pods`数据目录绑定到此数据盘，以达到多个数据目录共用一个数据盘，而无需修改相关数据目录。
+
+
+
+如需不同目录挂载不同数据盘
+
+```
+ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd" --skip-tags=bind_dir
+```
+
+
+
+### 配置 group_vars
 
 编辑group_vars/all.yml文件，填入自己的配置。
 
@@ -41,59 +89,13 @@ git clone https://github.com/k8sre/k8s.git
 
 
 
-## 二、安装步骤
-
-### 2.1、安装Ansible
-
-CentOS7等系统需安装以下依赖才能安装ansible
-
-```
-yum -y install python36-PyYAML python36-asn1crypto python36-cffi python36-cryptography python36-idna python36-jinja2 python36-jmespath python36-markupsafe python36-paramiko python36-ply python36-pyasn1 python36-pycparser python36-six sshpass
-```
-CentOS8
-
-```
-dnf -y install libsodium python3-babel python3-bcrypt python3-cffi python3-cryptography python3-jinja2 python3-jmespath python3-markupsafe python3-pip python3-pyasn1 python3-pycparser python3-pynacl python3-paramiko python3-pytz python36 sshpass
-```
-
-- 需要配置epel源
-
-在单独的Ansible控制机执行以下命令安装Ansible
-
-```
-pip3 install ansible==2.9.27
-pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
-```
-
-- 如使用Python3，请在ansible.cfg的defaults配置下添加`interpreter_python = /usr/bin/python3`。
-
-
-
-### 2.2、格式化并挂载数据盘
-
-如已经自行格式化并挂载目录完成，可以跳过此步骤。
-
-etcd数据盘
-
-```
-ansible-playbook fdisk.yml -i inventory -l etcd -e "disk=sdb dir=/var/lib/etcd"
-```
-
-containerd数据盘
-
-```
-ansible-playbook fdisk.yml -i inventory -l master,worker -e "disk=sdb dir=/var/lib/containerd"
-```
-
-
-
-### 2.3、部署集群
+## 部署集群
 
 ```
 ansible-playbook cluster.yml -i inventory
 ```
 
-如是公有云环境，使用公有云的负载均衡即可，无需安装haproxy和keepalived。
+如是公有云环境，使用公有云的负载均衡即可（需提前配置好负载均衡），无需安装haproxy和keepalived。
 
 ```
 ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
@@ -101,16 +103,16 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 
 
 
-## 三、扩容节点
+## 扩容节点
 
-### 3.1、扩容master节点
+### 扩容master节点
 
 扩容时，请不要在inventory文件master组中保留旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/var/lib/containerd"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
 ```
 
 执行生成节点证书
@@ -133,14 +135,14 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 
 
 
-### 3.2、扩容node节点
+### 扩容node节点
 
 扩容时，请不要在inventory文件worker组中保留旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_WORKER_IP} -e "disk=sdb dir=/var/lib/containerd"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
 ```
 
 执行生成节点证书
@@ -163,7 +165,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t containerd,wo
 
 
 
-## 四、替换集群证书
+## 替换集群证书
 
 先备份并删除证书目录{{cert.dir}}，重新创建{{cert.dir}}，并将token、sa.pub、sa.key文件拷贝至新创建的{{cert.dir}}（这三个文件务必保留，不能更改），然后执行以下步骤重新生成证书并分发证书。
 
@@ -214,7 +216,9 @@ kubectl get pod -n kube-system | grep -v NAME | grep cilium | awk '{print $1}' |
 -  更新证书可能会导致网络插件异常，建议重启。
 -  示例为重启cilium插件命令，请根据不同网络插件自行替换。
 
-## 五、升级kubernetes版本
+
+
+## 升级kubernetes版本
 
 请先编辑group_vars/all.yml，修改kubernetes.version为新版本。
 

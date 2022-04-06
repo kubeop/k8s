@@ -16,9 +16,9 @@
     name: Asia/Shanghai
 
 - name: "Install chrony"
-  yum:
-    name: "chrony"
-    state: installed
+  package:
+    name: chrony
+    state: present
   tags: ntp
 
 - name: "Set chrony"
@@ -43,6 +43,8 @@
 - name: "Disable selinux"
   selinux:
     state: disabled
+  when:
+    - ansible_os_family in ["RedHat"]
   tags: selinux
 
 - name: "Stop firewalld"
@@ -90,6 +92,8 @@
   with_items:
     - { regexp: "minlen", line: "minlen=10" }
     - { regexp: "minclass", line: "minclass=3" }
+  when:
+    - ansible_os_family in ["RedHat"]
   tags: passwd
 
 - name: "Set password remember"
@@ -100,6 +104,8 @@
   with_items:
     - { path: "/etc/pam.d/password-auth" }
     - { path: "/etc/pam.d/system-auth" }
+  when:
+    - ansible_os_family in ["RedHat"]
   tags: passwd
 
 - name: "Set limits"
@@ -147,7 +153,7 @@
     - {line: 'br_netfilter' }
   tags: mod
 
-- name: "Enabled conntrack modlue"
+- name: "Enabled conntrack modlue < 4.19.0"
   modprobe:
     name: "nf_conntrack_ipv4"
     state: present
@@ -155,7 +161,7 @@
         ansible_kernel.split('-')[0] is version('4.19.0', '<')
   tags: mod
 
-- name: "Enabled conntrack modlue"
+- name: "Enabled conntrack modlue > 4.19.0"
   modprobe:
     name: "nf_conntrack"
     state: present
@@ -184,6 +190,9 @@
     - {name: 'net.ipv4.tcp_max_syn_backlog ',value: ' 1024' }
     - {name: 'net.ipv4.tcp_synack_retries ',value: ' 2' }
     - {name: 'net.ipv4.tcp_fin_timeout',value: '30' }
+    - {name: 'net.ipv4.tcp_keepalive_time',value: '600' }
+    - {name: 'net.ipv4.tcp_keepalive_intvl',value: '30' }
+    - {name: 'net.ipv4.tcp_keepalive_probes',value: '10' }
     - {name: 'net.ipv4.ip_local_port_range',value: '20000 60999' }
     - {name: 'net.netfilter.nf_conntrack_max',value: '2310720' }
     - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
@@ -191,7 +200,7 @@
   tags: sysctl
 
 - name: "Install base application"
-  yum:
+  package:
     name:
       - vim
       - mtr
@@ -203,9 +212,28 @@
       - rsync
       - telnet
       - bash-completion
-      - nmap-ncat
       - net-tools
-      - nfs-utils
+    state: present
+  tags: install_app
+
+- name: "Install base application"
+  package:
+    name:
+      - nmap-ncat
       - yum-utils
-    state: installed
+      - nfs-utils
+    state: present
+  when:
+    - ansible_os_family in ["RedHat"]
+  tags: install_app
+
+- name: "Install base application"
+  package:
+    name:
+      - nmap
+      - nmap-common
+      - nfs-common
+    state: present
+  when:
+    - ansible_os_family in ["Debian"]
   tags: install_app
