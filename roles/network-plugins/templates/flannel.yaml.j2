@@ -191,7 +191,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-       image: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni/flannel:{{flannel.version}}
+        image: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni/flannel:{{flannel.version}}
         command:
         - /opt/bin/flanneld
         args:
