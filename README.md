@@ -1,7 +1,7 @@
 ## 支持的发型版
 
 - CentOS/RHEL 7，8
-- Ubuntu 18.04，20.04
+- Ubuntu 18.04，20.04，22.04
 - Alma Linux 8
 - Rocky Linux 8
 
