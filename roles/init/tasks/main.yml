@@ -47,7 +47,12 @@
     - ansible_os_family in ["RedHat"]
   tags: selinux
 
+- name: "Get firewalld is installed"
+  command: whereis firewalld
+  register: firewalld_state
+
 - name: "Stop firewalld"
+  when: "'/usr/sbin/firewalld' in firewalld_state.stdout"
   systemd:
     name: firewalld
     enabled: no
