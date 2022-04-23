@@ -15,7 +15,6 @@
     name:
       - util-linux
       - libseccomp2
-      - libseccomp-dev
     state: present
   when:
     - ansible_os_family in ["Debian"]
