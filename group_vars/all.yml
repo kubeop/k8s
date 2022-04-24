@@ -13,7 +13,7 @@ etcd:
   # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/etcd-{{version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.2
+  version: v3.5.3
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -34,7 +34,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.23.4
+  version: v1.23.6
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 集群Service网段
