@@ -17,9 +17,3 @@
   when: helm.enabled == true
   tags:
     - helm
-
-- import_tasks: dashboard.yml
-  when: dashboard.enabled == true
-  tags:
-    - dashboard
-

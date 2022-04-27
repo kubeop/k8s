@@ -140,7 +140,7 @@ spec:
         operator: "Exists"
       containers:
       - name: node-cache
-        image: registry.aliyuncs.com/k8sxio/k8s-dns-node-cache:{{nodelocaldns.version}}
+        image: {{nodelocaldns.image}}
         resources:
           requests:
             cpu: 25m
