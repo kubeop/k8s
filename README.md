@@ -52,7 +52,7 @@ pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 如已经自行格式化并挂载目录，可以跳过此步骤。
 
 ```
-ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/var/lib/container"
 ```
 
 ⚠️：
@@ -112,7 +112,7 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/var/lib/container"
 ```
 
 执行生成节点证书
@@ -142,7 +142,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/var/lib/container"
 ```
 
 执行生成节点证书

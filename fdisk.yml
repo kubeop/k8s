@@ -3,7 +3,7 @@
   hosts: all
   vars:
     disk: sdb
-    dir: /data
+    dir: /var/lib/container
   tasks:
     - name: set variable
       set_fact:
@@ -91,7 +91,7 @@
         - {line: "/var/lib/kubelet"}
         - {line: "/var/lib/containerd"}
         - {line: "/var/log/pods"}
-      when: inventory_hostname not in groups['etcd']
+      when: (inventory_hostname in groups['master'] or inventory_hostname not in groups['worker'])
       tags: bind_dir
     - name: "绑定worker数据目录到{{ dir }}目录"
       mount:
@@ -104,5 +104,5 @@
         - {src: "{{ dir }}/kubelet", path: "/var/lib/kubelet"}
         - {src: "{{ dir }}/containerd", path: "/var/lib/containerd"}
         - {src: "{{ dir }}/log", path: "/var/log/pods"}
-      when: inventory_hostname not in groups['etcd']
+      when: (inventory_hostname in groups['master'] or inventory_hostname not in groups['worker'])
       tags: bind_dir

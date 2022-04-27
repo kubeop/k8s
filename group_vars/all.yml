@@ -48,14 +48,14 @@ runc:
   # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/runc.amd64
   download_url: https://ghproxy.com/https://github.com/opencontainers/runc/releases/download
   # runc 版本
-  version: v1.1.0
+  version: v1.1.1
 
 cniplugins:
   # cni-plugins 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/cni-plugins-linux-amd64-{{version}}.tgz
   download_url: https://ghproxy.com/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
-  version: v1.1.0
+  version: v1.1.1
 
 critools:
   # cri-tools 安装包下载地址
@@ -70,7 +70,7 @@ containerd:
   # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/containerd-{{version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.5.0以上版本
-  version: 1.5.10
+  version: 1.5.11
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -122,7 +122,7 @@ metrics_server:
   version: v0.5.1
 helm:
   enabled: true
-  version: v3.8.0
+  version: v3.8.1
 dashboard:
   enabled: true
   version: v2.5.1
