@@ -265,7 +265,7 @@
   tags: healthcheck
 
 - name: "Create taint for control-plane"
-  shell: "kubectl taint nodes {{ hostvars[item].hostname }}-{{ item }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
+  shell: "kubectl taint nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
@@ -276,7 +276,7 @@
     - create_label
 
 - name: "Create label for master"
-  shell: "kubectl label nodes {{ hostvars[item].hostname }}-{{ item }} node-role.kubernetes.io/control-plane= --overwrite"
+  shell: "kubectl label nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }} node-role.kubernetes.io/control-plane= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
@@ -286,7 +286,7 @@
     - create_label
 
 - name: "Create label for worker"
-  shell: "kubectl label nodes {{ hostvars[item].hostname }}-{{ item }} node-role.kubernetes.io/worker= --overwrite"
+  shell: "kubectl label nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }} node-role.kubernetes.io/worker= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:

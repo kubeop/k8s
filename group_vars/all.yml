@@ -67,7 +67,7 @@ critools:
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
   # containerd 安装包下载地址
-  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/containerd-{{version}}-linux-amd64.tar.gz
+  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/v{{version}}/containerd-{{version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.5.0以上版本
   version: 1.5.11

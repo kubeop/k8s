@@ -68,5 +68,6 @@
   template:
     src: "etcd.service.j2"
     dest: "/usr/lib/systemd/system/etcd.service"
+  tags: dis_etcd_config
   notify:
     - restart etcd
