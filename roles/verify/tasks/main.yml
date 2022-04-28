@@ -11,8 +11,8 @@
 
 - name: Fail if bad hostname
   assert:
-    that: hostname is match("[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$")
-    msg: "Hostname must consist of lower case alphanumeric characters, '.' or '-', and must start and end with an alphanumeric character"
+    that: hostname is match("^[A-Za-z0-9-]*$")
+    msg: "Hostname must consist of lower case alphanumeric characters '-', and must start and end with an alphanumeric character"
   when: hostname is defined
 
 - name: Fail if etcd or master or worker group is empty
