@@ -36,6 +36,7 @@ pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 ```
 
 - 如使用Python3，请在ansible.cfg的defaults配置下添加`interpreter_python = /usr/bin/python3`。
+- 控制节点和被控节点Python版本尽量保持一致，否则执行可能出现问题。
 
 
 
@@ -91,6 +92,14 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd
 
 ## 部署集群
 
+格式化挂载数据盘
+
+```
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/var/lib/container"
+```
+
+部署集群
+
 ```
 ansible-playbook cluster.yml -i inventory
 ```
@@ -100,6 +109,8 @@ ansible-playbook cluster.yml -i inventory
 ```
 ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 ```
+
+- 默认会对节点进行初始化操作，集群节点会取主机名最后两段和IP作为集群节点名称。
 
 
 

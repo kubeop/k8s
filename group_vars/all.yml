@@ -102,12 +102,15 @@ network_plugin: cilium
 # cilium need linux kernel >= 4.9.17
 cilium:
   version: v1.9.10
+  # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 flannel:
   version: v0.17.0
+  # "vxlan" or "host-gw"
   network_mode: vxlan
 calico:
   version: v3.20.2
+  # "ipip" or "bpg"
   network_mode: ipip
 
 # Addons
