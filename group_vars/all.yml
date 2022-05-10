@@ -10,7 +10,7 @@ cert:
 # Etcd
 etcd:
   # etcd 安装包下载地址
-  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/etcd-{{version}}-linux-amd64.tar.gz
+  # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
   version: v3.5.3
@@ -31,7 +31,7 @@ loadbalance:
 # Kubernetes
 kubernetes:
   # kubernetes 二进制安装包下载地址，默认为阿里云从Google同步过来的镜像，更新较慢，最新版本可能未同步过来。
-  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/bin/linux/amd64/kube-apiserver。
+  # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
   version: v1.23.6
@@ -45,21 +45,21 @@ kubernetes:
 # container runtime
 runc:
   # runc 安装包下载地址
-  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/runc.amd64
+  # 如使用自建文件服务器，请保证下载路径为:{{runc.download_url}}/{{runc.version}}/runc.amd64
   download_url: https://ghproxy.com/https://github.com/opencontainers/runc/releases/download
   # runc 版本
   version: v1.1.1
 
 cniplugins:
   # cni-plugins 安装包下载地址
-  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/cni-plugins-linux-amd64-{{version}}.tgz
+  # 如使用自建文件服务器，请保证下载路径为:{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz
   download_url: https://ghproxy.com/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
   version: v1.1.1
 
 critools:
   # cri-tools 安装包下载地址
-  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/{{version}}/crictl-{{version}}-linux-amd64.tar.gz
+  # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
   version: v1.23.0
@@ -67,7 +67,7 @@ critools:
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
   # containerd 安装包下载地址
-  # 如使用自建文件服务器，请保证下载路径为:{{download_url}}/v{{version}}/containerd-{{version}}-linux-amd64.tar.gz
+  # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.5.0以上版本
   version: 1.5.11
@@ -101,28 +101,48 @@ containerd:
 network_plugin: cilium
 # cilium need linux kernel >= 4.9.17
 cilium:
-  version: v1.9.10
+  version: v1.11.4
+  # {{cilium.registry}}/operator-generic:{{cilium.version}}
+  # {{cilium.registry}}/cilium:{{cilium.version}}
+  # {{cilium.registry}}/istio_proxy:{{cilium.version}}
+  registry: docker.mirrors.sjtug.sjtu.edu.cn/cilium
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 flannel:
   version: v0.17.0
+  # {{flannel.registry}}/flannel-cni-plugin:v1.0.1
+  # {{flannel.registry}}/flannel:{{flannel.version}}
+  registry: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni
   # "vxlan" or "host-gw"
   network_mode: vxlan
 calico:
-  version: v3.20.2
+  version: v3.20.5
+  # {{calico.registry}}/kube-controllers:{{calico.version}}
+  # {{calico.registry}}/node:{{calico.version}}
+  # {{calico.registry}}/pod2daemon-flexvol:{{calico.version}}
+  # {{calico.registry}}/cni:{{calico.version}}
+  registry: docker.mirrors.sjtug.sjtu.edu.cn/calico
   # "ipip" or "bpg"
   network_mode: ipip
 
 # Addons
 coredns:
   version: 1.8.6
+  # {{coredns.registry}}/coredns:{{coredns.version}}
+  registry: docker.mirrors.sjtug.sjtu.edu.cn/coredns
 helm:
   enabled: true
+  # 如使用自建文件服务器，请保证下载路径为:{{helm.download_url}}/{{helm.version}}/helm-{{helm.version}}-linux-amd64.tar.gz
+  download_url: https://mirrors.huaweicloud.com/helm
   version: v3.8.1
 nodelocaldns:
   enabled: true
-  image: docker.mirrors.sjtug.sjtu.edu.cn/k8sre/k8s-dns-node-cache:1.21.1
+  version: 1.21.1
+  # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
+  registry: docker.mirrors.sjtug.sjtu.edu.cn/k8sre
   ip: 169.254.20.10
 metrics_server:
   enabled: true
-  image: docker.mirrors.sjtug.sjtu.edu.cn/k8sre/metrics-server:v0.6.1
+  version: v0.6.1
+  # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
+  registry: docker.mirrors.sjtug.sjtu.edu.cn/k8sre

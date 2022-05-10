@@ -141,7 +141,7 @@ spec:
             readOnlyRootFilesystem: true
             runAsNonRoot: true
             runAsUser: 1000
-          image: {{metrics_server.image}}
+          image: {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
           imagePullPolicy: IfNotPresent
           args:
             - --secure-port=4443

@@ -140,7 +140,7 @@ spec:
         operator: "Exists"
       containers:
       - name: node-cache
-        image: {{nodelocaldns.image}}
+        image: {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
         resources:
           requests:
             cpu: 25m

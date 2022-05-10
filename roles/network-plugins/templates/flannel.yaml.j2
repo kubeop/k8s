@@ -166,7 +166,7 @@ spec:
       serviceAccountName: flannel
       initContainers:
       - name: install-cni-plugin
-        image: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni/flannel-cni-plugin:v1.0.1
+        image: {{flannel.registry}}/flannel-cni-plugin:v1.0.1
         command:
         - cp
         args:
@@ -177,7 +177,7 @@ spec:
         - name: cni-plugin
           mountPath: /opt/cni/bin
       - name: install-cni
-        image: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni/flannel:{{flannel.version}}
+        image: {{flannel.registry}}/flannel:{{flannel.version}}
         command:
         - cp
         args:
@@ -191,7 +191,7 @@ spec:
           mountPath: /etc/kube-flannel/
       containers:
       - name: kube-flannel
-        image: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni/flannel:{{flannel.version}}
+        image: {{flannel.registry}}/flannel:{{flannel.version}}
         command:
         - /opt/bin/flanneld
         args:
