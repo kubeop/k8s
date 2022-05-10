@@ -63,7 +63,9 @@
     group: etcd
     mode: 0700
     state: directory
-
+  notify:
+    - restart etcd
+    
 - name: "Generate etcd configure"
   template:
     src: "etcd.service.j2"
