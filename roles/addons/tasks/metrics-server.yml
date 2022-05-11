@@ -5,7 +5,7 @@
     dest: "{{item.dest}}"
   with_items:
     - {src: "metrics-server.yaml.j2", dest: "/tmp/metrics-server.yaml"}
-  tags: calico
+  tags: metrics-server
 
 - name: "Deploy metrics-server"
   shell: "kubectl apply -f /tmp/metrics-server.yaml"

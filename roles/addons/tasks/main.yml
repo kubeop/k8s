@@ -17,3 +17,8 @@
   when: helm.enabled == true
   tags:
     - helm
+
+- import_tasks: nvidia-device-plugin.yml
+  when: nvidia_device_plugin.enabled == true
+  tags:
+    - nvidia_device_plugin

@@ -146,3 +146,8 @@ metrics_server:
   version: v0.6.1
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
   registry: docker.mirrors.sjtug.sjtu.edu.cn/k8sre
+nvidia_device_plugin:
+  enabled: false
+  version: v0.11.0
+  # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
+  registry: nvcr.io/nvidia

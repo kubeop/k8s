@@ -115,6 +115,9 @@ oom_score = {{ containerd.oom_score | default(0) }}
           runtime_type = "io.containerd.runc.v2"
 
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
+{% if gpu is defined and  gpu == 'true' %}
+            BinaryName = "nvidia-container-runtime"
+{% endif %}
 {% if 'options' in containerd %}
 {% for param, value in containerd.options.items() %}
             {{ param }} = {{ value | lower }}

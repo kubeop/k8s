@@ -20,6 +20,13 @@
     - ansible_os_family in ["Debian"]
   tags: containerd_app
 
+- name: "Install nvidia-container-runtime"
+  package:
+    name: nvidia-container-runtime
+    state: present
+  when: gpu is defined and gpu == 'true'
+  tags: gpu_app
+
 - name: Install runc
   get_url:
     url: "{{runc.download_url}}/{{runc.version}}/runc.amd64"

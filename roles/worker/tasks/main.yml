@@ -294,3 +294,21 @@
   tags:
     - create_worker_label
     - create_label
+
+- name: "Create taint for gpu worker"
+  when: gpu is defined and gpu == 'true'
+  shell: "kubectl taint nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower }}-{{ ansible_default_ipv4.address }} nvidia.com/gpu=:NoSchedule --overwrite"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: false
+  tags:
+    - create_gpu_taint
+    - create_gpu
+
+- name: "Create label for gpu worker"
+  when: gpu is defined and gpu == 'true'
+  shell: "kubectl label nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower }}-{{ ansible_default_ipv4.address }} nvidia.com/gpu=true --overwrite"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: false
+  tags:
+    - create_gpu_label
+    - create_gpu
