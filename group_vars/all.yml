@@ -116,13 +116,13 @@ flannel:
   # "vxlan" or "host-gw"
   network_mode: vxlan
 calico:
-  version: v3.20.5
+  version: v3.22.2
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/pod2daemon-flexvol:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
   registry: docker.mirrors.sjtug.sjtu.edu.cn/calico
-  # "ipip" or "bpg"
+  # "ipip" or "bgp"
   network_mode: ipip
 
 # Addons
