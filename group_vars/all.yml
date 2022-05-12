@@ -119,11 +119,12 @@ calico:
   version: v3.22.2
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
-  # {{calico.registry}}/pod2daemon-flexvol:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
   registry: docker.mirrors.sjtug.sjtu.edu.cn/calico
-  # "ipip" or "bgp"
+  # "ipip" or "bgp" or "mix"
   network_mode: ipip
+  # 可指定网卡或使用can-reach=网关
+  ip_autodetection_method: interface=eth0
 
 # Addons
 coredns:

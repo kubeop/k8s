@@ -329,7 +329,11 @@ spec:
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
 {% if calico.network_mode == 'bgp' %}
-              value: "off"
+              value: "Never"
+{% elif calico.network_mode == 'ipip' %} 
+              value: "Always"
+{% elif calico.network_mode == 'mix' %}
+              value: "CrossSubnet"
 {% else %}
               value: "Always"
 {% endif %}
@@ -363,7 +367,7 @@ spec:
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ kubernetes.podSubnet }}"
             - name: IP_AUTODETECTION_METHOD
-              value: "interface={{ansible_default_ipv4.interface}}"
+              value: "{{calico.ip_autodetection_method}}"
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
