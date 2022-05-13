@@ -36,9 +36,9 @@ kubernetes:
   # kubernetes 版本
   version: v1.23.6
   # 集群Pod网段
-  podSubnet: 10.64.0.0/12
+  podSubnet: 10.64.0.0/16
   # 集群Service网段
-  serviceSubnet: 192.168.0.0/16
+  serviceSubnet: 192.168.0.0/20
   # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   kubelet_dir: "/var/lib/kubelet"
 
