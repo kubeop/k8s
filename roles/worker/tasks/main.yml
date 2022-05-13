@@ -77,32 +77,22 @@
     - {line: "{{ cert.dir }}/ca.key"}
     - {line: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.pem"}
     - {line: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.key"}
-    - {line: "{{ cert.dir }}/token"}
   tags:
     - dis_worker_certs
     - dis_certs
 
-- name: "Get bootstrap-token"
-  copy:
-    src: "{{ cert.dir }}/token"
-    dest: "/etc/kubernetes/pki/"
-    owner: root
-    group: root
-    mode: 0640
-  tags:
-    - get_token
-    - bootstrap_token
-
 - name: "Get bootstrap-token-id"
-  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $1}'
+  shell: "cat {{ cert.dir }}/token | grep -v '^#' | awk -F '.' '{print $1}'"
   register: token_id
+  connection: local
   tags:
     - get_token_id
     - bootstrap_token
 
 - name: "Get bootstrap-token-secret"
-  shell: cat /etc/kubernetes/pki/token | grep -v "^#" | awk -F '.' '{print $2}'
+  shell: "cat {{ cert.dir }}/token | grep -v '^#' | awk -F '.' '{print $2}'"
   register: token_secret
+  connection: local
   tags:
     - get_token_secret
     - bootstrap_token
@@ -203,14 +193,6 @@
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
-
-- name: "Delete bootstrap-token"
-  file:
-    path: "/etc/kubernetes/pki/token"
-    state: absent
-  tags:
-    - delete_token
-    - bootstrap_token
 
 - name: "Restart kubelet"
   systemd:

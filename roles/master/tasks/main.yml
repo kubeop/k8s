@@ -94,6 +94,14 @@
     - dis_master_certs
     - dis_certs
 
+- name: "Get token-id"
+  shell: "cat {{ cert.dir }}/token | grep -v '^#' | awk -F '.' '{print $1}'"
+  register: token_id
+  connection: local
+  tags:
+    - dis_kubectl_kubeconfig
+    - dis_master_kubeconfig
+
 - name: "Distribution kubectl kubeconfig"
   template:
     src: "admin.kubeconfig.j2"
