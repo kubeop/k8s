@@ -1,9 +1,9 @@
 ---
-- name: "格式化磁盘"
+- name: "格式化挂载磁盘"
   hosts: all
   vars:
     disk: sdb
-    dir: /var/lib/container
+    dir: /data/containers
   tasks:
     - name: set variable
       set_fact:

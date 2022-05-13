@@ -53,7 +53,7 @@ pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 如已经自行格式化并挂载目录，可以跳过此步骤。
 
 ```
-ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/var/lib/container"
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data/containers"
 ```
 
 ⚠️：
@@ -95,7 +95,7 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/var/lib/container"
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data/containers"
 ```
 
 部署集群
@@ -123,7 +123,7 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/var/lib/container"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data/containers"
 ```
 
 执行生成节点证书
@@ -146,14 +146,14 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 
 
 
-### 扩容node节点
+### 扩容worker节点
 
 扩容时，请不要在inventory文件worker组中保留旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/var/lib/container"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data/containers"
 ```
 
 执行生成节点证书
