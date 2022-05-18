@@ -57,8 +57,8 @@
 
 - name: Fail if calico incompatible network plugin
   assert:
-    that: calico.network_mode in ['ipip', 'bgp']
-    msg: "When using network_plugin calico network_mode must be 'ipip' or 'bgp'"
+    that: calico.network_mode in ['ipip', 'bgp','mix']
+    msg: "When using network_plugin calico network_mode must be 'ipip' or 'bgp' or 'mix'"
   when:
     - network_plugin == 'calico'
 
