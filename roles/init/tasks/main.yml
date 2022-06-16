@@ -209,6 +209,7 @@
     name:
       - vim
       - mtr
+      - tar
       - curl
       - wget
       - lsof
