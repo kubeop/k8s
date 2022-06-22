@@ -98,16 +98,17 @@ containerd:
     "k8s.gcr.io": "https://registry.aliyuncs.com/k8sxio"
 
 # Network Plugin
-network_plugin: cilium
+network_plugin: calico
 # cilium need linux kernel >= 4.9.17
-cilium:
-  version: v1.11.6
+# 暂不推荐使用，后续测试通过再加入
+#cilium:
+  #version: v1.11.6
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   # {{cilium.registry}}/istio_proxy:{{cilium.version}}
-  registry: docker.mirrors.sjtug.sjtu.edu.cn/cilium
+  #registry: docker.mirrors.sjtug.sjtu.edu.cn/cilium
   # "disabled" or "vxlan" or "geneve"
-  network_mode: vxlan
+  #network_mode: vxlan
 flannel:
   version: v0.18.1
   # {{flannel.registry}}/flannel-cni-plugin:v1.0.1
@@ -140,13 +141,13 @@ nodelocaldns:
   enabled: true
   version: 1.21.1
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
-  registry: docker.mirrors.sjtug.sjtu.edu.cn/k8sre
+  registry: k8s-gcr-io.mirrors.sjtug.sjtu.edu.cn/dns
   ip: 169.254.20.10
 metrics_server:
   enabled: true
   version: v0.6.1
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
-  registry: docker.mirrors.sjtug.sjtu.edu.cn/k8sre
+  registry: k8s-gcr-io.mirrors.sjtug.sjtu.edu.cn/metrics-server
 nvidia_device_plugin:
   enabled: false
   version: v0.11.0
