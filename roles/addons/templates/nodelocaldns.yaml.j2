@@ -63,7 +63,7 @@ data:
         reload
         loop
         bind {{nodelocaldns.ip}}
-        forward . {{ kubernetes.serviceSubnet | next_nth_usable(2) }} {
+        forward . {{ kubernetes.serviceSubnet | next_nth_usable(10) }} {
                 force_tcp
         }
         prometheus :9253
@@ -75,7 +75,7 @@ data:
         reload
         loop
         bind {{nodelocaldns.ip}}
-        forward . {{ kubernetes.serviceSubnet | next_nth_usable(2) }} {
+        forward . {{ kubernetes.serviceSubnet | next_nth_usable(10) }} {
                 force_tcp
         }
         prometheus :9253
@@ -86,7 +86,7 @@ data:
         reload
         loop
         bind {{nodelocaldns.ip}}
-        forward . {{ kubernetes.serviceSubnet | next_nth_usable(2) }} {
+        forward . {{ kubernetes.serviceSubnet | next_nth_usable(10) }} {
                 force_tcp
         }
         prometheus :9253
@@ -97,7 +97,7 @@ data:
         reload
         loop
         bind {{nodelocaldns.ip}}
-        forward . {{ kubernetes.serviceSubnet | next_nth_usable(2) }} {
+        forward . {{ kubernetes.serviceSubnet | next_nth_usable(10) }} {
                 force_tcp
         }
         prometheus :9253

@@ -34,7 +34,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.23.6
+  version: v1.24.2
   # 集群Pod网段
   podSubnet: 10.64.0.0/16
   # 集群Service网段
@@ -86,7 +86,7 @@ containerd:
     address: ""
     grpc_histogram: false
   cri:
-    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.6"
+    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.7"
     max_container_log_line_size: -1
   containerd:
     snapshotter: overlayfs
