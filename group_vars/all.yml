@@ -48,7 +48,7 @@ runc:
   # 如使用自建文件服务器，请保证下载路径为:{{runc.download_url}}/{{runc.version}}/runc.amd64
   download_url: https://ghproxy.com/https://github.com/opencontainers/runc/releases/download
   # runc 版本
-  version: v1.1.1
+  version: v1.1.3
 
 cniplugins:
   # cni-plugins 安装包下载地址
@@ -62,7 +62,7 @@ critools:
   # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.23.0
+  version: v1.24.2
 
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
@@ -70,7 +70,7 @@ containerd:
   # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.5.0以上版本
-  version: 1.5.11
+  version: 1.6.6
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -101,7 +101,7 @@ containerd:
 network_plugin: cilium
 # cilium need linux kernel >= 4.9.17
 cilium:
-  version: v1.11.4
+  version: v1.11.6
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   # {{cilium.registry}}/istio_proxy:{{cilium.version}}
@@ -109,14 +109,14 @@ cilium:
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 flannel:
-  version: v0.17.0
+  version: v0.18.1
   # {{flannel.registry}}/flannel-cni-plugin:v1.0.1
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni
   # "vxlan" or "host-gw"
   network_mode: vxlan
 calico:
-  version: v3.22.2
+  version: v3.23.1
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
@@ -135,7 +135,7 @@ helm:
   enabled: true
   # 如使用自建文件服务器，请保证下载路径为:{{helm.download_url}}/{{helm.version}}/helm-{{helm.version}}-linux-amd64.tar.gz
   download_url: https://mirrors.huaweicloud.com/helm
-  version: v3.8.1
+  version: v3.8.2
 nodelocaldns:
   enabled: true
   version: 1.21.1
