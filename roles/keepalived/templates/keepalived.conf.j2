@@ -24,12 +24,12 @@ vrrp_instance VI_1 {
     }
     unicast_peer {
     {% for host in groups['haproxy'] %}
-      {{ host }}
+      {{ host }}   
     {% endfor %}
 
     }
     virtual_ipaddress {
-        {{loadbalance.ip}}
+        {{vip}}
     }
     track_script {
         Checkhaproxy

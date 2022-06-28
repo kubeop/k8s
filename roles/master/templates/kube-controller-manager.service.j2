@@ -6,7 +6,7 @@ Requires=kube-apiserver.service
 
 [Service]
 EnvironmentFile=-/etc/kubernetes/kube-controller-manager.conf
-User=kube
+User=root
 ExecStart=/usr/bin/kube-controller-manager $KUBE_CONTROLLER_MANAGER_ARGS
 Restart=on-failure
 LimitNOFILE=65536

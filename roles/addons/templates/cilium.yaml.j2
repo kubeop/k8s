@@ -96,7 +96,7 @@ data:
 
   # Regular expression matching compatible Istio sidecar istio-proxy
   # container image names
-  sidecar-istio-proxy-image: "{{cilium.registry}}/cilium/istio_proxy"
+  sidecar-istio-proxy-image: "cilium/istio_proxy"
 
   # Name of the cluster. Only relevant when building a mesh of clusters.
   cluster-name: default
@@ -109,7 +109,7 @@ data:
   #   - disabled
   #   - vxlan (default)
   #   - geneve
-  tunnel: {{ cilium.network_mode }}
+  tunnel: vxlan
   # Enables L7 proxy for L7 policy enforcement and visibility
   enable-l7-proxy: "true"
 
@@ -147,10 +147,9 @@ data:
   hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
   ipam: "cluster-pool"
-  cluster-pool-ipv4-cidr: "{{ kubernetes.podSubnet }}"
+  cluster-pool-ipv4-cidr: "10.0.0.0/8"
   cluster-pool-ipv4-mask-size: "24"
   disable-cnp-status-updates: "true"
-  cgroup-root: "/run/cilium/cgroupv2"
 ---
 # Source: cilium/templates/cilium-agent-clusterrole.yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -476,7 +475,7 @@ spec:
               key: custom-cni-conf
               name: cilium-config
               optional: true
-        image: "{{cilium.registry}}/cilium:{{cilium.version}}"
+        image: quay.io/cilium/cilium:{{cilium.version}}
         imagePullPolicy: IfNotPresent
         lifecycle:
           postStart:
@@ -521,32 +520,6 @@ spec:
           readOnly: true
       hostNetwork: true
       initContainers:
-      # Required to mount cgroup2 filesystem on the underlying Kubernetes node.
-      # We use nsenter command with host's cgroup and mount namespaces enabled.
-      - name: mount-cgroup
-        env:
-          - name: CGROUP_ROOT
-            value: /run/cilium/cgroupv2
-          - name: BIN_PATH
-            value: /opt/cni/bin
-        command:
-          - sh
-          - -c
-          # The statically linked Go program binary is invoked to avoid any
-          # dependency on utilities like sh and mount that can be missing on certain
-          # distros installed on the underlying host. Copy the binary to the
-          # same directory where we install cilium cni plugin so that exec permissions
-          # are available.
-          - 'cp /usr/bin/cilium-mount /hostbin/cilium-mount && nsenter --cgroup=/hostproc/1/ns/cgroup --mount=/hostproc/1/ns/mnt "${BIN_PATH}/cilium-mount" $CGROUP_ROOT; rm /hostbin/cilium-mount'
-        image: "{{cilium.registry}}/cilium:{{cilium.version}}"
-        imagePullPolicy: IfNotPresent
-        volumeMounts:
-          - mountPath: /hostproc
-            name: hostproc
-          - mountPath: /hostbin
-            name: cni-path
-        securityContext:
-          privileged: true
       - command:
         - /init-container.sh
         env:
@@ -568,7 +541,7 @@ spec:
               key: wait-bpf-mount
               name: cilium-config
               optional: true
-        image: "{{cilium.registry}}/cilium:{{cilium.version}}"
+        image: quay.io/cilium/cilium:{{cilium.version}}
         imagePullPolicy: IfNotPresent
         name: clean-cilium-state
         securityContext:
@@ -579,10 +552,6 @@ spec:
         volumeMounts:
         - mountPath: /sys/fs/bpf
           name: bpf-maps
-          mountPropagation: HostToContainer
-          # Required to mount cgroup filesystem from the host to cilium agent pod
-        - mountPath: /run/cilium/cgroupv2
-          name: cilium-cgroup
           mountPropagation: HostToContainer
         - mountPath: /var/run/cilium
           name: cilium-run
@@ -608,16 +577,6 @@ spec:
           path: /sys/fs/bpf
           type: DirectoryOrCreate
         name: bpf-maps
-      # To mount cgroup2 filesystem on the host
-      - hostPath:
-          path: /proc
-          type: Directory
-        name: hostproc
-      # To keep state between restarts / upgrades for cgroup2 filesystem
-      - hostPath:
-          path: /run/cilium/cgroupv2
-          type: DirectoryOrCreate
-        name: cilium-cgroup
       # To install cilium cni plugin in the host
       - hostPath:
           path:  /opt/cni/bin
@@ -730,7 +689,7 @@ spec:
               key: debug
               name: cilium-config
               optional: true
-        image: "{{cilium.registry}}/operator-generic:{{cilium.version}}"
+        image: quay.io/cilium/operator-generic:{{cilium.version}}
         imagePullPolicy: IfNotPresent
         name: cilium-operator
         livenessProbe:

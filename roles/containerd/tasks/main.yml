@@ -1,97 +1,35 @@
----
-- name: "Install dependency"
-  package:
-    name:
-      - util-linux
-      - libseccomp
-      - libseccomp-devel
-    state: present
-  when:
-    - ansible_os_family in ["RedHat"]
-  tags: containerd_app
+- name: "添加Docker软件源"
+  yum_repository:
+    file: docker-ce
+    name: "docker-ce-stable"
+    description: "Docker CE Stable - $basearch"
+    baseurl: "https://mirrors.aliyun.com/docker-ce/linux/centos/7/$basearch/stable"
+    gpgkey: "https://mirrors.aliyun.com/docker-ce/linux/centos/gpg"
+    gpgcheck: yes
+    enabled: yes
+  tags: docker_repo
 
-- name: "Install dependency"
-  package:
-    name:
-      - util-linux
-      - libseccomp2
-    state: present
-  when:
-    - ansible_os_family in ["Debian"]
-  tags: containerd_app
-
-- name: "Install nvidia-container-runtime"
-  package:
-    name: nvidia-container-runtime
-    state: present
-  when: gpu is defined and gpu == 'true'
-  tags: gpu_app
-
-- name: Install runc
-  get_url:
-    url: "{{runc.download_url}}/{{runc.version}}/runc.amd64"
-    owner: root
-    group: root
-    mode: 0755
-    dest: /usr/local/sbin/runc
-    timeout: 60
-  tags: install_runc
-
-- name: Create cni directory
-  file:
-    path: "/opt/cni/bin"
-    owner: root
-    group: root
-    mode: 0755
-    state: directory
-  tags: cni_config
-
-- name: Install cni
-  unarchive:
-    src: "{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz"
-    dest: "/opt/cni/bin/"
-    remote_src: yes
-  tags: install_cni
-
-- name: Install containerd
-  unarchive:
-    src: "{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz"
-    dest: "/usr/local/bin/"
-    remote_src: yes
-    extra_opts:
-      - --strip-components=1
+- name: "安装containerd"
+  yum:
+    update_cache: yes
+    enablerepo: docker-ce-stable
+    name: 'containerd.io{% if containerd_version is defined and containerd_version != ""  %}-{{ containerd_version }}{% endif %}'
+    state: installed
   tags: install_containerd
-  notify:
-    - restart containerd
 
-- name: "Set containerd service"
-  template:
-    src: "containerd.service.j2"
-    dest: "/usr/lib/systemd/system/containerd.service"
-    owner: root
-    group: root
-    mode: 0644
-  tags: containerd_config
-
-- name: "Create containerd data directory"
+- name: "创建containerd配置目录"
   file:
-    path: "{{ containerd.root }}"
+    path: "{{ item.path }}"
     owner: root
     group: root
     mode: 0755
     state: directory
+  with_items:
+    - {path: "/etc/containerd"}
+    - {path: "{{ containerd_root }}"}
   tags: containerd_config
 
-- name: "Create containerd config directory"
-  file:
-    path: "/etc/containerd"
-    owner: root
-    group: root
-    mode: 0755
-    state: directory
-  tags: containerd_config
-
-- name: "Set containerd config"
+- name: "生成containerd配置文件"
   template:
     src: "config.toml.j2"
     dest: "/etc/containerd/config.toml"
@@ -101,23 +39,3 @@
   tags: containerd_config
   notify:
     - restart containerd
-
-- name: Install cri-tools
-  unarchive:
-    src: "{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz"
-    dest: "/usr/local/bin/"
-    remote_src: yes
-  tags: install_critools
-  notify:
-    - Get crictl completion
-    - Install crictl completion
-
-- name: "Config cri-tools"
-  template:
-    src: "crictl.yaml.j2"
-    dest: "/etc/crictl.yaml"
-    owner: root
-    group: root
-    mode: 0644
-  tags: cri_tools
-  

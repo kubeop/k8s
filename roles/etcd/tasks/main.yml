@@ -1,49 +1,30 @@
----
-- name: "Create etcd user group"
-  group:
-    name: etcd
-    gid: 201
-    system: yes
-
-- name: Create etcd user
-  user:
-    name: etcd
-    uid: 201
-    group: etcd
-    comment: "Etcd User"
-    createhome: no
-    home: "{{ etcd.data_dir }}"
-    shell: /sbin/nologin
-    system: yes
-
-- name: "Download etcd"
-  unarchive:
-    src: "{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz"
+- name: "下载etcd安装包"
+  get_url:
+    url: "https://mirrors.huaweicloud.com/etcd/v{{ etcd.version }}/etcd-v{{ etcd.version }}-linux-amd64.tar.gz"
     dest: /tmp/
-    remote_src: yes
-  tags: install_etcd
 
-- name: "Install etcd"
+- name: "解压etcd安装包"
+  unarchive:
+    src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64.tar.gz"
+    dest: /tmp/
+    copy: no
+
+- name: "安装etcd"
   copy:
     src: "{{ item.src }}"
-    dest: "/usr/bin/"
-    owner: etcd
-    group: etcd
-    mode: 0750
+    dest: "/usr/local/bin/"
+    owner: root
+    group: root
+    mode: 0755
     remote_src: yes
   with_items:
-    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcd"}
-    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdctl"}
-    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdutl"}
-  tags: install_etcd
+    - {src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64/etcd"}
+    - {src: "/tmp/etcd-v{{ etcd.version }}-linux-amd64/etcdctl"}
 
-- name: "Distribution certs"
+- name: "分发证书"
   copy:
     src: "{{ item.line }}"
-    dest: "/etc/etcd/pki/"
-    owner: etcd
-    group: etcd
-    mode: 0640
+    dest: "/etc/kubernetes/pki/"
   with_items:
     - {line: '{{ cert.dir }}/etcd-ca.pem'}
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-server.pem'}
@@ -52,24 +33,19 @@
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.key'}
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.pem'}
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.key'}
-  tags:
-    - dis_etcd_certs
-    - dis_certs
+  tags: dis_certs
 
-- name: "Create etcd data directory"
+- name: "创建etcd数据目录"
   file:
     path: "{{ etcd.data_dir }}"
-    owner: etcd
-    group: etcd
-    mode: 0700
+    owner: root
+    group: root
+    mode: 0755
     state: directory
-  notify:
-    - restart etcd
-    
-- name: "Generate etcd configure"
+
+- name: "生成etcd配置文件"
   template:
     src: "etcd.service.j2"
     dest: "/usr/lib/systemd/system/etcd.service"
-  tags: dis_etcd_config
   notify:
     - restart etcd

@@ -1,10 +1,8 @@
----
-- name: "Install haproxy"
-  package:
+- name: "安装haproxy"
+  yum:
     name: haproxy
     state: present
-
-- name: "Generate haproxy.cfg"
+- name: "拷贝haproxy.cfg文件"
   template:
     src: "haproxy.cfg.j2"
     dest: "/etc/haproxy/haproxy.cfg"

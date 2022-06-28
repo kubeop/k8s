@@ -6,31 +6,27 @@ Wants=network-online.target
 
 [Service]
 Type=notify
-User=etcd
+User=root
 
-ExecStart=/usr/bin/etcd \
-         --name={{ ansible_hostname.split('-')[-2:] | join('-') | lower  }} \
+ExecStart=/usr/local/bin/etcd \
+         --name={{ hostname | split_hostname }} \
          --data-dir={{ etcd.data_dir | default("/var/lib/etcd") }} \
          --advertise-client-urls=https://{{ ansible_default_ipv4.address }}:2379 \
          --initial-advertise-peer-urls=https://{{ ansible_default_ipv4.address }}:2380 \
          --listen-peer-urls=https://{{ ansible_default_ipv4.address }}:2380 \
          --listen-client-urls=https://{{ ansible_default_ipv4.address }}:2379 \
          --listen-metrics-urls=http://{{ ansible_default_ipv4.address }}:2381 \
-         --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname.split('-')[-2:] | join('-') | lower }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
+         --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname | split_hostname }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
          --client-cert-auth=true \
          --peer-client-cert-auth=true \
-         --cert-file=/etc/etcd/pki/etcd-server.pem \
-         --key-file=/etc/etcd/pki/etcd-server.key \
-         --peer-cert-file=/etc/etcd/pki/etcd-peer.pem \
-         --peer-key-file=/etc/etcd/pki/etcd-peer.key \
-         --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
-         --trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
-         --initial-cluster-state=new \
-         --initial-cluster-token=etcd-cluster \
-         --election-timeout=3000 \
-         --heartbeat-interval=500 \
-         --snapshot-count=50000 \
-         --log-level=info
+         --cert-file=/etc/kubernetes/pki/etcd-server.pem \
+         --key-file=/etc/kubernetes/pki/etcd-server.key \
+         --peer-cert-file=/etc/kubernetes/pki/etcd-peer.pem \
+         --peer-key-file=/etc/kubernetes/pki/etcd-peer.key \
+         --peer-trusted-ca-file=/etc/kubernetes/pki/etcd-ca.pem \
+         --trusted-ca-file=/etc/kubernetes/pki/etcd-ca.pem \
+         --snapshot-count=10000 \
+         --logger=zap
 
 Restart=on-failure
 LimitNOFILE=65536

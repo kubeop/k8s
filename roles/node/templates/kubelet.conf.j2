@@ -17,10 +17,10 @@ authorization:
     cacheUnauthorizedTTL: 0s
 clusterDomain: "cluster.local"
 clusterDNS:
-{% if nodelocaldns.enabled %}
-  - "{{ nodelocaldns.ip }}"
+{% if coredns.enable_nodelocaldns %}
+  - "{{ coredns.nodelocaldns_ip }}"
 {% else %}
-  - "{{ kubernetes.serviceSubnet | next_nth_usable(10) }}"
+  - "{{ kubernetes.serviceSubnet | next_nth_usable(2) }}"
 {% endif %}
 cpuManagerReconcilePeriod: 0s
 containerLogMaxSize: 200Mi

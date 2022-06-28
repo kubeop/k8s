@@ -1,24 +1,40 @@
----
+- name: "获取etcd-ca证书"
+  slurp:
+    src: "/etc/kubernetes/pki/etcd-ca.pem"
+  register: cni_etcd_ca
+
+- name: "获取etcd-client证书"
+  slurp:
+    src: "/etc/kubernetes/pki/apiserver-etcd-client.pem"
+  register: cni_etcd_cert
+
+- name: "获取etcd-client证书"
+  slurp:
+    src: "/etc/kubernetes/pki/apiserver-etcd-client.key"
+  register: cni_etcd_key
+
+- import_tasks: calico.yml
+  when:
+    - network_plugin == 'calico'
+  tags:
+    - calico
+
+- import_tasks: flannel.yml
+  when:
+    - network_plugin == 'flannel'
+  tags:
+    - flannel
+
+- import_tasks: cilium.yml
+  when:
+    - network_plugin == 'cilium'
+  tags:
+    - ciliums
+
 - import_tasks: coredns.yml
   tags:
     - coredns
 
 - import_tasks: metrics-server.yml
-  when: metrics_server.enabled == true
   tags:
     - metrics-server
-
-- import_tasks: nodelocaldns.yml
-  when: nodelocaldns.enabled == true
-  tags:
-    - nodelocaldns
-
-- import_tasks: helm.yml
-  when: helm.enabled == true
-  tags:
-    - helm
-
-- import_tasks: nvidia-device-plugin.yml
-  when: nvidia_device_plugin.enabled == true
-  tags:
-    - nvidia_device_plugin

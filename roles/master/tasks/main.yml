@@ -1,73 +1,50 @@
----
-- name: "Create kubernetes user group"
-  group:
-    name: kube
-    gid: 200
-    system: yes
-
-- name: Create kubernetes user
-  user:
-    name: kube
-    uid: 200
-    group: kube
-    comment: "Kubernetes User"
-    createhome: no
-    shell: /sbin/nologin
-    system: yes
-
-- name: "Create kubernetes config directory"
+- name: "创建kubernetes证书目录"
   file:
-    path: "{{ item }}"
+    path: "/etc/kubernetes/pki/"
     owner: root
     group: root
-    mode: 0755
     state: directory
-  with_items:
-    - "~/.kube"
-    - "/etc/kubernetes/pki"
-  tags: dir
 
-- name: "Create kubernetes log directory"
+- name: "创建kubectl目录"
   file:
-    path: "{{ item }}"
-    owner: kube
-    group: kube
-    mode: 0755
+    path: "~/.kube"
     state: directory
-  with_items:
-    - "/var/log/kubernetes"
-    - "/usr/libexec/kubernetes"
-  tags: dir
 
-- name: "Install kubectl"
-  get_url:
-    url: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/bin/linux/amd64/kubectl"
-    owner: kube
-    group: kube
-    mode: 0755
-    dest: /usr/bin/
-  tags: install_kubectl
+- name: "创建kubernetes-audit日志文件"
+  file:
+    path: "/var/log/kubernetes-audit.log"
+    owner: root
+    group: root
+    state: touch
+  tags: audit-log
 
-- name: "Install master"
+- name: "安装master节点"
   get_url:
     url: "{{ item.line }}"
-    owner: kube
-    group: kube
-    mode: 0750
     dest: /usr/bin/
   with_items:
-    - {line: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/bin/linux/amd64/kube-apiserver"}
-    - {line: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/bin/linux/amd64/kube-controller-manager"}
-    - {line: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/bin/linux/amd64/kube-scheduler"}
-  tags: install_master
+    - {line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-apiserver"}
+    - {line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-controller-manager"}
+    - {line: "{{ kube_down_url }}/{{ kubernetes.version }}/kube-scheduler"}
+    - {line: "{{ kube_down_url }}/{{ kubernetes.version }}/kubectl"}
+  tags: kube_master
 
-- name: "Distribution master certs"
+- name: "添加执行权限"
+  file:
+    dest: "{{ item.line }}"
+    mode: 0755
+  with_items:
+    - {line: '/usr/bin/kube-apiserver'}
+    - {line: '/usr/bin/kube-controller-manager'}
+    - {line: '/usr/bin/kube-scheduler'}
+    - {line: '/usr/bin/kubectl'}
+  tags: kube_master
+
+- name: "分发master证书文件"
   copy:
     src: "{{ item.line }}"
     dest: "/etc/kubernetes/pki/"
-    owner: kube
-    group: kube
-    mode: 0644
+    mode: 0640
   with_items:
     - {line: '{{ cert.dir }}/ca.key'}
     - {line: '{{ cert.dir }}/ca.pem'}
@@ -90,70 +67,26 @@
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/scheduler.pem'}
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.key'}
     - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.pem'}
-  tags:
-    - dis_master_certs
-    - dis_certs
+  tags: dis_certs
 
-- name: "Get token-id"
-  shell: "cat {{ cert.dir }}/token | grep -v '^#' | awk -F '.' '{print $1}'"
-  register: token_id
-  connection: local
-  tags:
-    - dis_kubectl_kubeconfig
-    - dis_master_kubeconfig
-
-- name: "Distribution kubectl kubeconfig"
-  template:
-    src: "admin.kubeconfig.j2"
-    owner: kube
-    group: kube
-    mode: 0600
-    dest: "~/.kube/config"
-  tags:
-    - dis_kubectl_kubeconfig
-    - dis_master_kubeconfig
-
-- name: "Distribution master kubeconfig"
+- name: "分发kubeconfig"
   template:
     src: "{{ item.src }}"
-    owner: kube
-    group: kube
-    mode: 0640
     dest: "{{ item.dest }}"
   with_items:
     - {src: "admin.kubeconfig.j2",dest: "~/.kube/config" }
     - {src: "controller-manager.kubeconfig.j2",dest: "/etc/kubernetes/controller-manager.kubeconfig" }
     - {src: "scheduler.kubeconfig.j2",dest: "/etc/kubernetes/scheduler.kubeconfig" }
-  tags: dis_master_kubeconfig
-
-- name: "Distribution master config"
-  template:
-    src: "{{ item.src }}"
-    owner: kube
-    group: kube
-    mode: 0640
-    dest: "{{ item.dest }}"
-  with_items:
     - {src: "kube-apiserver.conf.j2",dest: "/etc/kubernetes/kube-apiserver.conf" }
+    - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
     - {src: "kube-controller-manager.conf.j2",dest: "/etc/kubernetes/kube-controller-manager.conf" }
+    - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
     - {src: "kube-scheduler.conf.j2",dest: "/etc/kubernetes/kube-scheduler.conf" }
+    - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
     - {src: "audit-policy.yaml.j2",dest: "/etc/kubernetes/audit-policy.yaml" }
   tags: dis_master_config
 
-- name: "Distribution master systemd unit"
-  template:
-    src: "{{ item.src }}"
-    owner: root
-    group: root
-    mode: 0644
-    dest: "{{ item.dest }}"
-  with_items:
-    - {src: "kube-apiserver.service.j2",dest: "/usr/lib/systemd/system/kube-apiserver.service" }
-    - {src: "kube-controller-manager.service.j2",dest: "/usr/lib/systemd/system/kube-controller-manager.service" }
-    - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
-  tags: dis_master_systemd
-
-- name: "Restart kube-apiserver"
+- name: "重启kube-apiserver"
   systemd:
     name: kube-apiserver
     state: restarted
@@ -161,7 +94,7 @@
     enabled: yes
   tags: restart_apiserver
 
-- name: "Restart kube-controller-manager"
+- name: "重启kube-controller-manager"
   systemd:
     name: kube-controller-manager
     state: restarted
@@ -169,7 +102,7 @@
     enabled: yes
   tags: restart_controller
 
-- name: "Restart kube-scheduler"
+- name: "重启kube-scheduler"
   systemd:
     name: kube-scheduler
     state: restarted
@@ -177,13 +110,13 @@
     enabled: yes
   tags: restart_scheduler
 
-- name: "Add kubectl completion"
+- name: "添加kubectl命令自动补全"
   lineinfile:
     dest: "/etc/profile"
     line: "source <(kubectl completion bash)"
     state: present
 
-- name: "Waiting kube-apiserver starting"
+- name: "等待kube-apiserver启动成功"
   wait_for:
     host: "{{ ansible_default_ipv4.address }}"
     port: 6443
@@ -191,7 +124,7 @@
     sleep: 2
   tags: healthcheck
 
-- name: "Waiting kube-controller-manager starting"
+- name: "等待kube-controller-manager启动成功"
   wait_for:
     host: "{{ ansible_default_ipv4.address }}"
     port: 10257
@@ -199,7 +132,7 @@
     sleep: 2
   tags: healthcheck
 
-- name: "Waiting kube-scheduler starting"
+- name: "等待kube-scheduler启动成功"
   wait_for:
     host: "{{ ansible_default_ipv4.address }}"
     port: 10259
@@ -207,7 +140,7 @@
     sleep: 2
   tags: healthcheck
 
-- name: "Kube-apiserver health check"
+- name: "kube-apiserver健康检查"
   uri:
     url: "https://{{ ansible_default_ipv4.address }}:6443/healthz"
     return_content: yes
@@ -219,7 +152,7 @@
   connection: local
   tags: healthcheck
 
-- name: "Kube-controller-manager health check"
+- name: "kube-controller-manager健康检查"
   uri:
     url: "https://{{ ansible_default_ipv4.address }}:10257/healthz"
     return_content: yes
@@ -229,7 +162,7 @@
   connection: local
   tags: healthcheck
 
-- name: "Kube-scheduler health check"
+- name: "kube-scheduler健康检查"
   uri:
     url: "https://{{ ansible_default_ipv4.address }}:10259/healthz"
     return_content: yes

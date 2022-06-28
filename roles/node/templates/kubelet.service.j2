@@ -5,7 +5,6 @@ After=containerd.service
 Requires=containerd.service
 
 [Service]
-User=root
 WorkingDirectory={{ kubernetes.kubelet_dir | default("/var/lib/kubelet") }}
 EnvironmentFile=-/etc/sysconfig/kubelet
 ExecStart=/usr/bin/kubelet $KUBELET_ARGS

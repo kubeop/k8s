@@ -1,3 +1,5 @@
+# __MACHINE_GENERATED_WARNING__
+
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -31,13 +33,6 @@ rules:
   - nodes
   verbs:
   - get
-- apiGroups:
-  - discovery.k8s.io
-  resources:
-  - endpointslices
-  verbs:
-  - list
-  - watch
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -78,9 +73,7 @@ data:
             ttl 30
         }
         prometheus :9153
-        forward . /etc/resolv.conf {
-            max_concurrent 1000
-        }
+        forward . /etc/resolv.conf
         cache 30
         loop
         reload
@@ -114,23 +107,11 @@ spec:
     metadata:
       labels:
         k8s-app: kube-dns
+      annotations:
+        seccomp.security.alpha.kubernetes.io/pod: 'runtime/default'
     spec:
-      securityContext:
-        seccompProfile:
-          type: RuntimeDefault
       priorityClassName: system-cluster-critical
       serviceAccountName: coredns
-      affinity:
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                  - key: k8s-app
-                    operator: In
-                    values: ["kube-dns"]
-              topologyKey: kubernetes.io/hostname
       tolerations:
         - key: "CriticalAddonsOnly"
           operator: "Exists"
@@ -138,15 +119,14 @@ spec:
         kubernetes.io/os: linux
       containers:
       - name: coredns
-        image: {{coredns.registry}}/coredns:{{coredns.version}}
+        image: registry.aliyuncs.com/k8sxio/coredns:{{coredns.version}}
         imagePullPolicy: IfNotPresent
         resources:
           limits:
-            cpu: 100m
-            memory: 256Mi
+            memory: 170Mi
           requests:
             cpu: 100m
-            memory: 256Mi
+            memory: 70Mi
         args: [ "-conf", "/etc/coredns/Corefile" ]
         volumeMounts:
         - name: config-volume
@@ -209,7 +189,7 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: {{kubernetes.serviceSubnet | next_nth_usable(10)}}
+  clusterIP: {{kubernetes.serviceSubnet | next_nth_usable(2)}}
   ports:
   - name: dns
     port: 53

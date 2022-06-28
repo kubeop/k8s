@@ -1,12 +1,13 @@
 KUBELET_ARGS="\
-    --hostname-override={{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }} \
+    --hostname-override={{ ansible_default_ipv4.address }} \
     --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
     --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
     --config=/etc/kubernetes/kubelet.conf \
     --runtime-cgroups=/system.slice/containerd.service \
     --container-runtime=remote \
-    --container-runtime-endpoint=unix://{{containerd.state}}/containerd.sock \
-    --image-service-endpoint=unix://{{containerd.state}}/containerd.sock \
+    --container-runtime-endpoint=unix://{{containerd_state}}/containerd.sock \
+    --image-service-endpoint=unix://{{containerd_state}}/containerd.sock \
     --cert-dir=/etc/kubernetes/pki \
     --root-dir={{ kubernetes.kubelet_dir | default("/var/lib/kubelet") }} \
+    --network-plugin=cni \
     --v=2"

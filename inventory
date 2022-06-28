@@ -1,27 +1,24 @@
-# 本组内填写etcd服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
+#本组内填写etcd服务器及主机名
 [etcd]
-172.16.90.101 hostname=etcd-01
-172.16.90.102 hostname=etcd-02
-172.16.90.103 hostname=etcd-03
+172.16.90.201 hostname=etcd-01
+172.16.90.202 hostname=etcd-02
+172.16.90.203 hostname=etcd-03
+
+#本组内填写master服务器及主机名
+[master]
+172.16.90.204 hostname=master-01
+172.16.90.205 hostname=master-02
+172.16.90.206 hostname=master-03
 
 [haproxy]
-172.16.90.98 hostname=haproxy-01 type=MASTER priority=100
-172.16.90.99 hostname=haproxy-02 type=BACKUP priority=90
+172.16.90.198 hostname=haproxy-01 type=MASTER priority=100
+172.16.90.199 hostname=haproxy-02 type=BACKUP priority=90
+[all:vars]
+lb_port=6443
+vip=172.16.90.200
 
-# 本组内填写master服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
-[master]
-172.16.90.110 hostname=master-01
-172.16.90.111 hostname=master-02
-172.16.90.112 hostname=master-03
-
-# 本组内填写worker服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
-# 最后面添加gpu=true 表示节点为GPU节点，运行时会配置使用GPU并且添加nvidia.com/gpu=true标签
-# 不是GPU节点时，可去掉gpu配置项
-# 启用GPU时，请先在节点按照 https://nvidia.github.io/libnvidia-container/ 配置软件源或同步相关包到私服
-[worker]
-172.16.90.120 hostname=worker-01 gpu=false
-172.16.90.121 hostname=worker-02 gpu=false
-172.16.90.122 hostname=worker-03 gpu=false
-172.16.90.123 hostname=worker-04 gpu=false
-172.16.90.124 hostname=worker-05 gpu=true
-172.16.90.125 hostname=worker-06 gpu=false
+#本组内填写node服务器及主机名
+[node]
+172.16.90.207 hostname=node-01
+172.16.90.208 hostname=node-02
+172.16.90.209 hostname=node-03

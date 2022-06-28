@@ -18,15 +18,3 @@
   retries: 8
   delay: 4
   until: containerd_ready.rc == 0
-
-- name: Get crictl completion
-  command: "/usr/local/bin/crictl completion"
-  changed_when: False
-  register: cri_completion
-  check_mode: false
-
-- name: Install crictl completion
-  copy:
-    dest: /etc/bash_completion.d/crictl
-    content: "{{ cri_completion.stdout }}"
-    mode: 0644
