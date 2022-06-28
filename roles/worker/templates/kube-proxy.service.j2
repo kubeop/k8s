@@ -1,0 +1,24 @@
+[Unit]
+Description=Kubernetes Kube-Proxy Server
+Documentation=https://github.com/kubernetes/kubernetes
+After=network.target
+
+[Service]
+ExecStartPre=-/usr/sbin/modprobe ip_vs
+ExecStartPre=-/usr/sbin/modprobe ip_vs_rr
+ExecStartPre=-/usr/sbin/modprobe ip_vs_wrr
+ExecStartPre=-/usr/sbin/modprobe ip_vs_sh
+ExecStartPre=-/usr/sbin/modprobe ip_vs_wlc
+ExecStartPre=-/usr/sbin/modprobe br_netfilter
+{% if ansible_kernel.split('-')[0] is version('4.19.0', '>=') or (ansible_os_family == 'RedHat' and ansible_distribution_major_version == '8') %}
+ExecStartPre=-/usr/sbin/modprobe nf_conntrack
+{% else %}
+ExecStartPre=-/usr/sbin/modprobe nf_conntrack_ipv4
+{% endif %}
+User=root
+ExecStart=/usr/bin/kube-proxy --config=/etc/kubernetes/kube-proxy.conf
+Restart=on-failure
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

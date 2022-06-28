@@ -1,4 +1,5 @@
-- name: "生成cilium部署文件"
+---
+- name: "Generate cilium yaml"
   template:
     src: "{{item.src}}"
     dest: "{{item.dest}}"
@@ -6,7 +7,7 @@
     - {src: "cilium.yaml.j2", dest: "/tmp/cilium.yaml"}
   tags: cilium
 
-- name: "部署cilium"
+- name: "Deploy cilium"
   shell: "kubectl apply -f /tmp/cilium.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true

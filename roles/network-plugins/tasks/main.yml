@@ -1,0 +1,34 @@
+---
+- name: "Get etcd-ca content"
+  slurp:
+    src: "/etc/kubernetes/pki/etcd-ca.pem"
+  register: cni_etcd_ca
+
+- name: "Get etcd-client content"
+  slurp:
+    src: "/etc/kubernetes/pki/apiserver-etcd-client.pem"
+  register: cni_etcd_cert
+
+- name: "Get etcd-client content"
+  slurp:
+    src: "/etc/kubernetes/pki/apiserver-etcd-client.key"
+  register: cni_etcd_key
+
+- import_tasks: calico.yml
+  when:
+    - network_plugin == 'calico'
+  tags:
+    - calico
+
+- import_tasks: flannel.yml
+  when:
+    - network_plugin == 'flannel'
+  tags:
+    - flannel
+
+- import_tasks: cilium.yml
+  when:
+    - network_plugin == 'cilium'
+  tags:
+    - ciliums
+

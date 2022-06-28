@@ -1,0 +1,63 @@
+---
+- name: "Verify Settings"
+  hosts: haproxy etcd master worker
+  roles:
+    - role: verify
+      tags: verify
+
+- name: "Generate Certs"
+  hosts: localhost
+  connection: local
+  roles:
+    - role: cert
+      tags: cert
+
+- name: "Set System Init"
+  hosts: haproxy etcd master worker
+  roles:
+    - role: init
+      tags: init
+
+- name: "Set Haproxy + Keepalived"
+  hosts: haproxy
+  roles:
+    - role: haproxy
+      tags: haproxy
+    - role: keepalived
+      tags: keepalived
+
+- name: "Set Etcd Cluster"
+  hosts: etcd
+  roles:
+    - role: etcd
+      tags: etcd
+
+- name: "Set Control Plane Nodes"
+  hosts: master
+  roles:
+    - role: master
+      tags: master
+
+- name: "Set Container Runtime"
+  hosts: master worker
+  roles:
+    - role: containerd
+      tags: containerd
+
+- name: "Set Worker Nodes"
+  hosts: master worker
+  roles:
+    - role: worker
+      tags: worker
+
+- name: "Set Container Networking Plugins"
+  hosts: master[0]
+  roles:
+    - role: network-plugins
+      tags: network-plugins
+
+- name: "Set Kubernetes Addons"
+  hosts: master[0]
+  roles:
+    - role: addons
+      tags: addons

@@ -1,4 +1,5 @@
-- name: "生成coredns部署文件"
+---
+- name: "Generate coredns yaml"
   template:
     src: "{{item.src}}"
     dest: "{{item.dest}}"
@@ -6,7 +7,7 @@
     - {src: "coredns.yaml.j2", dest: "/tmp/coredns.yaml"}
   tags: coredns
 
-- name: "部署coredns"
+- name: "Deploy coredns"
   shell: "kubectl apply -f /tmp/coredns.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true

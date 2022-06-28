@@ -1,11 +1,12 @@
-- name: "创建证书目录"
+---
+- name: "Create certs directory"
   file:
     path: "{{ cert.dir }}/{{ item }}"
     state: directory
   with_items:
     - "{{ groups['etcd'] }}"
     - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
+    - "{{ groups['worker'] }}"
 
 #etcd-ca
 - stat:
@@ -30,6 +31,7 @@
     privatekey_path: "{{ cert.dir }}/etcd-ca.key"
     use_common_name_for_san: no
     common_name: etcd-ca
+    create_subject_key_identifier: yes
     basic_constraints_critical: yes
     basic_constraints:
       - CA:TRUE
@@ -48,6 +50,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/etcd-ca.pem"
     provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
     selfsigned_create_subject_key_identifier: never_create
     privatekey_path: "{{ cert.dir }}/etcd-ca.key"
     csr_path: "{{ cert.dir }}/etcd-ca.csr"
@@ -66,6 +69,9 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-server.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
     common_name: "{{ item }}"
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -85,6 +91,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/etcd-server.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
@@ -108,6 +115,9 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-peer.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
     common_name: "{{ item }}"
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -127,6 +137,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/etcd-peer.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
@@ -151,6 +162,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
     organization_name: system:masters
     common_name: kube-apiserver-etcd-client
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
@@ -165,6 +179,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
@@ -189,6 +204,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
     organization_name: system:masters
     common_name: kube-etcd-healthcheck-client
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
@@ -203,6 +221,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
@@ -235,6 +254,7 @@
     privatekey_path: "{{ cert.dir }}/ca.key"
     use_common_name_for_san: no
     common_name: kubernetes
+    create_subject_key_identifier: yes
     basic_constraints_critical: yes
     basic_constraints:
       - CA:TRUE
@@ -253,6 +273,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/ca.pem"
     provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
     selfsigned_create_subject_key_identifier: never_create
     privatekey_path: "{{ cert.dir }}/ca.key"
     csr_path: "{{ cert.dir }}/ca.csr"
@@ -272,6 +293,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
     common_name: kube-apiserver
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -285,11 +309,11 @@
       - DNS:kubernetes.default.svc
       - DNS:kubernetes.default.svc.cluster
       - DNS:kubernetes.default.svc.cluster.local
-      - DNS:{{ kubernetes.apiserver_domain_name }}
+      - DNS:{% if 'domain_name' in loadbalance %}{{ loadbalance.domain_name }}{% else %}{{ loadbalance.ip }}{% endif %}
       - IP:127.0.0.1
       - IP:{{ item }}
       - IP:{{ kubernetes.serviceSubnet | next_nth_usable(1) }}
-      - IP:{{ vip }}
+      - IP:{{ loadbalance.ip }}
   with_items:
     - "{{ groups['master'] }}"
 
@@ -297,6 +321,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/apiserver.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
@@ -322,6 +347,9 @@
     organization_name: system:masters
     common_name: kube-apiserver-kubelet-client
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -335,6 +363,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.key"
@@ -359,6 +388,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/admin.key"
     organization_name: system:masters
     common_name: kubernetes-admin
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     use_common_name_for_san: no
     key_usage_critical: yes
     key_usage:
@@ -373,6 +405,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/admin.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/admin.key"
@@ -397,6 +430,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
     common_name: system:kube-controller-manager
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -410,6 +446,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/controller-manager.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
@@ -434,6 +471,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/scheduler.key"
     common_name: system:kube-scheduler
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -447,6 +487,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/scheduler.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/scheduler.key"
@@ -464,7 +505,7 @@
     size: "{{ cert.size }}"
   with_items:
     - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
+    - "{{ groups['worker'] }}"
 
 - name: "Generate kube-proxy request"
   openssl_csr:
@@ -472,6 +513,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
     common_name: system:kube-proxy
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -480,12 +524,13 @@
       - clientAuth
   with_items:
     - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
+    - "{{ groups['worker'] }}"
 
 - name: "Generate kube-proxy certificate"
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/kube-proxy.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
@@ -494,7 +539,7 @@
     ownca_privatekey_path: "{{ cert.dir }}/ca.key"
   with_items:
     - "{{ groups['master'] }}"
-    - "{{ groups['node'] }}"
+    - "{{ groups['worker'] }}"
 
 
 #front-proxy-ca
@@ -520,6 +565,7 @@
     privatekey_path: "{{ cert.dir }}/front-proxy-ca.key"
     use_common_name_for_san: no
     common_name: front-proxy-ca
+    create_subject_key_identifier: yes
     basic_constraints_critical: yes
     basic_constraints:
       - CA:TRUE
@@ -538,6 +584,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/front-proxy-ca.pem"
     provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
     selfsigned_create_subject_key_identifier: never_create
     privatekey_path: "{{ cert.dir }}/front-proxy-ca.key"
     csr_path: "{{ cert.dir }}/front-proxy-ca.csr"
@@ -557,6 +604,9 @@
     privatekey_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
     common_name: front-proxy-client
     use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
     key_usage_critical: yes
     key_usage:
       - digitalSignature
@@ -570,6 +620,7 @@
   openssl_certificate:
     path: "{{ cert.dir }}/{{ item }}/front-proxy-client.pem"
     provider: ownca
+    ownca_not_after: "+{{cert.day}}"
     ownca_create_subject_key_identifier: never_create
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
@@ -606,12 +657,12 @@
     path: "{{ cert.dir }}/token"
   register: token
 
-- name: "生成bootstrap-token"
+- name: "Generate bootstrap-token"
   when: not token.stat.exists
   shell: echo $(openssl rand -hex 3).$(openssl rand -hex 8)
   register: bootstrap_token
 
-- name: "创建bootstrap-token文件"
+- name: "Generate bootstrap-token file"
   when: not token.stat.exists
   blockinfile:
     path: "{{ cert.dir }}/token"

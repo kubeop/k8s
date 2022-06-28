@@ -6,7 +6,7 @@ Requires=kube-apiserver.service
 
 [Service]
 EnvironmentFile=-/etc/kubernetes/kube-scheduler.conf
-User=root
+User=kube
 ExecStart=/usr/bin/kube-scheduler $KUBE_SCHEDULER_ARGS
 Restart=on-failure
 LimitNOFILE=65536

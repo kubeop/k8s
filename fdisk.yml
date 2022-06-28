@@ -1,9 +1,9 @@
 ---
-- name: "格式化磁盘"
+- name: "格式化挂载磁盘"
   hosts: all
   vars:
     disk: sdb
-    dir: /var/lib/etcd
+    dir: /data/containers
   tasks:
     - name: set variable
       set_fact:
@@ -56,3 +56,53 @@
         opts: defaults,noatime,nodiratime,pquota
         state: mounted
       tags: fdisk
+    - name: "创建etcd目录"
+      file:
+        path: "{{ item.line }}"
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
+      with_items:
+        - {line: "{{ dir }}/etcd"}
+        - {line: "/var/lib/etcd"}
+      when: inventory_hostname in groups['etcd']
+      tags: bind_dir
+    - name: "绑定etcd数据目录到{{ dir }}目录"
+      mount:
+        path: "/var/lib/etcd"
+        src: "{{ dir }}/etcd"
+        fstype: none
+        opts: defaults,bind
+        state: mounted
+      when: inventory_hostname in groups['etcd']
+      tags: bind_dir
+    - name: "创建worker目录"
+      file:
+        path: "{{ item.line }}"
+        owner: root
+        group: root
+        mode: 0755
+        state: directory
+      with_items:
+        - {line: "{{ dir }}/kubelet"}
+        - {line: "{{ dir }}/containerd"}
+        - {line: "{{ dir }}/log"}
+        - {line: "/var/lib/kubelet"}
+        - {line: "/var/lib/containerd"}
+        - {line: "/var/log/pods"}
+      when: (inventory_hostname in groups['master'] or inventory_hostname in groups['worker'])
+      tags: bind_dir
+    - name: "绑定worker数据目录到{{ dir }}目录"
+      mount:
+        path: "{{ item.path }}"
+        src: "{{ item.src }}"
+        fstype: none
+        opts: defaults,bind
+        state: mounted
+      with_items:
+        - {src: "{{ dir }}/kubelet", path: "/var/lib/kubelet"}
+        - {src: "{{ dir }}/containerd", path: "/var/lib/containerd"}
+        - {src: "{{ dir }}/log", path: "/var/log/pods"}
+      when: (inventory_hostname in groups['master'] or inventory_hostname in groups['worker'])
+      tags: bind_dir

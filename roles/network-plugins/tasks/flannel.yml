@@ -1,4 +1,5 @@
-- name: "生成flannel部署文件"
+---
+- name: "Generate flannel yaml"
   template:
     src: "{{item.src}}"
     dest: "{{item.dest}}"
@@ -6,7 +7,7 @@
     - {src: "flannel.yaml.j2", dest: "/tmp/flannel.yaml"}
   tags: flannel
 
-- name: "部署flannel"
+- name: "Deploy flannel"
   shell: "kubectl apply -f /tmp/flannel.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
