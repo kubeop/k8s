@@ -13,7 +13,7 @@ etcd:
   # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.3
+  version: v3.5.4
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -34,11 +34,11 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.24.2
+  version: v1.24.3
   # 集群Pod网段
-  podSubnet: 10.64.0.0/16
+  podSubnet: 10.64.0.0/12
   # 集群Service网段
-  serviceSubnet: 192.168.0.0/20
+  serviceSubnet: 192.168.0.0/16
   # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   kubelet_dir: "/var/lib/kubelet"
 
@@ -95,7 +95,7 @@ containerd:
     SystemdCgroup: true
   registries:
     "docker.io": "https://registry-1.docker.io"
-    "k8s.gcr.io": "https://registry.aliyuncs.com/k8sxio"
+    "k8s.gcr.io": "https://k8s-gcr-io.mirrors.sjtug.sjtu.edu.cn"
 
 # Network Plugin
 network_plugin: calico
@@ -117,7 +117,7 @@ flannel:
   # "vxlan" or "host-gw"
   network_mode: vxlan
 calico:
-  version: v3.23.1
+  version: v3.23.2
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
