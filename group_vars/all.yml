@@ -150,6 +150,6 @@ metrics_server:
   registry: k8s-gcr-io.mirrors.sjtug.sjtu.edu.cn/metrics-server
 nvidia_device_plugin:
   enabled: false
-  version: v0.11.0
+  version: v0.12.2
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: nvcr.io/nvidia
