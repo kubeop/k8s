@@ -44,7 +44,7 @@
   selinux:
     state: disabled
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: selinux
 
 - name: "Get firewalld is installed"
@@ -98,7 +98,7 @@
     - { regexp: "minlen", line: "minlen=10" }
     - { regexp: "minclass", line: "minclass=3" }
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: passwd
 
 - name: "Set password remember"
@@ -110,7 +110,7 @@
     - { path: "/etc/pam.d/password-auth" }
     - { path: "/etc/pam.d/system-auth" }
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: passwd
 
 - name: "Set limits"
@@ -162,7 +162,7 @@
   modprobe:
     name: "nf_conntrack_ipv4"
     state: present
-  when: (ansible_os_family == 'RedHat' and ansible_distribution_major_version != '8') and
+  when: (ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version != '8') and
         ansible_kernel.split('-')[0] is version('4.19.0', '<')
   tags: mod
 
@@ -170,7 +170,7 @@
   modprobe:
     name: "nf_conntrack"
     state: present
-  when: (ansible_os_family == 'RedHat' and ansible_distribution_major_version == '8') or
+  when: (ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version == '8') or
         ansible_kernel.split('-')[0] is version('4.19.0', '>=')
   tags: mod
 
@@ -230,7 +230,7 @@
       - nfs-utils
     state: present
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: install_app
 
 - name: "Install base application"

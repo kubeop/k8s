@@ -7,7 +7,7 @@
       - libseccomp-devel
     state: present
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: containerd_app
 
 - name: "Install dependency"
