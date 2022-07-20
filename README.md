@@ -53,20 +53,26 @@ pip3 install netaddr -i  https://mirrors.ustc.edu.cn/pypi/web/simple
 如已经自行格式化并挂载目录，可以跳过此步骤。
 
 ```
-ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data/containers"
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
 ```
 
 ⚠️：
 
 - 此脚本会格式化{{disk}}指定的硬盘，并挂载到{{dir}}目录。
-- 会将`/var/lib/etcd`、`/var/lib/containerd`、`/var/lib/kubelet`、`/var/log/pods`数据目录绑定到此数据盘，以达到多个数据目录共用一个数据盘，而无需修改相关数据目录。
+- 会将`/var/lib/etcd`、`/var/lib/containerd`、`/var/lib/kubelet`、`/var/log/pods`数据目录绑定到此数据盘`{{dir}}/containers/etcd`、`{{dir}}/containers/containerd`、`{{dir}}/containers/kubelet`、`{{dir}}/containers/pods`目录，以达到多个数据目录共用一个数据盘，而无需修改kubernetes相关数据目录。
 
 
 
-如需不同目录挂载不同数据盘
+如需不同目录挂载不同数据盘，可以使用以下命令单独挂载
 
 ```
 ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd" --skip-tags=bind_dir
+```
+
+如已经格式化并挂载过数据盘，可以使用以下命令将数据目录绑定到数据盘
+
+```
+ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/data" -t bind_dir
 ```
 
 
@@ -95,7 +101,7 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data/containers"
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
 ```
 
 部署集群
@@ -123,7 +129,7 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data/containers"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
 ```
 
 执行生成节点证书
@@ -153,7 +159,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data/containers"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
 ```
 
 执行生成节点证书
