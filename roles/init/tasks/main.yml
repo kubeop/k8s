@@ -35,9 +35,12 @@
 
 - name: "Remove swapfile from /etc/fstab"
   mount:
-    name: "swap"
-    fstype: sqap
+    name: "{{ item }}"
+    fstype: swap
     state: absent
+  with_items:
+    - swap
+    - none
   tags: swap
 
 - name: "Disable selinux"
