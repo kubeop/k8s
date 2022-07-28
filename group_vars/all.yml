@@ -100,15 +100,13 @@ containerd:
 # Network Plugin
 network_plugin: calico
 # cilium need linux kernel >= 4.9.17
-# 暂不推荐使用，后续测试通过再加入
-#cilium:
-  #version: v1.11.6
+cilium:
+  version: v1.12.0
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
-  # {{cilium.registry}}/istio_proxy:{{cilium.version}}
-  #registry: docker.mirrors.sjtug.sjtu.edu.cn/cilium
+  registry: docker.mirrors.sjtug.sjtu.edu.cn/cilium
   # "disabled" or "vxlan" or "geneve"
-  #network_mode: vxlan
+  network_mode: vxlan
 flannel:
   version: v0.18.1
   # {{flannel.registry}}/flannel-cni-plugin:v1.0.1
