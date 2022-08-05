@@ -121,7 +121,6 @@
     mode: 0640
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "admin.kubeconfig.j2",dest: "~/.kube/config" }
     - {src: "controller-manager.kubeconfig.j2",dest: "/etc/kubernetes/controller-manager.kubeconfig" }
     - {src: "scheduler.kubeconfig.j2",dest: "/etc/kubernetes/scheduler.kubeconfig" }
   tags: dis_master_kubeconfig

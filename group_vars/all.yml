@@ -126,15 +126,15 @@ calico:
   ip_autodetection_method: interface=eth0
 
 # Addons
-coredns:
-  version: 1.8.6
-  # {{coredns.registry}}/coredns:{{coredns.version}}
-  registry: docker.mirrors.sjtug.sjtu.edu.cn/coredns
 helm:
   enabled: true
   # 如使用自建文件服务器，请保证下载路径为:{{helm.download_url}}/{{helm.version}}/helm-{{helm.version}}-linux-amd64.tar.gz
   download_url: https://mirrors.huaweicloud.com/helm
   version: v3.8.2
+coredns:
+  version: 1.8.6
+  # {{coredns.registry}}/coredns:{{coredns.version}}
+  registry: docker.mirrors.sjtug.sjtu.edu.cn/coredns
 nodelocaldns:
   enabled: true
   version: 1.21.1

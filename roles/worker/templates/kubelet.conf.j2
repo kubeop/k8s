@@ -25,7 +25,12 @@ clusterDNS:
 cpuManagerReconcilePeriod: 0s
 containerLogMaxSize: 200Mi
 containerLogMaxFiles: 10
-evictionPressureTransitionPeriod: 0s
+evictionHard:
+  imagefs.available: 15%
+  memory.available: 500Mi
+  nodefs.available: 10%
+  nodefs.inodesFree: 5%
+evictionPressureTransitionPeriod: 5m0s
 fileCheckFrequency: 0s
 healthzBindAddress: 0.0.0.0
 healthzPort: 10248
