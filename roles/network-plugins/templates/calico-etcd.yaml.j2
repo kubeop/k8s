@@ -21,6 +21,7 @@ kind: ServiceAccount
 metadata:
   name: calico-kube-controllers
   namespace: kube-system
+automountServiceAccountToken: true
 ---
 # Source: calico/templates/calico-node.yaml
 apiVersion: v1
@@ -28,6 +29,7 @@ kind: ServiceAccount
 metadata:
   name: calico-node
   namespace: kube-system
+automountServiceAccountToken: true
 ---
 # Source: calico/templates/calico-etcd-secrets.yaml
 # The following contains k8s Secrets for use with a TLS enabled etcd cluster.
@@ -71,7 +73,7 @@ data:
   # Configure the MTU to use for workload interfaces and tunnels.
   # By default, MTU is auto-detected, and explicitly setting this field should not be required.
   # You can override auto-detection by providing a non-zero value.
-  veth_mtu: "0"
+  veth_mtu: "{{calico.mtu}}"
 
   # The CNI network configuration to install on each node. The special
   # values in this config will be automatically populated.

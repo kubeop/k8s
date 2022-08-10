@@ -122,6 +122,8 @@ calico:
   registry: docker.mirrors.sjtug.sjtu.edu.cn/calico
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
+  # mtu 默认为0，表示自动自动检测
+  mtu: 0
   # 可指定网卡或使用can-reach=网关
   ip_autodetection_method: interface=eth0
 
