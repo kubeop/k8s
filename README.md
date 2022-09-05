@@ -118,6 +118,12 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 
 - 默认会对节点进行初始化操作，集群节点会取主机名最后两段和IP作为集群节点名称。
 
+如果想让master节点也进行调度，可以添加使用以下方式
+
+```
+ansible-playbook cluster.yml -i inventory --skip-tags=create_master_taint
+```
+
 
 
 ## 扩容节点
