@@ -19,14 +19,28 @@
   package:
     name: chrony
     state: present
+  when:
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: ntp
 
-- name: "Set chrony"
+- name: "Set chrony.service"
   copy:
     src: "chrony.conf"
     dest: "/etc/chrony.conf"
   notify:
     - restart chrony
+  when:
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+  tags: ntp
+
+- name: "Set systemd-timesyncd.service"
+  copy:
+    src: "timesyncd.conf"
+    dest: "/etc/systemd/timesyncd.conf"
+  notify:
+    - restart systemd-timesyncd
+  when:
+    - ansible_os_family in ["Debian"]
   tags: ntp
 
 - name: "Disable swap"
