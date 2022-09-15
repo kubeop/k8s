@@ -2,12 +2,18 @@
 - name: "格式化挂载磁盘"
   hosts: all
   vars:
+    type: disk
     disk: sdb
     dir: /data
   tasks:
-    - name: set variable
+    - name: set disk variable
+      when: type == "disk"
       set_fact:
         partation: "{{ disk }}1"
+    - name: set nvme variable
+      when: type == "nvme"
+      set_fact:
+        partation: "{{ disk }}p1"
     - stat:
         path: "/dev/{{ partation }}"
       register: disk_stat

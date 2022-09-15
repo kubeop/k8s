@@ -56,6 +56,14 @@ pip3 install netaddr -i  https://mirrors.ustc.edu.cn/pypi/web/simple
 ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
 ```
 
+如果是NVME的磁盘，请使用以下方式:
+
+```
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data type=nvme"
+```
+
+
+
 ⚠️：
 
 - 此脚本会格式化{{disk}}指定的硬盘，并挂载到{{dir}}目录。
