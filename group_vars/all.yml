@@ -13,7 +13,7 @@ etcd:
   # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.4
+  version: v3.5.5
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -34,7 +34,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.24.3
+  version: v1.24.6
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 集群Service网段
@@ -70,7 +70,7 @@ containerd:
   # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.5.0以上版本
-  version: 1.6.6
+  version: 1.6.8
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -132,7 +132,7 @@ helm:
   enabled: true
   # 如使用自建文件服务器，请保证下载路径为:{{helm.download_url}}/{{helm.version}}/helm-{{helm.version}}-linux-amd64.tar.gz
   download_url: https://mirrors.huaweicloud.com/helm
-  version: v3.8.2
+  version: v3.9.4
 coredns:
   version: 1.8.6
   # {{coredns.registry}}/coredns:{{coredns.version}}
