@@ -62,7 +62,7 @@ critools:
   # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.24.2
+  version: v1.25.0
 
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
@@ -101,21 +101,21 @@ containerd:
 network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
-  version: v1.12.0
+  version: v1.12.2
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: docker.mirrors.sjtug.sjtu.edu.cn/cilium
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 flannel:
-  version: v0.18.1
+  version: v0.19.2
   # {{flannel.registry}}/flannel-cni-plugin:v1.0.1
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni
   # "vxlan" or "host-gw"
   network_mode: vxlan
 calico:
-  version: v3.23.2
+  version: v3.22.5
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
