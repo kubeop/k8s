@@ -20,9 +20,41 @@
     - ansible_os_family in ["Debian"]
   tags: containerd_app
 
+- name: "Add nvidia-container-toolkit repository"
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description}}"
+    file: nvidia-container-toolkit
+    baseurl: "{{ item.baseurl }}"
+    repo_gpgcheck: yes
+    gpgcheck: yes
+    gpgkey: "{{ item.gpgkey }}"
+    sslverify: yes
+    sslcacert: "/etc/pki/tls/certs/ca-bundle.crt"
+    enabled: yes
+  with_items:
+    - { name: "libnvidia-container",description: "libnvidia-container",baseurl: "https://nvidia.github.io/libnvidia-container/stable/centos{{ansible_distribution_major_version}}/$basearch",gpgkey: "https://nvidia.github.io/libnvidia-container/gpgkey" }
+    - { name: "nvidia-container-runtime",description: "nvidia-container-runtime",baseurl: "https://nvidia.github.io/nvidia-container-runtime/stable/centos{{ansible_distribution_major_version}}/$basearch",gpgkey: "https://nvidia.github.io/nvidia-container-runtime/gpgkey" }
+  when:
+    - gpu is defined and gpu == 'true'
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+  tags: gpu_runtime
+
+- name: "Add nvidia-container-toolkit repository"
+  apt_repository:
+    repo: "deb https://nvidia.github.io/libnvidia-container/stable/ubuntu{{ansible_distribution_version}}/$(ARCH) /"
+    filename: nvidia-container-toolkit
+    state: present
+  when:
+    - gpu is defined and gpu == 'true'
+    - ansible_os_family in ["Debian"]
+  tags: gpu_runtime
+
 - name: "Install nvidia-container-runtime"
   package:
-    name: nvidia-container-runtime
+    name: 
+      - nvidia-container-runtime
+      - nvidia-container-toolkit
     state: present
   when: gpu is defined and gpu == 'true'
   tags: gpu_app
