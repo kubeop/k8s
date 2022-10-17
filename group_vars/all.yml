@@ -104,14 +104,14 @@ cilium:
   version: v1.12.2
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
-  registry: docker.mirrors.sjtug.sjtu.edu.cn/cilium
+  registry: dockerproxy.com/cilium
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 flannel:
   version: v0.19.2
   # {{flannel.registry}}/flannel-cni-plugin:v1.0.1
   # {{flannel.registry}}/flannel:{{flannel.version}}
-  registry: docker.mirrors.sjtug.sjtu.edu.cn/flannelcni
+  registry: dockerproxy.com/flannelcni
   # "vxlan" or "host-gw"
   network_mode: vxlan
 calico:
@@ -119,7 +119,7 @@ calico:
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
-  registry: docker.mirrors.sjtug.sjtu.edu.cn/calico
+  registry: dockerproxy.com/calico
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
   # mtu 默认为0，表示自动自动检测
@@ -136,18 +136,18 @@ helm:
 coredns:
   version: 1.8.6
   # {{coredns.registry}}/coredns:{{coredns.version}}
-  registry: docker.mirrors.sjtug.sjtu.edu.cn/coredns
+  registry: dockerproxy.com/coredns
 nodelocaldns:
   enabled: true
   version: 1.21.1
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
-  registry: k8s-gcr-io.mirrors.sjtug.sjtu.edu.cn/dns
+  registry: k8s.dockerproxy.com/dns
   ip: 169.254.20.10
 metrics_server:
   enabled: true
   version: v0.6.1
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
-  registry: k8s-gcr-io.mirrors.sjtug.sjtu.edu.cn/metrics-server
+  registry: k8s.dockerproxy.com/metrics-server
 nvidia_device_plugin:
   enabled: false
   version: v0.12.2
