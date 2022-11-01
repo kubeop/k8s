@@ -101,8 +101,8 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-    - { regexp: "PASS_MIN_DAYS", line: "PASS_MIN_DAYS 7" }
-    - { regexp: "PASS_MAX_DAYS", line: "PASS_MAX_DAYS 90" }
+    - { regexp: "PASS_MIN_DAYS", line: "PASS_MIN_DAYS 0" }
+    - { regexp: "PASS_MAX_DAYS", line: "PASS_MAX_DAYS 99999" }
   tags: passwd
 
 - name: "Set password complexity"
