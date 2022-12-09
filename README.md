@@ -31,7 +31,7 @@
 ### 安装Ansible
 
 ```
-pip3 install ansible==2.9.27
+pip3 install ansible
 pip3 install netaddr -i  https://mirrors.ustc.edu.cn/pypi/web/simple
 ```
 
