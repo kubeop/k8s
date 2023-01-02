@@ -21,6 +21,7 @@
       - libnetfilter-cttimeout1
       - libnetfilter-queue1
       - libnetfilter-conntrack3
+      - conntrack
       - ipvsadm
       - ipset
       - socat
