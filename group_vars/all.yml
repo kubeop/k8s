@@ -92,7 +92,6 @@ containerd:
   containerd:
     snapshotter: overlayfs
   options:
-    #BinaryName = "nvidia-container-runtime"
     SystemdCgroup: true
   registries:
     "docker.io": "https://registry-1.docker.io"
