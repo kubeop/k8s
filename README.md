@@ -138,7 +138,7 @@ ansible-playbook cluster.yml -i inventory --skip-tags=create_master_taint
 
 ### 扩容master节点
 
-扩容时，请不要在inventory文件master组中保留旧服务器信息，仅保留扩容节点的信息。
+扩容时，建议注释inventory文件master组中旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
@@ -168,7 +168,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 
 ### 扩容worker节点
 
-扩容时，请不要在inventory文件worker组中保留旧服务器信息，仅保留扩容节点的信息。
+扩容时，建议注释inventory文件worker组中旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
