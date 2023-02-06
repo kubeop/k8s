@@ -13,7 +13,7 @@ etcd:
   # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.6
+  version: v3.5.7
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -35,13 +35,15 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.26.0
+  version: v1.26.1
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 集群Service网段
   serviceSubnet: 192.168.0.0/16
   # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   kubelet_dir: "/var/lib/kubelet"
+  # 配置kube-proxy的ipvs调度策略，支持rr(轮询),wrr(加权轮训),lc(最少连接数),wlc(加权最少连接数),sh(源地址哈希),dh(目标地址哈希),sed(最短预期延迟),nq(最少队列)
+  scheduler: rr
 
 # container runtime
 runc:
@@ -56,22 +58,22 @@ cniplugins:
   # 如使用自建文件服务器，请保证下载路径为:{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz
   download_url: https://ghproxy.com/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
-  version: v1.1.1
+  version: v1.2.0
 
 critools:
   # cri-tools 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.25.0
+  version: v1.26.0
 
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
   # containerd 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
-  # containerd 版本,建议使用1.5.0以上版本
-  version: 1.6.12
+  # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
+  version: 1.6.16
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -101,14 +103,14 @@ containerd:
 network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
-  version: v1.12.4
+  version: v1.12.6
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: dockerproxy.com/cilium
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 flannel:
-  version: v0.20.2
+  version: v0.21.0
   # {{flannel.registry}}/flannel-cni-plugin:v1.0.1
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: dockerproxy.com/flannelcni

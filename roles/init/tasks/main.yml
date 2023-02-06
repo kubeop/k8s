@@ -166,10 +166,14 @@
     state: present
   with_items:
     - {line: 'ip_vs' }
-    - {line: 'ip_vs_sh' }
     - {line: 'ip_vs_rr' }
     - {line: 'ip_vs_wrr' }
+    - {line: 'ip_vs_lc' }
     - {line: 'ip_vs_wlc' }
+    - {line: 'ip_vs_sh' }
+    - {line: 'ip_vs_dh' }
+    - {line: 'ip_vs_sed' }
+    - {line: 'ip_vs_nq' }
     - {line: 'bridge' }
     - {line: 'overlay' }
     - {line: 'br_netfilter' }

@@ -102,6 +102,8 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/data" -t bin
     - B类地址：172.16-31.0.0/16-24
     - C类地址：192.168.0.0/16-24
 
+- 如是离线环境，提前将相关包下载放到内网下载服务器，然后将groups/all.yml替换为内网下载地址即可（确保可以使用yum/apt/dnf等安装系统依赖包）
+
 
 
 ## 部署集群
