@@ -30,6 +30,55 @@
     - ansible_os_family in ["Debian"]
   tags: worker_app
 
+- name: "Enabled modlue"
+  modprobe:
+    name: "{{ item.line }}"
+    state: present
+  with_items:
+    - {line: 'ip_vs' }
+    - {line: 'ip_vs_rr' }
+    - {line: 'ip_vs_wrr' }
+    - {line: 'ip_vs_lc' }
+    - {line: 'ip_vs_wlc' }
+    - {line: 'ip_vs_sh' }
+    - {line: 'ip_vs_dh' }
+    - {line: 'ip_vs_sed' }
+    - {line: 'ip_vs_nq' }
+    - {line: 'bridge' }
+    - {line: 'overlay' }
+    - {line: 'ip_tables' }
+    - {line: 'iptable_filter' }
+    - {line: 'br_netfilter' }
+  tags: worker_mod
+
+- name: "Enabled conntrack modlue < 4.19.0"
+  modprobe:
+    name: "nf_conntrack_ipv4"
+    state: present
+  when: ((ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version != '8') or ansible_os_family in ['Debian']) and
+        ansible_kernel.split('-')[0] is version('4.19.0', '<')
+  tags: worker_mod
+
+- name: "Enabled conntrack modlue > 4.19.0"
+  modprobe:
+    name: "nf_conntrack"
+    state: present
+  when: (ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version == '8') or
+        ansible_kernel.split('-')[0] is version('4.19.0', '>=')
+  tags: worker_mod
+
+- name: "Modify sysctl"
+  sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  with_items:
+    - {name: 'net.netfilter.nf_conntrack_max',value: '2310720' }
+    - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
+    - {name: 'net.bridge.bridge-nf-call-ip6tables',value: '1' }
+  tags: worker_sysctl
+
 - name: "Create kubernetes directory"
   file:
     path: "{{ item.line }}"

@@ -16,7 +16,7 @@ mode: ipvs
 ipvs:
   excludeCIDRs: null
   minSyncPeriod: 2s
-  scheduler: {{ kubernetes.scheduler }}
+  scheduler: {{ kubernetes.scheduler | default("rr") }}
   strictARP: false
   syncPeriod: 30s
   tcpFinTimeout: 0s

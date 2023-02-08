@@ -160,41 +160,6 @@
     - {line: 'DefaultLimitNPROC=65535' }
   tags: limits
 
-- name: "Enabled modlue"
-  modprobe:
-    name: "{{ item.line }}"
-    state: present
-  with_items:
-    - {line: 'ip_vs' }
-    - {line: 'ip_vs_rr' }
-    - {line: 'ip_vs_wrr' }
-    - {line: 'ip_vs_lc' }
-    - {line: 'ip_vs_wlc' }
-    - {line: 'ip_vs_sh' }
-    - {line: 'ip_vs_dh' }
-    - {line: 'ip_vs_sed' }
-    - {line: 'ip_vs_nq' }
-    - {line: 'bridge' }
-    - {line: 'overlay' }
-    - {line: 'br_netfilter' }
-  tags: mod
-
-- name: "Enabled conntrack modlue < 4.19.0"
-  modprobe:
-    name: "nf_conntrack_ipv4"
-    state: present
-  when: ((ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version != '8') or ansible_os_family in ['Debian']) and
-        ansible_kernel.split('-')[0] is version('4.19.0', '<')
-  tags: mod
-
-- name: "Enabled conntrack modlue > 4.19.0"
-  modprobe:
-    name: "nf_conntrack"
-    state: present
-  when: (ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version == '8') or
-        ansible_kernel.split('-')[0] is version('4.19.0', '>=')
-  tags: mod
-
 - name: "Modify sysctl"
   sysctl:
     name: "{{ item.name }}"
@@ -220,9 +185,6 @@
     - {name: 'net.ipv4.tcp_keepalive_intvl',value: '30' }
     - {name: 'net.ipv4.tcp_keepalive_probes',value: '10' }
     - {name: 'net.ipv4.ip_local_port_range',value: '20000 60999' }
-    - {name: 'net.netfilter.nf_conntrack_max',value: '2310720' }
-    - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
-    - {name: 'net.bridge.bridge-nf-call-ip6tables',value: '1' }
   tags: sysctl
 
 - name: "Install base application"
