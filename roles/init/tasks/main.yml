@@ -19,14 +19,28 @@
   package:
     name: chrony
     state: present
+  when:
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: ntp
 
-- name: "Set chrony"
+- name: "Set chrony.service"
   copy:
     src: "chrony.conf"
     dest: "/etc/chrony.conf"
   notify:
     - restart chrony
+  when:
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+  tags: ntp
+
+- name: "Set systemd-timesyncd.service"
+  copy:
+    src: "timesyncd.conf"
+    dest: "/etc/systemd/timesyncd.conf"
+  notify:
+    - restart systemd-timesyncd
+  when:
+    - ansible_os_family in ["Debian"]
   tags: ntp
 
 - name: "Disable swap"
@@ -35,16 +49,19 @@
 
 - name: "Remove swapfile from /etc/fstab"
   mount:
-    name: "swap"
-    fstype: sqap
+    name: "{{ item }}"
+    fstype: swap
     state: absent
+  with_items:
+    - swap
+    - none
   tags: swap
 
 - name: "Disable selinux"
   selinux:
     state: disabled
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: selinux
 
 - name: "Get firewalld is installed"
@@ -84,8 +101,8 @@
     line: "{{ item.line }}"
     state: present
   with_items:
-    - { regexp: "PASS_MIN_DAYS", line: "PASS_MIN_DAYS 7" }
-    - { regexp: "PASS_MAX_DAYS", line: "PASS_MAX_DAYS 90" }
+    - { regexp: "PASS_MIN_DAYS", line: "PASS_MIN_DAYS 0" }
+    - { regexp: "PASS_MAX_DAYS", line: "PASS_MAX_DAYS 99999" }
   tags: passwd
 
 - name: "Set password complexity"
@@ -98,7 +115,7 @@
     - { regexp: "minlen", line: "minlen=10" }
     - { regexp: "minclass", line: "minclass=3" }
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: passwd
 
 - name: "Set password remember"
@@ -110,7 +127,7 @@
     - { path: "/etc/pam.d/password-auth" }
     - { path: "/etc/pam.d/system-auth" }
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: passwd
 
 - name: "Set limits"
@@ -143,37 +160,6 @@
     - {line: 'DefaultLimitNPROC=65535' }
   tags: limits
 
-- name: "Enabled modlue"
-  modprobe:
-    name: "{{ item.line }}"
-    state: present
-  with_items:
-    - {line: 'ip_vs' }
-    - {line: 'ip_vs_sh' }
-    - {line: 'ip_vs_rr' }
-    - {line: 'ip_vs_wrr' }
-    - {line: 'ip_vs_wlc' }
-    - {line: 'bridge' }
-    - {line: 'overlay' }
-    - {line: 'br_netfilter' }
-  tags: mod
-
-- name: "Enabled conntrack modlue < 4.19.0"
-  modprobe:
-    name: "nf_conntrack_ipv4"
-    state: present
-  when: (ansible_os_family == 'RedHat' and ansible_distribution_major_version != '8') and
-        ansible_kernel.split('-')[0] is version('4.19.0', '<')
-  tags: mod
-
-- name: "Enabled conntrack modlue > 4.19.0"
-  modprobe:
-    name: "nf_conntrack"
-    state: present
-  when: (ansible_os_family == 'RedHat' and ansible_distribution_major_version == '8') or
-        ansible_kernel.split('-')[0] is version('4.19.0', '>=')
-  tags: mod
-
 - name: "Modify sysctl"
   sysctl:
     name: "{{ item.name }}"
@@ -199,9 +185,6 @@
     - {name: 'net.ipv4.tcp_keepalive_intvl',value: '30' }
     - {name: 'net.ipv4.tcp_keepalive_probes',value: '10' }
     - {name: 'net.ipv4.ip_local_port_range',value: '20000 60999' }
-    - {name: 'net.netfilter.nf_conntrack_max',value: '2310720' }
-    - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
-    - {name: 'net.bridge.bridge-nf-call-ip6tables',value: '1' }
   tags: sysctl
 
 - name: "Install base application"
@@ -230,7 +213,7 @@
       - nfs-utils
     state: present
   when:
-    - ansible_os_family in ["RedHat"]
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: install_app
 
 - name: "Install base application"

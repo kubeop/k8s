@@ -8,3 +8,8 @@
      name: chronyd
      state: restarted
      enabled: yes
+- name: restart systemd-timesyncd
+  systemd:
+     name: systemd-timesyncd
+     state: restarted
+     enabled: yes

@@ -31,8 +31,8 @@
 ### 安装Ansible
 
 ```
-pip3 install ansible==2.9.27
-pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
+pip3 install ansible
+pip3 install netaddr -i  https://mirrors.ustc.edu.cn/pypi/web/simple
 ```
 
 - 如使用Python3，请在ansible.cfg的defaults配置下添加`interpreter_python = /usr/bin/python3`。
@@ -53,20 +53,34 @@ pip3 install netaddr -i https://mirrors.aliyun.com/pypi/simple/
 如已经自行格式化并挂载目录，可以跳过此步骤。
 
 ```
-ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data/containers"
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
 ```
+
+如果是NVME的磁盘，请使用以下方式:
+
+```
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data type=nvme"
+```
+
+
 
 ⚠️：
 
 - 此脚本会格式化{{disk}}指定的硬盘，并挂载到{{dir}}目录。
-- 会将`/var/lib/etcd`、`/var/lib/containerd`、`/var/lib/kubelet`、`/var/log/pods`数据目录绑定到此数据盘，以达到多个数据目录共用一个数据盘，而无需修改相关数据目录。
+- 会将`/var/lib/etcd`、`/var/lib/containerd`、`/var/lib/kubelet`、`/var/log/pods`数据目录绑定到此数据盘`{{dir}}/containers/etcd`、`{{dir}}/containers/containerd`、`{{dir}}/containers/kubelet`、`{{dir}}/containers/pods`目录，以达到多个数据目录共用一个数据盘，而无需修改kubernetes相关数据目录。
 
 
 
-如需不同目录挂载不同数据盘
+如需不同目录挂载不同数据盘，可以使用以下命令单独挂载
 
 ```
 ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd" --skip-tags=bind_dir
+```
+
+如已经格式化并挂载过数据盘，可以使用以下命令将数据目录绑定到数据盘
+
+```
+ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/data" -t bind_dir
 ```
 
 
@@ -88,6 +102,8 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd
     - B类地址：172.16-31.0.0/16-24
     - C类地址：192.168.0.0/16-24
 
+- 如是离线环境，提前将相关包下载放到内网下载服务器，然后将groups/all.yml替换为内网下载地址即可（确保可以使用yum/apt/dnf等安装系统依赖包）
+
 
 
 ## 部署集群
@@ -95,7 +111,7 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data/containers"
+ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
 ```
 
 部署集群
@@ -112,18 +128,24 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 
 - 默认会对节点进行初始化操作，集群节点会取主机名最后两段和IP作为集群节点名称。
 
+如果想让master节点也进行调度，可以添加使用以下方式
+
+```
+ansible-playbook cluster.yml -i inventory --skip-tags=create_master_taint
+```
+
 
 
 ## 扩容节点
 
 ### 扩容master节点
 
-扩容时，请不要在inventory文件master组中保留旧服务器信息，仅保留扩容节点的信息。
+扩容时，建议注释inventory文件master组中旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data/containers"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
 ```
 
 执行生成节点证书
@@ -148,12 +170,12 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 
 ### 扩容worker节点
 
-扩容时，请不要在inventory文件worker组中保留旧服务器信息，仅保留扩容节点的信息。
+扩容时，建议注释inventory文件worker组中旧服务器信息，仅保留扩容节点的信息。
 
 格式化挂载数据盘
 
 ```
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data/containers"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
 ```
 
 执行生成节点证书

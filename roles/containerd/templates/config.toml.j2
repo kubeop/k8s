@@ -86,7 +86,11 @@ oom_score = {{ containerd.oom_score | default(0) }}
       max_conf_num = 1
 
     [plugins."io.containerd.grpc.v1.cri".containerd]
+{% if gpu is defined and  gpu == 'true' %}
+      default_runtime_name = "nvidia"
+{% else %}
       default_runtime_name = "runc"
+{% endif %}
       disable_snapshot_annotations = true
       discard_unpacked_layers = false
       no_pivot = false
@@ -104,7 +108,21 @@ oom_score = {{ containerd.oom_score | default(0) }}
         [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime.options]
 
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
+{% if gpu is defined and  gpu == 'true' %}
+        [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia]
+          privileged_without_host_devices = false
+          runtime_engine = ""
+          runtime_root = ""
+          runtime_type = "io.containerd.runc.v2"
 
+          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
+            BinaryName = "/usr/bin/nvidia-container-runtime"
+{% if 'options' in containerd %}
+{% for param, value in containerd.options.items() %}
+            {{ param }} = {{ value | lower }}
+{% endfor %}
+{% endif %}
+{% else %}
         [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc]
           base_runtime_spec = ""
           container_annotations = []
@@ -115,14 +133,13 @@ oom_score = {{ containerd.oom_score | default(0) }}
           runtime_type = "io.containerd.runc.v2"
 
           [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.runc.options]
-{% if gpu is defined and  gpu == 'true' %}
-            BinaryName = "nvidia-container-runtime"
-{% endif %}
 {% if 'options' in containerd %}
 {% for param, value in containerd.options.items() %}
             {{ param }} = {{ value | lower }}
 {% endfor %}
 {% endif %}
+{% endif %}
+
 
       [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
         base_runtime_spec = ""

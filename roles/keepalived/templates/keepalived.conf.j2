@@ -22,6 +22,8 @@ vrrp_instance VI_1 {
         auth_type PASS
         auth_pass kuburnetes
     }
+
+    unicast_src_ip {{ ansible_default_ipv4.address }}
     unicast_peer {
     {% for host in groups['haproxy'] %}
       {{ host }}
