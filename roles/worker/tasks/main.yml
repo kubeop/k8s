@@ -296,6 +296,18 @@
   connection: local
   tags: healthcheck
 
+- name: "Check whether the worker is ready?"
+  shell: "kubectl get node | grep {{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }}"
+  register: worker_status
+  until: '"Ready" in worker_status.stdout'
+  retries: 5
+  delay: 3
+  delegate_to: "{{ groups['master'][0] }}"
+  with_items:
+    - "{{ groups['master'] }}"
+  tags:
+    - create_label
+
 - name: "Create taint for control-plane"
   shell: "kubectl taint nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
