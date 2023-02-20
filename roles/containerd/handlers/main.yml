@@ -10,6 +10,7 @@
     name: containerd
     state: restarted
     enabled: yes
+    masked: false
     daemon_reload: yes
 
 - name: Containerd | wait for containerd

@@ -73,6 +73,7 @@
   systemd:
     name: firewalld
     enabled: no
+    masked: false
     state: stopped
   tags: firewalld
 

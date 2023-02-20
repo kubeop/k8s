@@ -158,6 +158,7 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
+    masked: false
   tags: restart_apiserver
 
 - name: "Restart kube-controller-manager"
@@ -166,6 +167,7 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
+    masked: false
   tags: restart_controller
 
 - name: "Restart kube-scheduler"
@@ -174,6 +176,7 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
+    masked: false
   tags: restart_scheduler
 
 - name: "Add kubectl completion"

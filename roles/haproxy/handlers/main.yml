@@ -5,4 +5,5 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
+    masked: false
   register: haproxy_restarted

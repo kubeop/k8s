@@ -250,6 +250,7 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
+    masked: false
   tags: restart_kubelet
 
 - name: "Waiting kubelet starting"
@@ -276,6 +277,7 @@
     state: restarted
     daemon_reload: yes
     enabled: yes
+    masked: false
   tags: restart_proxy
 
 - name: "Waiting kube-proxy starting"

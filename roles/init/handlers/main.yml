@@ -3,13 +3,16 @@
      name: sshd
      state: restarted
      enabled: yes
+     masked: false
 - name: restart chrony
   systemd:
      name: chronyd
      state: restarted
      enabled: yes
+     masked: false
 - name: restart systemd-timesyncd
   systemd:
      name: systemd-timesyncd
      state: restarted
      enabled: yes
+     masked: false
