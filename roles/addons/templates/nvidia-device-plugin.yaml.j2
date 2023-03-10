@@ -20,13 +20,15 @@ spec:
             nodeSelectorTerms:
             - matchExpressions:
               - key: nvidia.com/gpu
-                operator: In
-                values:
-                - "true"
+                operator: Exists
       tolerations:
       # This toleration is deprecated. Kept here for backward compatibility
       # See https://kubernetes.io/docs/tasks/administer-cluster/guaranteed-scheduling-critical-addon-pods/
+      - effect: NoSchedule
+        operator: Exists
       - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
         operator: Exists
       - key: nvidia.com/gpu
         operator: Exists
