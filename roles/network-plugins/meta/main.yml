@@ -16,9 +16,9 @@ dependencies:
       - flannel
 
   - role: network-plugins/kube-router
-    when: network_plugin == 'kube-router'
+    when: network_plugin == 'kuberouter'
     tags:
-      - kube-router
+      - kuberouter
 
   - role: network-plugins/macvlan
     when: network_plugin == 'macvlan'

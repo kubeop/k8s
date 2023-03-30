@@ -43,7 +43,7 @@
 
 - name: Fail if unknown network plugin
   assert:
-    that: network_plugin in ['calico', 'flannel', 'cilium', 'kube-router', 'macvlan']
+    that: network_plugin in ['calico', 'flannel', 'cilium', 'kuberouter', 'macvlan']
     msg: "{{ network_plugin }} is not supported"
   when:
     - network_plugin is defined
