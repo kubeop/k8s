@@ -19,7 +19,7 @@
 - name: kube-router | Create kubeconfig
   template:
     src: kube-router.kubeconfig.j2
-    dest: /var/lib/kube-router/kube-router.kubeconfig
+    dest: /var/lib/kube-router/kubeconfig
     mode: 0644
   notify:
     - reset_kube_router
