@@ -1,20 +1,20 @@
 ---
-- name: "Get etcd-ca content"
+- name: "calico | Get etcd-ca content"
   slurp:
     src: "/etc/kubernetes/pki/etcd-ca.pem"
   register: cni_etcd_ca
 
-- name: "Get etcd-client content"
+- name: "calico | Get etcd-client content"
   slurp:
     src: "/etc/kubernetes/pki/apiserver-etcd-client.pem"
   register: cni_etcd_cert
 
-- name: "Get etcd-client content"
+- name: "calico | Get etcd-client content"
   slurp:
     src: "/etc/kubernetes/pki/apiserver-etcd-client.key"
   register: cni_etcd_key
 
-- name: "Generate calico yaml"
+- name: "calico | Create manifest"
   template:
     src: "{{item.src}}"
     dest: "{{item.dest}}"
@@ -24,7 +24,7 @@
   run_once: true
   tags: calico
 
-- name: "Deploy calico"
+- name: "calico | Apply manifest"
   shell: "kubectl apply -f /tmp/calico-etcd.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true

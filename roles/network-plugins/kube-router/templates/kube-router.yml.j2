@@ -1,3 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kube-router-cfg
+  namespace: kube-system
+  labels:
+    tier: node
+    k8s-app: kube-router
+data:
+  cni-conf.json: |
+    {
+       "cniVersion":"0.3.0",
+       "name":"kubernetes",
+       "plugins":[
+          {
+             "name":"kubernetes",
+             "type":"bridge",
+             "bridge":"kube-bridge",
+             "isDefaultGateway":true,
+{% if kuberouter.hairpin_mode %}
+             "hairpinMode":true,
+{% endif %}
+             "ipam":{
+                "type":"host-local"
+             }
+          },
+          {
+            "type":"portmap",
+            "capabilities": {
+               "portMappings":true
+            }
+          }
+       ]
+    }
+
+---
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -7,11 +43,6 @@ metadata:
   name: kube-router
   namespace: kube-system
 spec:
-  minReadySeconds: 3
-  updateStrategy:
-    rollingUpdate:
-      maxUnavailable: 1
-    type: RollingUpdate
   selector:
     matchLabels:
       k8s-app: kube-router
@@ -29,18 +60,22 @@ spec:
         image: {{ kuberouter.registry }}/kube-router:{{ kuberouter.version }}
         imagePullPolicy: IfNotPresent
         args:
-        - --run-router={{ kuberouter.run_router | bool }}
-        - --run-firewall={{ kuberouter.run_firewall | bool }}
-        - --run-service-proxy={{ kuberouter.run_service_proxy | bool }}
-        - --kubeconfig=/var/lib/kube-router/kubeconfig
-        - --bgp-graceful-restart=true
-        - --metrics-path=/metrics
-        - --metrics-port=9255
+        - "--run-router={{ kuberouter.run_router | bool | lower }}"
+        - "--run-firewall={{ kuberouter.run_firewall | bool | lower }}"
+        - "--run-service-proxy={{ kuberouter.run_service_proxy | bool | lower }}"
+        - "--bgp-graceful-restart=true"
+        - "--metrics-path=/metrics"
+        - "--metrics-port=9255"
         env:
         - name: NODE_NAME
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+        ports:
+        - containerPort: 9255
+          hostPort: 9255
+          name: metrics
+          protocol: TCP
         - name: KUBE_ROUTER_CNI_CONF_FILE
           value: /etc/cni/net.d/10-kuberouter.conflist
         livenessProbe:
@@ -61,20 +96,38 @@ spec:
           readOnly: true
         - name: cni-conf-dir
           mountPath: /etc/cni/net.d
-        - name: kubeconfig
-          mountPath: /var/lib/kube-router
-          readOnly: true
         - name: xtables-lock
           mountPath: /run/xtables.lock
           readOnly: false
-        ports:
-        - containerPort: 9255
-          hostPort: 9255
-          name: metrics
-          protocol: TCP
+      initContainers:
+      - name: install-cni
+        image: docker.io/cloudnativelabs/kube-router
+        imagePullPolicy: Always
+        command:
+        - /bin/sh
+        - -c
+        - set -e -x;
+          if [ ! -f /etc/cni/net.d/10-kuberouter.conflist ]; then
+            if [ -f /etc/cni/net.d/*.conf ]; then
+              rm -f /etc/cni/net.d/*.conf;
+            fi;
+            TMP=/etc/cni/net.d/.tmp-kuberouter-cfg;
+            cp /etc/kube-router/cni-conf.json ${TMP};
+            mv ${TMP} /etc/cni/net.d/10-kuberouter.conflist;
+          fi
+        volumeMounts:
+        - mountPath: /etc/cni/net.d
+          name: cni-conf-dir
+        - mountPath: /etc/kube-router
+          name: kube-router-cfg
       hostNetwork: true
       tolerations:
-      - operator: Exists
+      - effect: NoSchedule
+        operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
+      - effect: NoExecute
+        operator: Exists
       volumes:
       - name: lib-modules
         hostPath:
@@ -82,9 +135,9 @@ spec:
       - name: cni-conf-dir
         hostPath:
           path: /etc/cni/net.d
-      - name: kubeconfig
-        hostPath:
-          path: /var/lib/kube-router
+      - name: kube-router-cfg
+        configMap:
+          name: kube-router-cfg
       - name: xtables-lock
         hostPath:
           path: /run/xtables.lock
@@ -132,6 +185,7 @@ rules:
       - get
       - list
       - watch
+
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1

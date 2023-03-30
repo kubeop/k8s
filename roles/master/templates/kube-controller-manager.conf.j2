@@ -6,6 +6,7 @@ KUBE_CONTROLLER_MANAGER_ARGS="\
     --authorization-kubeconfig=/etc/kubernetes/controller-manager.kubeconfig \
     --client-ca-file=/etc/kubernetes/pki/ca.pem \
     --cluster-cidr={{ kubernetes.podSubnet }} \
+    --node-cidr-mask-size={{ kubernetes.maskSize }} \
     --service-cluster-ip-range={{ kubernetes.serviceSubnet }} \
     --cluster-name=kubernetes \
     --cluster-signing-cert-file=/etc/kubernetes/pki/ca.pem \
