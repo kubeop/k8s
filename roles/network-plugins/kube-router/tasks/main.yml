@@ -1,0 +1,46 @@
+---
+- name: kube-router | Retrieve Pod Cidr
+  command: "kubectl get nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }} -o jsonpath='{.spec.podCIDR}'"
+  changed_when: false
+  register: node_pod_cidr_cmd
+  delegate_to: "{{ groups['master'][0] }}"
+
+- name: kube-router | set node_pod_cidr
+  set_fact:
+    node_pod_cidr={{ node_pod_cidr_cmd.stdout }}
+
+- name: kube-router | Create config directory
+  file:
+    path: /var/lib/kube-router
+    state: directory
+    recurse: true
+    mode: 0755
+
+- name: kube-router | Create kubeconfig
+  template:
+    src: kube-router.kubeconfig.j2
+    dest: /var/lib/kube-router/kube-router.kubeconfig
+    mode: 0644
+  notify:
+    - reset_kube_router
+
+- name: kube-router | Create cni config
+  template:
+    src: 10-kuberouter.conflist.j2
+    dest: /etc/cni/net.d/10-kuberouter.conflist
+    mode: 0644
+  notify:
+    - reset_kube_router
+
+- name: kube-router | Create manifest
+  template:
+    src: kube-router.yml.j2
+    dest: "/tmp/kube-router.yml"
+    mode: 0644
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+
+- name: kube-router | Apply manifest
+  shell: "kubectl apply -f /tmp//tmp/kube-router.yml"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true

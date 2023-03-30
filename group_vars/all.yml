@@ -129,6 +129,23 @@ calico:
   # 可指定网卡或使用can-reach=网关
   ip_autodetection_method: interface=eth0
 
+kube-router:
+  version: v1.5.3
+  # {{kube-router.registry}}/kube-router
+  registry: dockerproxy.com/cloudnativelabs
+  # Setups node CNI to allow hairpin mode, requires node reboots, see
+  # https://github.com/cloudnativelabs/kube-router/blob/master/docs/user-guide.md#hairpin-mode
+  # 即让Pod可以通过Service访问自己
+  hairpin_mode: true
+  # 启用Pod网络，通过iBGP通告和学习到Pod的路由
+  run_router: true
+  # 启用网络策略，设置iptables为Pod提供入口防火墙
+  run_firewall: true
+  # 启用服务代理，为Kubernetes服务设置IPVS
+  run_service_proxy: false
+macvlan:
+  enable_nat_default_gateway: true
+
 # Addons
 helm:
   enabled: true

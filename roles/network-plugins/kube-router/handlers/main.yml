@@ -1,0 +1,11 @@
+---
+- name: reset_kube_router
+  command: /bin/true
+  notify:
+    - Kube-router | delete kube-router containerd containers
+
+- name: Kube-router | delete kube-router containerd containers
+  shell: 'crictl pods --name kube-router* -q | xargs -I% --no-run-if-empty bash -c "crictl stopp % && crictl rmp %"'
+  register: crictl_kube_router_remove
+  until: crictl_kube_router_remove is succeeded
+  retries: 5

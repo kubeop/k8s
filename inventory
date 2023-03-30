@@ -10,18 +10,18 @@
 
 # 本组内填写master服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
 [master]
-172.16.90.110 hostname=master-01
-172.16.90.111 hostname=master-02
-172.16.90.112 hostname=master-03
+172.16.90.110 hostname=master-01 interface=eth0
+172.16.90.111 hostname=master-02 interface=eth0
+172.16.90.112 hostname=master-03 interface=eth0
 
 # 本组内填写worker服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
 # 最后面添加gpu=true 表示节点为GPU节点，运行时会配置使用GPU并且添加nvidia.com/gpu=true标签
 # 不是GPU节点时，可去掉gpu配置项
 # 启用GPU时，请先在节点按照 https://nvidia.github.io/libnvidia-container/ 配置软件源或同步相关包到私服
 [worker]
-172.16.90.120 hostname=worker-01 gpu=false
-172.16.90.121 hostname=worker-02 gpu=false
-172.16.90.122 hostname=worker-03 gpu=false
-172.16.90.123 hostname=worker-04 gpu=false
-172.16.90.124 hostname=worker-05 gpu=true
-172.16.90.125 hostname=worker-06 gpu=false
+172.16.90.120 hostname=worker-01 gpu=false interface=eth0
+172.16.90.121 hostname=worker-02 gpu=false interface=eth0
+172.16.90.122 hostname=worker-03 gpu=false interface=eth0
+172.16.90.123 hostname=worker-04 gpu=false interface=eth0
+172.16.90.124 hostname=worker-05 gpu=true  interface=eth0
+172.16.90.125 hostname=worker-06 gpu=false interface=eth0

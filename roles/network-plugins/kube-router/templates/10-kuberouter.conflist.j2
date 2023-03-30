@@ -1,0 +1,29 @@
+{
+   "cniVersion":"0.3.0",
+   "name":"kubernetes",
+   "plugins":[
+      {
+         "name":"kubernetes",
+         "type":"bridge",
+         "bridge":"kube-bridge",
+         "isDefaultGateway":true,
+{% if kube-router.hairpin_mode %}
+          "hairpinMode":true,
+{% endif %}
+         "ipam":{
+            "subnet": "{{ node_pod_cidr }}",
+            "gateway": "{{ node_pod_cidr|ipaddr('net')|ipaddr(1)|ipaddr('address') }}",
+            "routes": [{
+			    "dst": "0.0.0.0/0"
+		    }]
+            "type":"host-local"
+         }
+      },
+      {
+         "type":"portmap",
+         "capabilities":{
+            "portMappings":true
+         }
+      }
+   ]
+}
