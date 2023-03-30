@@ -7,7 +7,7 @@
          "type":"bridge",
          "bridge":"kube-bridge",
          "isDefaultGateway":true,
-{% if kube-router.hairpin_mode %}
+{% if kuberouter.hairpin_mode %}
           "hairpinMode":true,
 {% endif %}
          "ipam":{

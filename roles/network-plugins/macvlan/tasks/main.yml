@@ -20,12 +20,12 @@
     node_default_gateway_interface={{ node_default_gateway_interface_cmd.stdout | trim }}
 
 - name: Macvlan | set macvlan_interface
-when: interface is defined
+  when: interface is defined
   set_fact:
     macvlan_interface={{ interface | trim }}
 
 - name: Macvlan | set macvlan_interface
-when: interface is not defined
+  when: interface is not defined
   set_fact:
     macvlan_interface={{ node_default_gateway_interface_cmd.stdout | trim }}
 

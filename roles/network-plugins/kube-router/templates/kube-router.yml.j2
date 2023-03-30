@@ -26,12 +26,12 @@ spec:
       serviceAccountName: kube-router
       containers:
       - name: kube-router
-        image: {{ kube-router.registry }}/kube-router:{{ kube-router.version }}
+        image: {{ kuberouter.registry }}/kube-router:{{ kuberouter.version }}
         imagePullPolicy: IfNotPresent
         args:
-        - --run-router={{ run_router | bool }}
-        - --run-firewall={{ run_firewall | bool }}
-        - --run-service-proxy={{ run_service_proxy | bool }}
+        - --run-router={{ kuberouter.run_router | bool }}
+        - --run-firewall={{ kuberouter.run_firewall | bool }}
+        - --run-service-proxy={{ kuberouter.run_service_proxy | bool }}
         - --kubeconfig=/var/lib/kube-router/kubeconfig
         - --bgp-graceful-restart=true
         - --metrics-path=/metrics

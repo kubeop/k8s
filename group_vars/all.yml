@@ -129,7 +129,7 @@ calico:
   # 可指定网卡或使用can-reach=网关
   ip_autodetection_method: interface=eth0
 
-kube-router:
+kuberouter:
   version: v1.5.3
   # {{kube-router.registry}}/kube-router
   registry: dockerproxy.com/cloudnativelabs
@@ -143,6 +143,7 @@ kube-router:
   run_firewall: true
   # 启用服务代理，为Kubernetes服务设置IPVS
   run_service_proxy: false
+
 macvlan:
   enable_nat_default_gateway: true
 
