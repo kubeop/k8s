@@ -150,6 +150,7 @@ kuberouter:
   run_service_proxy: false
   
 macvlan:
+  # 目前仅支持RHEL7系列和Ubuntu
   enable_nat_default_gateway: true
   # "bridge" or "private" or "vepa" or "passthru"
   mode: bridge
