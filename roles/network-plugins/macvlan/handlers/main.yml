@@ -3,6 +3,7 @@
   command: /bin/true
   notify:
     - Macvlan | reload network
+    - Macvlan | reload containerd
   when: not ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"]
 
 - name: Macvlan | reload network
@@ -17,5 +18,11 @@
       {%- elif ansible_os_family == "Debian" -%}
       networking
       {%- endif %}
+    state: restarted
+  when: not ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"] and network_plugin not in ['canal', 'calico']
+
+- name: Macvlan | reload containerd
+  systemd:
+    name: containerd
     state: restarted
   when: not ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"] and network_plugin not in ['canal', 'calico']
