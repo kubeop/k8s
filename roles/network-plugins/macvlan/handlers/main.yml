@@ -10,7 +10,7 @@
     name: >-
       {% if ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version == "8" -%}
       NetworkManager
-      {%- elif ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] -%}
+      {%- elif ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version == "7" -%}
       network
       {%- elif ansible_distribution == "Ubuntu" and ansible_distribution_release == "bionic" -%}
       systemd-networkd
