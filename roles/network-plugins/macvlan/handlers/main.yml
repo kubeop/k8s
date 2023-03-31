@@ -6,7 +6,7 @@
   when: not ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"]
 
 - name: Macvlan | reload network
-  systemctl:
+  systemd:
     name: >-
       {% if ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version == "8" -%}
       NetworkManager

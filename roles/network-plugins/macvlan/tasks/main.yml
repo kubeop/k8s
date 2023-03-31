@@ -19,56 +19,10 @@
   set_fact:
     node_default_gateway_interface={{ node_default_gateway_interface_cmd.stdout | trim }}
 
-- name: Macvlan | set macvlan_interface
-  when: interface is defined
-  set_fact:
-    macvlan_interface={{ interface | trim }}
-
-- name: Macvlan | set macvlan_interface
-  when: interface is not defined
-  set_fact:
-    macvlan_interface={{ node_default_gateway_interface_cmd.stdout | trim }}
-
-- name: Macvlan | Install network gateway interface on debian
-  template:
-    src: debian-network-macvlan.cfg.j2
-    dest: /etc/network/interfaces.d/60-mac0.cfg
-    mode: 0644
-  notify: Macvlan | restart network
-  when: ansible_os_family in ["Debian"]
-
 - block:
-  - name: Macvlan | Install macvlan script on centos
-    copy:
-      src: "{{ item }}"
-      dest: /etc/sysconfig/network-scripts/
-      owner: root
-      group: root
-      mode: "0755"
-    with_fileglob:
-    - files/*
-
-  - name: Macvlan | Install post-up script on centos
-    copy:
-      src: "files/ifup-local"
-      dest: /sbin/
-      owner: root
-      group: root
-      mode: "0755"
-    when: enable_nat_default_gateway
-
-  - name: Macvlan | Install network gateway interface on centos
-    template:
-      src: "{{ item.src }}.j2"
-      dest: "/etc/sysconfig/network-scripts/{{ item.dst }}"
-      mode: 0644
-    with_items:
-    - {src: centos-network-macvlan.cfg, dst: ifcfg-mac0 }
-    - {src: centos-routes-macvlan.cfg, dst: route-mac0 }
-    - {src: centos-postup-macvlan.cfg, dst: post-up-mac0 }
-    notify: Macvlan | restart network
-  when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+- name: Macvlan | Add interface for Macvlan
+  command: "ip link add macvlan0 link {{ node_default_gateway_interface }} type macvlan mode {{ macvlan.mode }}"
+  changed_when: false
 
 - name: Macvlan | Install cni definition for Macvlan
   template:
@@ -85,7 +39,7 @@
 - name: Enable net.ipv4.conf.all.arp_notify in sysctl
   sysctl:
     name: net.ipv4.conf.all.arp_notify
-    value: 1
+    value: '1'
     sysctl_set: yes
     state: present
     reload: yes

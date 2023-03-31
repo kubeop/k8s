@@ -151,6 +151,8 @@ kuberouter:
   
 macvlan:
   enable_nat_default_gateway: true
+  # "bridge" or "private" or "vepa" or "passthru"
+  mode: bridge
 
 # Addons
 helm:
