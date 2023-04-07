@@ -35,7 +35,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.26.1
+  version: v1.26.3
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 节点Pod网段掩码大小
@@ -149,11 +149,11 @@ kuberouter:
   # 启用服务代理，为Kubernetes服务设置IPVS
   run_service_proxy: false
   
-macvlan:
-  # 目前仅支持RHEL7系列和Ubuntu
-  enable_nat_default_gateway: true
-  # "bridge" or "private" or "vepa" or "passthru"
-  mode: bridge
+#macvlan:
+#  # 目前仅支持RHEL7系列和Ubuntu，网卡需开启混杂模式
+#  enable_nat_default_gateway: true
+#  # "bridge" or "private" or "vepa" or "passthru"
+#  mode: bridge
 
 # Addons
 helm:
@@ -173,7 +173,7 @@ nodelocaldns:
   ip: 169.254.20.10
 metrics_server:
   enabled: true
-  version: v0.6.2
+  version: v0.6.3
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
   registry: k8s.dockerproxy.com/metrics-server
 nvidia_device_plugin:
