@@ -23,5 +23,5 @@
 172.16.90.121 hostname=worker-02 gpu=false
 172.16.90.122 hostname=worker-03 gpu=false
 172.16.90.123 hostname=worker-04 gpu=false
-172.16.90.124 hostname=worker-05 gpu=true
+172.16.90.124 hostname=worker-05 gpu=true 
 172.16.90.125 hostname=worker-06 gpu=false

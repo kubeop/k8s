@@ -1,13 +1,15 @@
 ---
-- name: "Generate cilium yaml"
+- name: cilium | Create manifest
   template:
     src: "{{item.src}}"
     dest: "{{item.dest}}"
   with_items:
     - {src: "cilium.yaml.j2", dest: "/tmp/cilium.yaml"}
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
   tags: cilium
 
-- name: "Deploy cilium"
+- name: cilium | Apply manifest
   shell: "kubectl apply -f /tmp/cilium.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true

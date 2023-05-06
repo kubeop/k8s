@@ -18,11 +18,14 @@
   - [calico](https://github.com/projectcalico/calico)
   - [cilium](https://github.com/cilium/cilium)
   - [flanneld](https://github.com/flannel-io/flannel)
+  - [kube-router](https://github.com/cloudnativelabs/kube-router)
+  - [macvlan](https://github.com/containernetworking/plugins)
 - Application
   - [coredns](https://github.com/coredns/coredns)
+  - [node-local-dns](https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/dns/nodelocaldns)
   - [metrics-server](https://github.com/kubernetes-sigs/metrics-server)
-  - [kubernetes-dashboard](https://github.com/kubernetes/dashboard)
   - [helm](https://github.com/helm/helm)
+  - [nvidia_device_plugin](https://github.com/NVIDIA/k8s-device-plugin)
 
 
 

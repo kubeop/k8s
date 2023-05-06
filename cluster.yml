@@ -51,7 +51,7 @@
       tags: worker
 
 - name: "Set Container Networking Plugins"
-  hosts: master[0]
+  hosts: master worker
   roles:
     - role: network-plugins
       tags: network-plugins

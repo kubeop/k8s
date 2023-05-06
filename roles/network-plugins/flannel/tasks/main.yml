@@ -1,13 +1,15 @@
 ---
-- name: "Generate flannel yaml"
+- name: flannel | Create manifest
   template:
     src: "{{item.src}}"
     dest: "{{item.dest}}"
   with_items:
     - {src: "flannel.yaml.j2", dest: "/tmp/flannel.yaml"}
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
   tags: flannel
 
-- name: "Deploy flannel"
+- name: flannel | Apply manifest
   shell: "kubectl apply -f /tmp/flannel.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
