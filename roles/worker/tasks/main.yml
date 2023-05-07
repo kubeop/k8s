@@ -305,6 +305,7 @@
   retries: 5
   delay: 3
   delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
   with_items:
     - "{{ groups['master'] }}"
   tags:
@@ -340,6 +341,7 @@
   retries: 5
   delay: 3
   delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
   with_items:
     - "{{ groups['worker'] }}"
   tags:
