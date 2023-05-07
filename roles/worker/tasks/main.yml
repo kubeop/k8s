@@ -298,16 +298,18 @@
   connection: local
   tags: healthcheck
 
-- name: "Check whether the worker is ready?"
+- name: "Check whether the master is ready?"
   shell: "kubectl get node | grep {{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }}"
-  register: worker_status
-  until: '"Ready" in worker_status.stdout'
+  register: master_status
+  until: '"Ready" in master_status.stdout'
   retries: 5
   delay: 3
   delegate_to: "{{ groups['master'][0] }}"
   with_items:
     - "{{ groups['master'] }}"
   tags:
+    - create_master_label
+    - create_master_taint
     - create_label
 
 - name: "Create taint for control-plane"
@@ -329,6 +331,19 @@
     - "{{ groups['master'] }}"
   tags:
     - create_master_label
+    - create_label
+
+- name: "Check whether the worker is ready?"
+  shell: "kubectl get node | grep {{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }}"
+  register: worker_status
+  until: '"Ready" in worker_status.stdout'
+  retries: 5
+  delay: 3
+  delegate_to: "{{ groups['master'][0] }}"
+  with_items:
+    - "{{ groups['worker'] }}"
+  tags:
+    - create_worker_label
     - create_label
 
 - name: "Create label for worker"
