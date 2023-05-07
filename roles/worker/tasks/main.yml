@@ -299,7 +299,7 @@
   tags: healthcheck
 
 - name: "Check whether the master is ready?"
-  shell: "kubectl get node | grep {{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }}"
+  shell: "kubectl get node | grep {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }}"
   register: master_status
   until: '"Ready" in master_status.stdout'
   retries: 5
@@ -335,7 +335,7 @@
     - create_label
 
 - name: "Check whether the worker is ready?"
-  shell: "kubectl get node | grep {{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }}"
+  shell: "kubectl get node | grep {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }}"
   register: worker_status
   until: '"Ready" in worker_status.stdout'
   retries: 5
