@@ -35,7 +35,7 @@
 
 ```
 pip3 install ansible
-pip3 install netaddr -i  https://mirrors.ustc.edu.cn/pypi/web/simple
+pip3 install netaddr -i https://mirrors.ustc.edu.cn/pypi/web/simple
 ```
 
 - 如使用Python3，请在ansible.cfg的defaults配置下添加`interpreter_python = /usr/bin/python3`。
@@ -88,9 +88,54 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/data" -t bin
 
 
 
+### 使用离线包
+
+#### 下载安装包
+
+```shell
+# 编辑down_package.py脚本，修改links定义URL中的版本号为所需下载版本。
+# 编辑down_package.py脚本，修改path定义的下载文件保存路径。默认为当前目录的 mirrors 目录下(离线包目录结构保持与在线一致)
+# 安装脚本依赖
+pip3 install requests -i https://mirrors.ustc.edu.cn/pypi/web/simple
+
+# 执行脚本进行安装包下载
+python3 down_package.py
+
+# 下载完成后，使用Python启动一个HTTP服务(可以根据实际情况是在下载机器启动，还是将安装包拷贝至其他机器启动)
+cd mirrors
+python3 -m http.server 8888
+
+# 编辑 group_vars/all.yml ,将相关 download_url 配置中的域名部分修改为上一步启动HTTP的IP:PORT
+# 如原本download_url配置为: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
+#  ⚠️：请注意下载的离线包和 group_vars/all.yml 中 version 版本保持一致
+# 使用本地离线包: http://1.1.1.1:8888/etcd-io/etcd/releases/download
+
+# ⚠️：因GPU相关安装包没有合适的离线方式，如需离线添加GPU节点，请先行到机器节点安装以下软件包
+nvidia-container-runtime
+nvidia-container-toolkit
+
+# 自行安装后，在离线添加GPU节点时需添加以下参数跳过gpu组件安装
+--skip-tags=gpu_runtime,gpu_app
+```
+
+
+
+#### 下载镜像
+
+```shell
+# 找一台安装有 docker 并且可以访问公网的机器
+# 自行访问 https://github.com/AliyunContainerService/image-syncer/releases 安装 image-syncer
+# 编辑 images.json 文件，修改源镜像地址或TAG，并将 registry.k8sre.com/library 修改您的私有仓库即可
+# 使用 docker login 登录您的私有仓库
+# 执行镜像同步
+image-syncer --proc=6 --images=images.json --arch amd64
+```
+
+
+
 ### 配置 group_vars
 
-编辑group_vars/all.yml文件，填入自己的配置。
+编辑group_vars/all.yml文件，根据自己的实际环境进行配置。
 
 请注意：
 

@@ -116,9 +116,10 @@ cilium:
 flannel:
   # https://github.com/flannel-io/flannel
   version: v0.21.5
-  # {{flannel.registry}}/flannel-cni-plugin:v1.0.1
+  plugin_version: v1.1.0
+  # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
-  registry: dockerproxy.com/flannelcni
+  registry: dockerproxy.com/flannel
   # "vxlan" or "host-gw"
   network_mode: vxlan
 
