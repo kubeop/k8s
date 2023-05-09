@@ -161,7 +161,7 @@ kuberouter:
 
 # Addons
 helm:
-  enabled: true
+  enabled: false
   # 如使用自建文件服务器，请保证下载路径为:{{helm.download_url}}/{{helm.version}}/helm-{{helm.version}}-linux-amd64.tar.gz
   download_url: https://mirrors.huaweicloud.com/helm
   version: v3.9.4
