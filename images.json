@@ -1,14 +1,14 @@
 {
-	"registry.aliyuncs.com/google_containers/pause:3.7": "registry.k8sre.com/library/pause:3.7",
-	"dockerproxy.com/cilium/cilium:v1.13.2": "registry.k8sre.com/library/cilium:v1.13.2",
-	"dockerproxy.com/flannel/flannel-cni-plugin:v1.1.0": "registry.k8sre.com/library/flannel-cni-plugin:v1.1.0",
-	"dockerproxy.com/flannel/flannel:v0.21.5": "registry.k8sre.com/library/flannel:v0.21.5",
-    "dockerproxy.com/calico/kube-controllers:v3.24.5":"registry.k8sre.com/library/kube-controllers:v3.24.5",
-    "dockerproxy.com/calico/node:v3.24.5":"registry.k8sre.com/library/node:v3.24.5",
-    "dockerproxy.com/calico/cni:v3.24.5":"registry.k8sre.com/library/cni:v3.24.5",
-    "dockerproxy.com/cloudnativelabs/kube-router:v1.5.4":"registry.k8sre.com/library/kube-router:v1.5.4",
-    "dockerproxy.com/coredns/coredns:1.10.1":"registry.k8sre.com/library/coredns:1.10.1",
-    "k8s.dockerproxy.com/dns/k8s-dns-node-cache:1.22.20":"registry.k8sre.com/library/k8s-dns-node-cache:1.22.20",
-    "k8s.dockerproxy.com/metrics-server/metrics-server:v0.6.3":"registry.k8sre.com/library/metrics-server:v0.6.3",
-    "nvcr.io/nvidia/k8s-device-plugin:v0.14.0":"registry.k8sre.com/library/k8s-device-plugin:v0.14.0"
+	"registry.aliyuncs.com/google_containers/pause:3.7": "registry.kubeop.com/library/pause:3.7",
+	"dockerproxy.com/cilium/cilium:v1.13.2": "registry.kubeop.com/library/cilium:v1.13.2",
+	"dockerproxy.com/flannel/flannel-cni-plugin:v1.1.0": "registry.kubeop.com/library/flannel-cni-plugin:v1.1.0",
+	"dockerproxy.com/flannel/flannel:v0.21.5": "registry.kubeop.com/library/flannel:v0.21.5",
+    "dockerproxy.com/calico/kube-controllers:v3.24.5":"registry.kubeop.com/library/kube-controllers:v3.24.5",
+    "dockerproxy.com/calico/node:v3.24.5":"registry.kubeop.com/library/node:v3.24.5",
+    "dockerproxy.com/calico/cni:v3.24.5":"registry.kubeop.com/library/cni:v3.24.5",
+    "dockerproxy.com/cloudnativelabs/kube-router:v1.5.4":"registry.kubeop.com/library/kube-router:v1.5.4",
+    "dockerproxy.com/coredns/coredns:1.10.1":"registry.kubeop.com/library/coredns:1.10.1",
+    "k8s.dockerproxy.com/dns/k8s-dns-node-cache:1.22.20":"registry.kubeop.com/library/k8s-dns-node-cache:1.22.20",
+    "k8s.dockerproxy.com/metrics-server/metrics-server:v0.6.3":"registry.kubeop.com/library/metrics-server:v0.6.3",
+    "nvcr.io/nvidia/k8s-device-plugin:v0.14.0":"registry.kubeop.com/library/k8s-device-plugin:v0.14.0"
 }

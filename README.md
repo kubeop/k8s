@@ -125,7 +125,7 @@ nvidia-container-toolkit
 ```shell
 # 找一台安装有 docker 并且可以访问公网的机器
 # 自行访问 https://github.com/AliyunContainerService/image-syncer/releases 安装 image-syncer
-# 编辑 images.json 文件，修改源镜像地址或TAG，并将 registry.k8sre.com/library 修改您的私有仓库即可
+# 编辑 images.json 文件，修改源镜像地址或TAG，并将 registry.kubeop.com/library 修改您的私有仓库即可
 # 使用 docker login 登录您的私有仓库
 # 执行镜像同步
 image-syncer --proc=6 --images=images.json --arch amd64
