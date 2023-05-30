@@ -141,12 +141,8 @@
   with_items:
     - { limit_domain: 'root',limit_type: 'soft',limit_item: 'nofile', value: '655360' }
     - { limit_domain: 'root',limit_type: 'hard',limit_item: 'nofile', value: '655360' }
-    - { limit_domain: '*',limit_type: 'soft',limit_item: 'core', value: '0' }
-    - { limit_domain: '*',limit_type: 'hard',limit_item: 'core', value: '0' }
     - { limit_domain: '*',limit_type: 'soft',limit_item: 'nproc', value: '655360' }
     - { limit_domain: '*',limit_type: 'hard',limit_item: 'nproc', value: '655360' }
-    - { limit_domain: '*',limit_type: 'soft',limit_item: 'stack', value: 'unlimited' }
-    - { limit_domain: '*',limit_type: 'hard',limit_item: 'stack', value: 'unlimited' }
     - { limit_domain: '*',limit_type: 'soft',limit_item: 'nofile', value: '655360' }
     - { limit_domain: '*',limit_type: 'hard',limit_item: 'nofile', value: '655360' }
   tags: limits
