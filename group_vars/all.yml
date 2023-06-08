@@ -122,6 +122,14 @@ flannel:
   registry: dockerproxy.com/flannel
   # "vxlan" or "host-gw"
   network_mode: vxlan
+  # 运行参数
+  args:
+    - "--ip-masq"
+    - "--kube-subnet-mgr"
+  # 当主机位于同一子网上时启用直接路由
+  directRouting: false
+  # 传出数据包的所需 MTU，如果未定义，则使用外部接口的 MTU。
+  # mtu: 1500
 
 calico:
   # https://github.com/projectcalico/calico

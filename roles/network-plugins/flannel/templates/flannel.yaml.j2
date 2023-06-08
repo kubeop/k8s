@@ -79,6 +79,12 @@ data:
     {
       "Network": "{{ kubernetes.podSubnet }}",
       "Backend": {
+{% if flannel.network_mode == 'vxlan' %}
+        "DirectRouting": {{ flannel.directRouting | lower}},
+{% if 'mtu' in flannel %}
+        "MTU": {{ flannel.mtu }},
+{% endif %}
+{% endif %}
         "Type": "{{ flannel.network_mode }}"
       }
     }
@@ -146,9 +152,12 @@ spec:
         image: {{flannel.registry}}/flannel:{{flannel.version}}
         command:
         - /opt/bin/flanneld
+{% if 'args' in flannel %}
         args:
-        - --ip-masq
-        - --kube-subnet-mgr
+{% for param in flannel.args %}
+        - {{ param }}
+{% endfor %}
+{% endif %}
         resources:
           requests:
             cpu: "100m"
