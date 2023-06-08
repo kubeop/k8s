@@ -4,6 +4,7 @@
 172.16.90.102 hostname=etcd-02
 172.16.90.103 hostname=etcd-03
 
+# 使用云负载均衡时，可以注释以下haproxy内容
 [haproxy]
 172.16.90.98 hostname=haproxy-01 type=MASTER priority=100
 172.16.90.99 hostname=haproxy-02 type=BACKUP priority=90
