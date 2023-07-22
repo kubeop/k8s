@@ -1,7 +1,8 @@
 ## 支持的发型版
 
 - CentOS/RHEL 7，8
-- Ubuntu 18.04，20.04，22.04
+- Ubuntu 20.04，22.04
+- Debian 12
 - Alma Linux 8
 - Rocky Linux 8
 
@@ -138,6 +139,8 @@ image-syncer --proc=6 --images=images.json --arch amd64
 编辑group_vars/all.yml文件，根据自己的实际环境进行配置。
 
 请注意：
+
+- **Kubernetes** 的最低版本要求为 V1.24
 
 - 请尽量将etcd安装在独立的服务器上，不建议跟master安装在一起。数据盘尽量使用SSD盘。
 - Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复，同时也避免与docker0网卡的网段冲突。）：

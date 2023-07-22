@@ -13,7 +13,7 @@ etcd:
   # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.8
+  version: v3.5.9
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -31,11 +31,12 @@ loadbalance:
 # Kubernetes
 kubernetes:
   # kubernetes 二进制安装包下载地址，默认为阿里云从Google同步过来的镜像，更新较慢，最新版本可能未同步过来。
-  # 如默认的阿里云下载源更新不及时，可修改为官方下载地址: https://storage.googleapis.com/kubernetes-release/release
+  # 官方下载源，下载较慢。 https://storage.googleapis.com/kubernetes-release/release
+  # 阿里云下载源，可能更新不及时，无法下载最新版本。https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.26.4
+  version: v1.27.4
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 节点Pod网段掩码大小
@@ -53,21 +54,21 @@ runc:
   # 如使用自建文件服务器，请保证下载路径为:{{runc.download_url}}/{{runc.version}}/runc.amd64
   download_url: https://ghproxy.com/https://github.com/opencontainers/runc/releases/download
   # runc 版本
-  version: v1.1.7
+  version: v1.1.8
 
 cniplugins:
   # cni-plugins 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz
   download_url: https://ghproxy.com/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
-  version: v1.2.0
+  version: v1.3.0
 
 critools:
   # cri-tools 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.27.0
+  version: v1.27.1
 
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
@@ -106,7 +107,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.13.2
+  version: v1.13.4
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: dockerproxy.com/cilium
@@ -115,7 +116,7 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.21.5
+  version: v0.22.0
   plugin_version: v1.1.0
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
@@ -133,7 +134,7 @@ flannel:
 
 calico:
   # https://github.com/projectcalico/calico
-  version: v3.24.5
+  version: v3.26.1
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
@@ -179,7 +180,7 @@ coredns:
   registry: dockerproxy.com/coredns
 nodelocaldns:
   enabled: true
-  version: 1.22.20
+  version: 1.22.23
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
   registry: k8s.dockerproxy.com/dns
   ip: 169.254.20.10
@@ -190,6 +191,6 @@ metrics_server:
   registry: k8s.dockerproxy.com/metrics-server
 nvidia_device_plugin:
   enabled: false
-  version: v0.14.0
+  version: v0.14.1
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: nvcr.io/nvidia
