@@ -92,7 +92,8 @@ containerd:
     address: ""
     grpc_histogram: false
   cri:
-    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.7"
+    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.9"
+    max_concurrent_downloads: 3
     max_container_log_line_size: -1
   containerd:
     snapshotter: overlayfs
