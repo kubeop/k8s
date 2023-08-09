@@ -147,7 +147,9 @@ spec:
             memory: 5Mi
         args: [ "-localip", "{{nodelocaldns.ip}}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
         securityContext:
-          privileged: true
+          capabilities:
+            add:
+            - NET_ADMIN
         ports:
         - containerPort: 53
           name: dns

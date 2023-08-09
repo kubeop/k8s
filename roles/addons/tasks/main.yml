@@ -3,15 +3,20 @@
   tags:
     - coredns
 
+- import_tasks: nodelocaldns.yml
+  when: nodelocaldns.enabled == true
+  tags:
+    - nodelocaldns
+
 - import_tasks: metrics-server.yml
   when: metrics_server.enabled == true
   tags:
     - metrics-server
 
-- import_tasks: nodelocaldns.yml
-  when: nodelocaldns.enabled == true
+- import_tasks: node-problem-detector.yml
+  when: npd.enabled == true
   tags:
-    - nodelocaldns
+    - node-problem-detector
 
 - import_tasks: helm.yml
   when: helm.enabled == true

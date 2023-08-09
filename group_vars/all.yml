@@ -190,6 +190,11 @@ metrics_server:
   version: v0.6.3
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
   registry: k8s.dockerproxy.com/metrics-server
+npd:
+  enabled: true
+  version: v0.8.9
+  # {{npd.registry}}/node-problem-detector:{{npd.version}}
+  registry: k8s.dockerproxy.com/node-problem-detector
 nvidia_device_plugin:
   enabled: false
   version: v0.14.1
