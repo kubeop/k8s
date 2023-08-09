@@ -16,3 +16,9 @@
      state: restarted
      enabled: yes
      masked: false
+- name: restart systemd-journald
+  systemd:
+     name: systemd-journald
+     state: restarted
+     enabled: yes
+     masked: false

@@ -192,7 +192,7 @@ metrics_server:
   registry: k8s.dockerproxy.com/metrics-server
 npd:
   enabled: true
-  version: v0.8.9
+  version: v0.8.13
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
   registry: k8s.dockerproxy.com/node-problem-detector
 nvidia_device_plugin:

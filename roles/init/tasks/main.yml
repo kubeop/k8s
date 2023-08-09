@@ -184,6 +184,19 @@
     - {name: 'net.ipv4.ip_local_port_range',value: '20000 60999' }
   tags: sysctl
 
+- name: "Config systemd-journald"
+  file:
+    path: "/var/log/journal"
+    owner: root
+    group: systemd-journal
+    mode: 2775
+    state: directory
+  notify:
+    - restart systemd-journald
+  when:
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+  tags: journal
+
 - name: "Install base application"
   package:
     name:
