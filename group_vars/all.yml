@@ -191,7 +191,7 @@ metrics_server:
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
   registry: k8s.dockerproxy.com/metrics-server
 npd:
-  enabled: true
+  enabled: false
   version: v0.8.13
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
   registry: k8s.dockerproxy.com/node-problem-detector
