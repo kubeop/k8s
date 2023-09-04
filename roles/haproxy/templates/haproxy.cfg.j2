@@ -40,7 +40,6 @@ frontend haproxy_kube
 
 backend masters
     mode tcp
-    option tcplog
     balance roundrobin
     {% for host in groups['master'] %}
     server  {{hostvars[host].hostname}}  {{host}}:6443 check port 6443 inter 1500 rise 1 fall 3 weight 1
