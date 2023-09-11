@@ -36,7 +36,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.27.4
+  version: v1.28.1
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 节点Pod网段掩码大小
