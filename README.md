@@ -278,7 +278,7 @@ etcdctl endpoint health \
 逐个删除旧的kubelet证书
 
 ```
-ansible -i inventory -l master,worker -m shell -a "rm -rf /etc/kubernetes/pki/kubelet*"
+ansible -i inventory master,worker -m shell -a "rm -rf /etc/kubernetes/pki/kubelet*"
 ```
 
 - `-l`参数更换为具体节点IP。
