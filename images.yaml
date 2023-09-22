@@ -1,0 +1,12 @@
+registry.aliyuncs.com/google_containers/pause:3.9: registry.ecarxmap.com/ecarx/pause
+dockerproxy.com/cilium/cilium:v1.13.4: registry.ecarxmap.com/ecarx/cilium
+dockerproxy.com/flannel/flannel-cni-plugin:v1.1.0: registry.ecarxmap.com/ecarx/flannel-cni-plugin
+dockerproxy.com/flannel/flannel:v0.22.0: registry.ecarxmap.com/ecarx/flannel
+dockerproxy.com/calico/kube-controllers:v3.26.1: registry.ecarxmap.com/ecarx/calico-kube-controllers
+dockerproxy.com/calico/node:v3.26.1: registry.ecarxmap.com/ecarx/calico-node
+dockerproxy.com/calico/cni:v3.26.1: registry.ecarxmap.com/ecarx/calico-cni
+dockerproxy.com/cloudnativelabs/kube-router:v1.5.4: registry.ecarxmap.com/ecarx/kube-router
+dockerproxy.com/coredns/coredns:1.10.1: registry.ecarxmap.com/ecarx/coredns
+k8s.dockerproxy.com/dns/k8s-dns-node-cache:1.22.23: registry.ecarxmap.com/ecarx/k8s-dns-node-cache
+k8s.dockerproxy.com/metrics-server/metrics-server:v0.6.3: registry.ecarxmap.com/ecarx/metrics-server
+nvcr.io/nvidia/k8s-device-plugin:v0.14.1: registry.ecarxmap.com/ecarx/k8s-device-plugin

@@ -36,7 +36,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.28.1
+  version: v1.28.2
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 节点Pod网段掩码大小
@@ -54,7 +54,7 @@ runc:
   # 如使用自建文件服务器，请保证下载路径为:{{runc.download_url}}/{{runc.version}}/runc.amd64
   download_url: https://ghproxy.com/https://github.com/opencontainers/runc/releases/download
   # runc 版本
-  version: v1.1.8
+  version: v1.1.9
 
 cniplugins:
   # cni-plugins 安装包下载地址
@@ -68,7 +68,7 @@ critools:
   # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.27.1
+  version: v1.28.0
 
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
@@ -76,7 +76,7 @@ containerd:
   # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
   download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
-  version: 1.6.21
+  version: 1.6.24
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
