@@ -42,7 +42,7 @@ staticPodPath: /etc/kubernetes/manifests
 streamingConnectionIdleTimeout: 4h
 syncFrequency: 1m
 volumeStatsAggPeriod: 1m
-{% if kubernetes.version | int is version("1.28.0","ge") %}
+{% if kubernetes.version | regex_replace('v') is version("1.28.0","ge") %}
 containerRuntimeEndpoint: unix://{{containerd.state}}/containerd.sock
 imageServiceEndpoint: unix://{{containerd.state}}/containerd.sock
 {% endif %}
