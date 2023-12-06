@@ -327,3 +327,7 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t restart_apiserver,restart_
 
 - `-l`参数更换为具体节点IP。
 
+## 清理节点
+```
+ansible-playbook reset.yml -i inventory -l ${IP} -e "flush_iptables=true enable_dual_stack_networks=false"
+```
