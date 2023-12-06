@@ -7,7 +7,7 @@
 
 - name: Macvlan | set node_pod_cidr
   set_fact:
-    node_pod_cidr={{ node_pod_cidr_cmd.stdout }}
+    node_pod_cidr: "{{ node_pod_cidr_cmd.stdout }}"
 
 - name: Macvlan | Retrieve default gateway network interface
   become: false
@@ -17,7 +17,7 @@
 
 - name: Macvlan | set node_default_gateway_interface
   set_fact:
-    node_default_gateway_interface={{ node_default_gateway_interface_cmd.stdout | trim }}
+    node_default_gateway_interface: "{{ node_default_gateway_interface_cmd.stdout | trim }}"
 
 - name: Macvlan | Install network gateway interface on debian
   template:
@@ -27,7 +27,9 @@
   notify: Macvlan | restart network
   when: ansible_os_family in ["Debian"]
 
-- block:
+- name: Install macvlan config on RH distros
+  when: ansible_os_family == "RedHat"
+  block:
   - name: Macvlan | Install macvlan script on centos
     copy:
       src: "{{ item }}"
@@ -57,8 +59,34 @@
     - {src: centos-routes-macvlan.cfg, dst: route-mac0 }
     - {src: centos-postup-macvlan.cfg, dst: post-up-mac0 }
     notify: Macvlan | restart network
-  when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+
+- name: Install macvlan config on Flatcar
+  when: ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"]
+  block:
+  - name: Macvlan | Install service nat via gateway on Flatcar Container Linux
+    template:
+      src: coreos-service-nat_ouside.j2
+      dest: /etc/systemd/system/enable_nat_ouside.service
+      mode: 0644
+    when: macvlan.enable_nat_default_gateway
+
+  - name: Macvlan | Enable service nat via gateway on Flatcar Container Linux
+    command: "{{ item }}"
+    with_items:
+    - systemctl daemon-reload
+    - systemctl enable enable_nat_ouside.service
+    when: macvlan.enable_nat_default_gateway
+
+  - name: Macvlan | Install network gateway interface on Flatcar Container Linux
+    template:
+      src: "{{ item.src }}.j2"
+      dest: "/etc/systemd/network/{{ item.dst }}"
+      mode: 0644
+    with_items:
+    - {src: coreos-device-macvlan.cfg, dst: macvlan.netdev }
+    - {src: coreos-interface-macvlan.cfg, dst: output.network }
+    - {src: coreos-network-macvlan.cfg, dst: macvlan.network }
+    notify: Macvlan | restart network
 
 - name: Macvlan | Install cni definition for Macvlan
   template:
@@ -73,9 +101,10 @@
     mode: 0644
 
 - name: Enable net.ipv4.conf.all.arp_notify in sysctl
-  sysctl:
+  ansible.posix.sysctl:
     name: net.ipv4.conf.all.arp_notify
-    value: '1'
+    value: 1
     sysctl_set: yes
+    sysctl_file: "/etc/sysctl.d/99-sysctl.conf"
     state: present
     reload: yes

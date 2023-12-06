@@ -163,11 +163,10 @@ kuberouter:
   # 启用服务代理，为Kubernetes服务设置IPVS
   run_service_proxy: false
   
-#macvlan:
-#  # 目前仅支持RHEL7系列和Ubuntu，网卡需开启混杂模式
-#  enable_nat_default_gateway: true
-#  # "bridge" or "private" or "vepa" or "passthru"
-#  mode: bridge
+macvlan:
+  macvlan_interface: eth0
+  # 目前仅支持RHEL7系列和Ubuntu，网卡需开启混杂模式
+  enable_nat_default_gateway: true
 
 # Addons
 helm:

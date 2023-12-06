@@ -1,17 +1,9 @@
 ---
-- name: Macvlan | restart network
-  command: /bin/true
-  notify:
-    - Macvlan | reload network
-    - Macvlan | reload containerd
-  when: not ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"]
-
 - name: Macvlan | reload network
-  systemd:
+  service:
+    # noqa: jinja[spacing]
     name: >-
-      {% if ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version == "8" -%}
-      NetworkManager
-      {%- elif ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version == "7" -%}
+      {% if ansible_os_family == "RedHat" -%}
       network
       {%- elif ansible_distribution == "Ubuntu" and ansible_distribution_release == "bionic" -%}
       systemd-networkd
@@ -19,10 +11,5 @@
       networking
       {%- endif %}
     state: restarted
-  when: not ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"] and network_plugin not in ['canal', 'calico']
-
-- name: Macvlan | reload containerd
-  systemd:
-    name: containerd
-    state: restarted
-  when: not ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"] and network_plugin not in ['canal', 'calico']
+  when: not ansible_os_family in ["Flatcar", "Flatcar Container Linux by Kinvolk"] and kube_network_plugin not in ['calico']
+  listen: Macvlan | restart network
