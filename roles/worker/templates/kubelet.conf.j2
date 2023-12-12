@@ -25,6 +25,7 @@ clusterDNS:
 cpuManagerReconcilePeriod: 10s
 containerLogMaxSize: 200Mi
 containerLogMaxFiles: 10
+maxPods: {{ kubernetes.kubelet_max_pods | default(110) }}
 evictionHard:
   imagefs.available: 15%
   memory.available: 500Mi

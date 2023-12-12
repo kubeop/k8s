@@ -89,3 +89,10 @@
       - kubernetes.podSubnet | ipaddr(kubernetes.serviceSubnet) | string == 'None'
     msg: "podSubnet cannot be the same network segment as serviceSubnet"
   run_once: yes
+
+- name: "Guarantee that enough network address space is available for all pods"
+  assert:
+    that: "{{ (kubernetes.kubelet_max_pods | default(110)) | int <= (2 ** (32 - kubernetes.maskSize | int)) - 2 }}"
+    msg: "Do not schedule more pods on a node than inet addresses are available."
+  when: network_plugin != 'calico'
+  run_once: yes

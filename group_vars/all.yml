@@ -11,7 +11,7 @@ cert:
 etcd:
   # etcd 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
-  download_url: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
+  download_url: https://mirror.ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
   version: v3.5.9
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
@@ -45,6 +45,8 @@ kubernetes:
   serviceSubnet: 192.168.0.0/16
   # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   kubelet_dir: "/var/lib/kubelet"
+  # 节点最大Pod数量
+  kubelet_max_pods: 110
   # 配置kube-proxy的ipvs调度策略，支持rr(轮询),wrr(加权轮训),lc(最少连接数),wlc(加权最少连接数),sh(源地址哈希),dh(目标地址哈希),sed(最短预期延迟),nq(最少队列)
   scheduler: rr
 
@@ -52,21 +54,21 @@ kubernetes:
 runc:
   # runc 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{runc.download_url}}/{{runc.version}}/runc.amd64
-  download_url: https://ghproxy.com/https://github.com/opencontainers/runc/releases/download
+  download_url: https://mirror.ghproxy.com/https://github.com/opencontainers/runc/releases/download
   # runc 版本
   version: v1.1.9
 
 cniplugins:
   # cni-plugins 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz
-  download_url: https://ghproxy.com/https://github.com/containernetworking/plugins/releases/download
+  download_url: https://mirror.ghproxy.com/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
   version: v1.3.0
 
 critools:
   # cri-tools 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
-  download_url: https://ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
+  download_url: https://mirror.ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
   version: v1.28.0
 
@@ -74,7 +76,7 @@ critools:
 containerd:
   # containerd 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
-  download_url: https://ghproxy.com/https://github.com/containerd/containerd/releases/download
+  download_url: https://mirror.ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
   version: 1.6.24
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
@@ -162,11 +164,6 @@ kuberouter:
   run_firewall: true
   # 启用服务代理，为Kubernetes服务设置IPVS
   run_service_proxy: false
-  
-macvlan:
-  macvlan_interface: eth0
-  # 目前仅支持RHEL7系列和Ubuntu，网卡需开启混杂模式
-  enable_nat_default_gateway: true
 
 # Addons
 helm:

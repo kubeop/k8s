@@ -20,6 +20,8 @@
 # 不是GPU节点时，可去掉gpu配置项
 # 启用GPU时，请先在节点安装GPU驱动
 # 启用GPU时，并且是离线环境，请先在节点按照 https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installation-guide 配置软件源或同步相关包到私服
+# 使用macvlan时，增加access_ip、ansible_host、macvlan_interface变量，示例如下:
+# 172.16.90.120 hostname=worker-01 gpu=false access_ip=172.16.90.120 ansible_host=172.16.90.120 macvlan_interface=ens192
 [worker]
 172.16.90.120 hostname=worker-01 gpu=false
 172.16.90.121 hostname=worker-02 gpu=false
