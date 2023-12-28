@@ -15,9 +15,26 @@
     msg: "Hostname must consist of lower case alphanumeric characters '-', and must start and end with an alphanumeric character"
   when: hostname is defined
 
+- name: Fetch resolconf
+  block:
+    - name: Get content of /etc/resolv.conf
+      slurp:
+        src: /etc/resolv.conf
+      register: resolvconf_slurp
+
+    - name: Get currently configured nameservers
+      set_fact:
+        configured_nameservers: "{{ resolvconf_slurp.content | b64decode | regex_findall('^nameserver\\s*(\\S*)', multiline=True) | ansible.utils.ipaddr }}"
+      when: resolvconf_slurp.content is defined
+
+- name: Stop if /etc/resolv.conf not configured nameservers
+  assert:
+    that: configured_nameservers | length>0
+    fail_msg: "nameserver should not empty in /etc/resolv.conf"
+
 - name: Fail if etcd or master or worker group is empty
   assert:
-    that: "groups.get('{{ item }}')"
+    that: "groups.get( item )"
     fail_msg: "Group 'etcd' or 'master' or 'worker' cannot be empty"
   with_items:
     - etcd
@@ -72,21 +89,21 @@
 - name: "Check that serviceSubnet is a network range"
   assert:
     that:
-      - kubernetes.serviceSubnet | ipaddr('net')
+      - kubernetes.serviceSubnet | ansible.utils.ipaddr('net')
     msg: "kubernetes.serviceSubnet = '{{ kubernetes.serviceSubnet }}' is not a valid network range"
   run_once: yes
 
 - name: "Check that podSubnet is a network range"
   assert:
     that:
-      - kubernetes.podSubnet | ipaddr('net')
+      - kubernetes.podSubnet | ansible.utils.ipaddr('net')
     msg: "kubernetes.podSubnet = '{{ kubernetes.podSubnet }}' is not a valid network range"
   run_once: yes
 
 - name: "Check that podSubnet does not collide with serviceSubnet"
   assert:
     that:
-      - kubernetes.podSubnet | ipaddr(kubernetes.serviceSubnet) | string == 'None'
+      - kubernetes.podSubnet | ansible.utils.ipaddr(kubernetes.serviceSubnet) | string == 'None'
     msg: "podSubnet cannot be the same network segment as serviceSubnet"
   run_once: yes
 

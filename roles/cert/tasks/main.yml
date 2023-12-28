@@ -287,7 +287,35 @@
   with_items:
     - "{{ groups['master'] }}"
 
+- name: "Aggregate all SANs"
+  set_fact:
+    apiserver_sans: "{{ (sans_base + groups['master'] + sans_lb + sans_lb_ip + sans_access_ip) | unique }}"
+  vars:
+    sans_base:
+      - "127.0.0.1"
+      - "localhost"
+      - "kubernetes"
+      - "kubernetes.default"
+      - "kubernetes.default.svc"
+      - "kubernetes.default.svc.cluster"
+      - "kubernetes.default.svc.cluster.local"
+      - "{{ kubernetes.serviceSubnet | ansible.utils.ipaddr('net') | ansible.utils.ipaddr(1) | ansible.utils.ipaddr('address') }}"
+    sans_lb: "{{ [loadbalance.domain_name] if loadbalance.domain_name is defined else [] }}"
+    sans_lb_ip: "{{ [loadbalance.ip] if loadbalance.ip is defined else [] }}"
+    sans_access_ip: "{{ loadbalance.access_ip | list if loadbalance.access_ip is defined else [] }}"
+  tags: facts
+
+- name: "Debug all SANs"
+  vars:
+    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
+    apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
+  debug:
+    msg: "{{ apiserver_ips | map('regex_replace', '^(.*)$', 'IP:\\1') | list  +  apiserver_hosts | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
+
 - name: "Generate apiserver request"
+  vars:
+    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
+    apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
   openssl_csr:
     path: "{{ cert.dir }}/{{ item }}/apiserver.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
@@ -302,18 +330,7 @@
       - keyEncipherment
     extended_key_usage:
       - serverAuth
-    subject_alt_name:
-      - DNS:localhost
-      - DNS:kubernetes
-      - DNS:kubernetes.default
-      - DNS:kubernetes.default.svc
-      - DNS:kubernetes.default.svc.cluster
-      - DNS:kubernetes.default.svc.cluster.local
-      - DNS:{% if 'domain_name' in loadbalance %}{{ loadbalance.domain_name }}{% else %}{{ loadbalance.ip }}{% endif %}
-      - IP:127.0.0.1
-      - IP:{{ item }}
-      - IP:{{ kubernetes.serviceSubnet | next_nth_usable(1) }}
-      - IP:{{ loadbalance.ip }}
+    subject_alt_name: "{{ apiserver_ips | map('regex_replace', '^(.*)$', 'IP:\\1') | list  +  apiserver_hosts | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
   with_items:
     - "{{ groups['master'] }}"
 

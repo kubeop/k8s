@@ -1,11 +1,10 @@
 ## 支持的发型版
 
-- CentOS/RHEL 7，8
-- Ubuntu 20.04，22.04
+- CentOS/RHEL 7，8，9
+- AlmaLinux 8，9
+- RockyLinux 8，9
+- Ubuntu Server 20.04，22.04
 - Debian 12
-- Alma Linux 8
-- Rocky Linux 8
-
 
 
 ## 支持组件
@@ -35,7 +34,7 @@
 ### 安装Ansible
 
 ```
-pip3 install ansible
+pip3 install ansible -i https://mirrors.ustc.edu.cn/pypi/web/simple
 pip3 install netaddr -i https://mirrors.ustc.edu.cn/pypi/web/simple
 ```
 
@@ -65,8 +64,6 @@ ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
 ```
 ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data type=nvme"
 ```
-
-
 
 ⚠️：
 
@@ -107,7 +104,7 @@ cd mirrors
 python3 -m http.server 8888
 
 # 编辑 group_vars/all.yml ,将相关 download_url 配置中的域名部分修改为上一步启动HTTP的IP:PORT
-# 如原本download_url配置为: https://ghproxy.com/https://github.com/etcd-io/etcd/releases/download
+# 如原本download_url配置为: https://mirror.ghproxy.com/https://github.com/etcd-io/etcd/releases/download
 #  ⚠️：请注意下载的离线包和 group_vars/all.yml 中 version 版本保持一致
 # 使用本地离线包: http://1.1.1.1:8888/etcd-io/etcd/releases/download
 

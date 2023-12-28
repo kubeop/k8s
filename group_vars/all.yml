@@ -26,7 +26,9 @@ etcd:
 loadbalance:
   ip: 172.16.90.100
   port: 6443
-  #domain_name: apiserver.mafic.com
+  # domain_name: apiserver.kubeop.com
+  # access_ip:
+  #   - 172.16.90.100
 
 # Kubernetes
 kubernetes:
@@ -34,7 +36,7 @@ kubernetes:
   # 官方下载源，下载较慢。 https://storage.googleapis.com/kubernetes-release/release
   # 阿里云下载源，可能更新不及时，无法下载最新版本。https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
-  download_url: https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
+  download_url: https://storage.googleapis.com/kubernetes-release/release
   # kubernetes 版本
   version: v1.28.2
   # 集群Pod网段
