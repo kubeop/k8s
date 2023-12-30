@@ -13,7 +13,7 @@ etcd:
   # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
   download_url: https://mirror.ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.9
+  version: v3.5.11
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -38,7 +38,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
   download_url: https://storage.googleapis.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.28.2
+  version: v1.28.5
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 节点Pod网段掩码大小
@@ -58,21 +58,21 @@ runc:
   # 如使用自建文件服务器，请保证下载路径为:{{runc.download_url}}/{{runc.version}}/runc.amd64
   download_url: https://mirror.ghproxy.com/https://github.com/opencontainers/runc/releases/download
   # runc 版本
-  version: v1.1.9
+  version: v1.1.10
 
 cniplugins:
   # cni-plugins 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz
   download_url: https://mirror.ghproxy.com/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
-  version: v1.3.0
+  version: v1.4.0
 
 critools:
   # cri-tools 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
   download_url: https://mirror.ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.28.0
+  version: v1.29.0
 
 # Use cri-containerd-cni, Contains cni-plugins: https://github.com/containernetworking/plugins
 containerd:
@@ -80,7 +80,7 @@ containerd:
   # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
   download_url: https://mirror.ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
-  version: 1.6.24
+  version: 1.6.26
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
