@@ -1,5 +1,5 @@
 global_defs {
-   router_id k8s
+   router_id HA_{{ type }}
 }
 
 vrrp_script Checkhaproxy {
@@ -20,14 +20,16 @@ vrrp_instance VI_1 {
     mcast_src_ip {{ ansible_default_ipv4.address }}
     authentication {
         auth_type PASS
-        auth_pass kuburnetes
+        auth_pass kubeop
     }
 
     unicast_src_ip {{ ansible_default_ipv4.address }}
     unicast_peer {
-    {% for host in groups['haproxy'] %}
+{% for host in groups['haproxy'] %}
+  {% if hostvars[host]['ansible_default_ipv4']['address'] != ansible_default_ipv4['address'] %}
       {{ host }}
-    {% endfor %}
+  {% endif %}
+{% endfor %}
 
     }
     virtual_ipaddress {

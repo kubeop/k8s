@@ -211,7 +211,6 @@
       - rsync
       - telnet
       - bash-completion
-      - net-tools
     state: present
   tags: install_app
 
@@ -221,6 +220,7 @@
       - nmap-ncat
       - yum-utils
       - nfs-utils
+      - iproute
     state: present
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
@@ -232,6 +232,7 @@
       - nmap
       - nmap-common
       - nfs-common
+      - iproute2
     state: present
   when:
     - ansible_os_family in ["Debian"]
