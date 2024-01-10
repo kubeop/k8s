@@ -37,6 +37,8 @@ httpCheckFrequency: 20s
 healthzBindAddress: 0.0.0.0
 healthzPort: 10248
 imageMinimumGCAge: 2m
+imageGCHighThresholdPercent: 90
+imageGCLowThresholdPercent: 85
 rotateCertificates: true
 runtimeRequestTimeout: 2m
 staticPodPath: /etc/kubernetes/manifests
