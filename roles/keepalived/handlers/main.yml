@@ -1,0 +1,9 @@
+
+- name: restart keepalived
+  systemd:
+    name: keepalived
+    state: restarted
+    daemon_reload: yes
+    enabled: yes
+    masked: false
+  register: keepalived_restarted

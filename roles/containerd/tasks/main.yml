@@ -1,0 +1,153 @@
+---
+- name: "Install dependency"
+  package:
+    name:
+      - util-linux
+      - libseccomp
+      - libseccomp-devel
+    state: present
+  when:
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+  tags: containerd_app
+
+- name: "Install dependency"
+  package:
+    name:
+      - util-linux
+      - libseccomp2
+    state: present
+  when:
+    - ansible_os_family in ["Debian"]
+  tags: containerd_app
+
+- name: "Add nvidia-container-toolkit repository"
+  yum_repository:
+    name: "{{ item.name }}"
+    description: "{{ item.description}}"
+    file: nvidia-container-toolkit
+    baseurl: "{{ item.baseurl }}"
+    repo_gpgcheck: yes
+    gpgcheck: yes
+    gpgkey: "{{ item.gpgkey }}"
+    sslverify: yes
+    sslcacert: "/etc/pki/tls/certs/ca-bundle.crt"
+    enabled: yes
+  with_items:
+    - { name: "nvidia-container-toolkit",description: "nvidia-container-toolkit",baseurl: "https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch",gpgkey: "https://nvidia.github.io/libnvidia-container/gpgkey" }
+  when:
+    - gpu is defined and gpu == 'true'
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+  tags: gpu_runtime
+
+- name: "Add nvidia-container-toolkit repository"
+  apt_repository:
+    repo: "deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
+    filename: nvidia-container-toolkit
+    state: present
+  when:
+    - gpu is defined and gpu == 'true'
+    - ansible_os_family in ["Debian"]
+  tags: gpu_runtime
+
+- name: "Install nvidia-container-runtime"
+  package:
+    name: 
+      - nvidia-container-runtime
+      - nvidia-container-toolkit
+    state: present
+  when: gpu is defined and gpu == 'true'
+  tags: gpu_app
+
+- name: Install runc
+  copy:
+    src: "{{ download.dest }}/runc/{{ runc.version }}/runc.amd64"
+    dest: "/usr/local/sbin/runc"
+    owner: root
+    group: root
+    mode: 0755
+  tags: install_runc
+
+- name: Create cni directory
+  file:
+    path: "/opt/cni/bin"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  tags: cni_config
+
+- name: Install cni
+  unarchive:
+    src: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}/cni-plugins-linux-amd64-{{ cniplugins.version }}.tgz"
+    dest: "/opt/cni/bin/"
+    remote_src: no
+  tags: install_cni
+
+- name: Install containerd
+  unarchive:
+    src: "{{ download.dest }}/containerd/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-amd64.tar.gz"
+    dest: "/usr/local/bin/"
+    remote_src: no
+    extra_opts:
+      - --strip-components=1
+  tags: install_containerd
+  notify:
+    - restart containerd
+
+- name: "Set containerd service"
+  template:
+    src: "containerd.service.j2"
+    dest: "/usr/lib/systemd/system/containerd.service"
+    owner: root
+    group: root
+    mode: 0644
+  tags: containerd_config
+
+- name: "Create containerd data directory"
+  file:
+    path: "{{ containerd.root }}"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  tags: containerd_config
+
+- name: "Create containerd config directory"
+  file:
+    path: "/etc/containerd"
+    owner: root
+    group: root
+    mode: 0755
+    state: directory
+  tags: containerd_config
+
+- name: "Set containerd config"
+  template:
+    src: "config.toml.j2"
+    dest: "/etc/containerd/config.toml"
+    owner: root
+    group: root
+    mode: 0644
+  tags: containerd_config
+  notify:
+    - restart containerd
+
+- name: Install cri-tools
+  unarchive:
+    src: "{{ download.dest }}/critools/{{ critools.version }}/crictl-{{ critools.version }}-linux-amd64.tar.gz"
+    dest: "/usr/local/bin/"
+    remote_src: no
+  tags: install_critools
+  notify:
+    - Get crictl completion
+    - Install crictl completion
+
+- name: "Config cri-tools"
+  template:
+    src: "crictl.yaml.j2"
+    dest: "/etc/crictl.yaml"
+    owner: root
+    group: root
+    mode: 0644
+  tags: cri_tools
+  

@@ -1,0 +1,112 @@
+---
+- name: "Create download directory"
+  file:
+    path: "{{ download.dest }}/{{ item }}"
+    state: directory
+  with_items:
+    - etcd/{{ etcd.version }}
+    - kubernetes/{{ kubernetes.version }}/bin/linux/amd64
+    - runc/{{ runc.version }}
+    - cniplugins/{{ cniplugins.version }}
+    - critools/{{ critools.version }}
+    - containerd/v{{ containerd.version }}
+    - calico/{{ calico.version }}
+  tags: download_dir
+
+- name: "Download etcd"
+  get_url:
+    url: "{{ etcd_download_url }}/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-amd64.tar.gz"
+    dest: "{{ download.dest }}/etcd/{{ etcd.version }}"
+    timeout: "{{ download.timeout }}"
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_etcd
+
+- name: "Download kubernetes"
+  get_url:
+    url: "{{ kubernetes_download_url }}/{{ kubernetes.version }}/bin/linux/amd64/{{ item }}"
+    dest: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/amd64"
+    timeout: "{{ download.timeout }}"
+  with_items:
+    - kube-apiserver
+    - kube-controller-manager
+    - kube-scheduler
+    - kubelet
+    - kube-proxy
+    - kubectl
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_kubernetes
+
+- name: "Download runc"
+  get_url:
+    url: "{{ runc_download_url }}/{{ runc.version }}/runc.amd64"
+    dest: "{{ download.dest }}/runc/{{ runc.version }}"
+    timeout: "{{ download.timeout }}"
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_runc
+
+- name: "Download cniplugins"
+  get_url:
+    url: "{{ cniplugins_download_url }}/{{ cniplugins.version }}/cni-plugins-linux-amd64-{{ cniplugins.version }}.tgz"
+    dest: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}"
+    timeout: "{{ download.timeout }}"
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_cniplugins
+
+- name: "Download critools"
+  get_url:
+    url: "{{ critools_download_url }}/{{ critools.version }}/crictl-{{ critools.version }}-linux-amd64.tar.gz"
+    dest: "{{ download.dest }}/critools/{{ critools.version }}"
+    timeout: "{{ download.timeout }}"
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_critools
+
+- name: "Download containerd"
+  get_url:
+    url: "{{ containerd_download_url }}/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-amd64.tar.gz"
+    dest: "{{ download.dest }}/containerd/v{{ containerd.version }}"
+    timeout: "{{ download.timeout }}"
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_containerd
+
+- name: "Download calicoctl"
+  get_url:
+    url: "{{ calicoctl_download_url }}/{{ calico.version }}/calicoctl-linux-amd64"
+    dest: "{{ download.dest }}/calico/{{ calico.version }}"
+    timeout: "{{ download.timeout }}"
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_calicoctl

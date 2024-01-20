@@ -1,0 +1,15 @@
+---
+# 如使用自建文件服务器，请保证下载路径为: {{ etcd_download_url }}/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-amd64.tar.gz
+etcd_download_url: "https://mirror.ghproxy.com/https://github.com/etcd-io/etcd/releases/download"
+# 如使用自建文件服务器，请保证下载路径为: {{ kubernetes_download_url }}/{{ kubernetes.version }}/bin/linux/amd64/kubectl
+kubernetes_download_url: "https://storage.googleapis.com/kubernetes-release/release"
+# 如使用自建文件服务器，请保证下载路径为: {{ runc_download_url }}/{{ runc.version }}/runc.amd64
+runc_download_url: "https://mirror.ghproxy.com/https://github.com/opencontainers/runc/releases/download"
+# 如使用自建文件服务器，请保证下载路径为: {{ cniplugins_download_url }}/{{ cniplugins.version }}/cni-plugins-linux-amd64-{{ cniplugins.version }}.tgz
+cniplugins_download_url: "https://mirror.ghproxy.com/https://github.com/containernetworking/plugins/releases/download"
+# 如使用自建文件服务器，请保证下载路径为: {{ critools_download_url }}/{{ critools.version }}/crictl-{{ critools.version }}-linux-amd64.tar.gz
+critools_download_url: "https://mirror.ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download"
+# 如使用自建文件服务器，请保证下载路径为: {{ containerd_download_url }}/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-amd64.tar.gz
+containerd_download_url: "https://mirror.ghproxy.com/https://github.com/containerd/containerd/releases/download"
+# 如使用自建文件服务器，请保证下载路径为: {{ calicoctl_download_url }}/{{ calico.version }}/calicoctl-linux-amd64
+calicoctl_download_url: "https://mirror.ghproxy.com/https://github.com/projectcalico/calico/releases/download"

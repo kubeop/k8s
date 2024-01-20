@@ -1,0 +1,31 @@
+# 本组内填写etcd服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
+[etcd]
+172.16.90.101 hostname=etcd-01
+172.16.90.102 hostname=etcd-02
+172.16.90.103 hostname=etcd-03
+
+# 使用云负载均衡时，可以注释以下haproxy内容
+[haproxy]
+172.16.90.98 hostname=haproxy-01 type=MASTER priority=100
+172.16.90.99 hostname=haproxy-02 type=BACKUP priority=90
+
+# 本组内填写master服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
+[master]
+172.16.90.110 hostname=master-01
+172.16.90.111 hostname=master-02
+172.16.90.112 hostname=master-03
+
+# 本组内填写worker服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
+# 最后面添加gpu=true 表示节点为GPU节点，运行时会配置使用GPU并且添加nvidia.com/gpu=true标签
+# 不是GPU节点时，可去掉gpu配置项
+# 启用GPU时，请先在节点安装GPU驱动
+# 启用GPU时，并且是离线环境，请先在节点按照 https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#installation-guide 配置软件源或同步相关包到私服
+# 使用macvlan时，增加access_ip、ansible_host、macvlan_interface变量，示例如下:
+# 172.16.90.120 hostname=worker-01 gpu=false access_ip=172.16.90.120 ansible_host=172.16.90.120 macvlan_interface=ens192
+[worker]
+172.16.90.120 hostname=worker-01 gpu=false
+172.16.90.121 hostname=worker-02 gpu=false
+172.16.90.122 hostname=worker-03 gpu=false
+172.16.90.123 hostname=worker-04 gpu=false
+172.16.90.124 hostname=worker-05 gpu=true 
+172.16.90.125 hostname=worker-06 gpu=false

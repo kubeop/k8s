@@ -1,0 +1,42 @@
+global_defs {
+   router_id HA_{{ type }}
+}
+
+vrrp_script Checkhaproxy {
+    script "/etc/keepalived/check_haproxy.sh"
+    interval 3
+    timeout 9
+    fall 2
+    rise 2
+}
+
+vrrp_instance VI_1 {
+    state {{ type }}
+    interface {{ ansible_default_ipv4.interface }}
+    virtual_router_id  100
+    priority {{priority}}
+    advert_int 1
+    nopreempt
+    mcast_src_ip {{ ansible_default_ipv4.address }}
+    authentication {
+        auth_type PASS
+        auth_pass kubeop
+    }
+
+    unicast_src_ip {{ ansible_default_ipv4.address }}
+    unicast_peer {
+{% for host in groups['haproxy'] %}
+  {% if hostvars[host]['ansible_default_ipv4']['address'] != ansible_default_ipv4['address'] %}
+      {{ host }}
+  {% endif %}
+{% endfor %}
+
+    }
+    virtual_ipaddress {
+        {{loadbalance.ip}}
+    }
+    track_script {
+        Checkhaproxy
+    }
+
+}

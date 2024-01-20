@@ -1,0 +1,56 @@
+---
+- name: "calico | Get etcd-ca content"
+  slurp:
+    src: "/etc/kubernetes/pki/etcd-ca.pem"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  register: cni_etcd_ca
+  tags:
+    - calico
+    - calico_yaml
+
+- name: "calico | Get etcd-client content"
+  slurp:
+    src: "/etc/kubernetes/pki/apiserver-etcd-client.pem"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  register: cni_etcd_cert
+  tags:
+    - calico
+    - calico_yaml
+
+- name: "calico | Get etcd-client content"
+  slurp:
+    src: "/etc/kubernetes/pki/apiserver-etcd-client.key"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  register: cni_etcd_key
+  tags:
+    - calico
+    - calico_yaml
+
+- name: "calico | Create manifest"
+  template:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+  with_items:
+    - {src: "calico-etcd.yaml.j2", dest: "/tmp/calico-etcd.yaml"}
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags:
+    - calico
+    - calico_yaml
+
+- name: "calico | Apply manifest"
+  shell: "kubectl apply -f /tmp/calico-etcd.yaml"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags:
+    - calico
+    - calico_install
+
+- import_tasks: calicoctl.yml
+  tags:
+    - calico
+    - calico_install
+    - calicoctl

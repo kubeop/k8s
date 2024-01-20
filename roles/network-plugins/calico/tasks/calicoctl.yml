@@ -1,0 +1,28 @@
+---
+- name: "Install calicoctl"
+  copy:
+    src: "{{ download.dest }}/calico/{{ calico.version }}/calicoctl-linux-amd64"
+    dest: "/usr/local/bin/calicoctl"
+    mode: 0750
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['master'] }}"
+  tags: calicoctl
+
+- name: "Create calico directory"
+  file:
+    path: "/etc/calico"
+    state: directory
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['master'] }}"
+  tags: calicoctl
+
+- name: "Copy calicoctl config"
+  template:
+    src: "calicoctl.cfg.j2"
+    dest: "/etc/calico/calicoctl.cfg"
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  loop: "{{ groups['master'] }}"
+  tags: calicoctl

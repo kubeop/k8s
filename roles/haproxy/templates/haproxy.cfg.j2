@@ -1,0 +1,46 @@
+global
+   log /dev/log local0
+   log /dev/log local1 notice
+   chroot      /var/lib/haproxy
+   pidfile     /var/run/haproxy.pid
+   maxconn     4000
+   stats timeout 30s
+   user        haproxy
+   group       haproxy
+   daemon
+   stats socket /var/lib/haproxy/stats
+
+defaults
+    mode                    tcp
+    log                     global
+    option                  httplog
+    option                  dontlognull
+    option                  http-server-close
+    option                  redispatch
+    retries                 3
+    timeout http-request    10s  #默认http请求超时时间
+    timeout queue           1m   #默认队列超时时间
+    timeout connect         10s  #默认连接超时时间
+    timeout client          1m   #默认客户端超时时间
+    timeout server          1m   #默认服务器超时时间
+    timeout http-keep-alive 10s  #默认持久连接超时时间
+    timeout check           10s  #设置心跳检查超时时间
+    maxconn                 50000
+
+frontend http_stats
+   bind *:58080
+   mode http
+   stats uri /haproxy?stats
+
+frontend haproxy_kube
+    bind *:{{loadbalance.port}}
+    mode tcp
+    option tcplog
+    default_backend masters
+
+backend masters
+    mode tcp
+    balance roundrobin
+    {% for host in groups['master'] %}
+    server  {{hostvars[host].hostname}}  {{host}}:6443 check port 6443 inter 1500 rise 1 fall 3 weight 1
+    {% endfor %}

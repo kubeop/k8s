@@ -1,0 +1,687 @@
+---
+- name: "Create certs directory"
+  file:
+    path: "{{ cert.dir }}/{{ item }}"
+    state: directory
+  with_items:
+    - "{{ groups['etcd'] }}"
+    - "{{ groups['master'] }}"
+    - "{{ groups['worker'] }}"
+
+#etcd-ca
+- stat:
+    path: "{{ cert.dir }}/etcd-ca.key"
+  register: etcd_ca_key
+
+- name: "Generate etcd_ca private key"
+  when: not etcd_ca_key.stat.exists
+  openssl_privatekey:
+    path: "{{ cert.dir }}/etcd-ca.key"
+    type: RSA
+    size: "{{ cert.size }}"
+
+- stat:
+    path: "{{ cert.dir }}/etcd-ca.csr"
+  register: etcd_ca_csr
+
+- name: "Generate etcd_ca request"
+  when: not etcd_ca_csr.stat.exists
+  openssl_csr:
+    path: "{{ cert.dir }}/etcd-ca.csr"
+    privatekey_path: "{{ cert.dir }}/etcd-ca.key"
+    use_common_name_for_san: no
+    common_name: etcd-ca
+    create_subject_key_identifier: yes
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+      - keyCertSign
+
+- stat:
+    path: "{{ cert.dir }}/etcd-ca.pem"
+  register: etcd_ca_pem
+
+- name: "Generate etcd_ca certificate"
+  when: not etcd_ca_pem.stat.exists
+  openssl_certificate:
+    path: "{{ cert.dir }}/etcd-ca.pem"
+    provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
+    selfsigned_create_subject_key_identifier: never_create
+    privatekey_path: "{{ cert.dir }}/etcd-ca.key"
+    csr_path: "{{ cert.dir }}/etcd-ca.csr"
+
+# etcd-server
+- name: "Generate etcd-server private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-server request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/etcd-server.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
+    common_name: "{{ item }}"
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+    subject_alt_name:
+      - DNS:localhost
+      - DNS:{{ item }}
+      - IP:127.0.0.1
+      - IP:{{ item }}
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-server certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/etcd-server.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/etcd-server.csr"
+    ownca_path: "{{ cert.dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+# etcd-peer
+- name: "Generate etcd-peer private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-peer request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/etcd-peer.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
+    common_name: "{{ item }}"
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+    subject_alt_name:
+      - DNS:localhost
+      - DNS:{{ item }}
+      - IP:127.0.0.1
+      - IP:{{ item }}
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-peer certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/etcd-peer.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/etcd-peer.csr"
+    ownca_path: "{{ cert.dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+# apiserver-etcd-client
+- name: "Generate apiserver-etcd-client private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver-etcd-client request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
+    organization_name: system:masters
+    common_name: kube-apiserver-etcd-client
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    use_common_name_for_san: no
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver-etcd-client certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.csr"
+    ownca_path: "{{ cert.dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# etcd-healthcheck-client
+- name: "Generate etcd-healthcheck-client private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-healthcheck-client request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
+    organization_name: system:masters
+    common_name: kube-etcd-healthcheck-client
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    use_common_name_for_san: no
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: "Generate etcd-healthcheck-client certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.csr"
+    ownca_path: "{{ cert.dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+#ca
+- stat:
+    path: "{{ cert.dir }}/ca.key"
+  register: ca_key
+
+- name: "Generate CA private key"
+  when: not ca_key.stat.exists
+  openssl_privatekey:
+    path: "{{ cert.dir }}/ca.key"
+    type: RSA
+    size: "{{ cert.size }}"
+
+- stat:
+    path: "{{ cert.dir }}/ca.csr"
+  register: ca_csr
+
+- name: "Generate CA request"
+  when: not ca_csr.stat.exists
+  openssl_csr:
+    path: "{{ cert.dir }}/ca.csr"
+    privatekey_path: "{{ cert.dir }}/ca.key"
+    use_common_name_for_san: no
+    common_name: kubernetes
+    create_subject_key_identifier: yes
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+      - keyCertSign
+
+- stat:
+    path: "{{ cert.dir }}/ca.pem"
+  register: ca_pem
+
+- name: "Generate CA certificate"
+  when: not ca_pem.stat.exists
+  openssl_certificate:
+    path: "{{ cert.dir }}/ca.pem"
+    provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
+    selfsigned_create_subject_key_identifier: never_create
+    privatekey_path: "{{ cert.dir }}/ca.key"
+    csr_path: "{{ cert.dir }}/ca.csr"
+
+# apiserver
+- name: "Generate apiserver private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/apiserver.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Aggregate all SANs"
+  set_fact:
+    apiserver_sans: "{{ (sans_base + groups['master'] + sans_lb + sans_lb_ip + sans_access_ip) | unique }}"
+  vars:
+    sans_base:
+      - "127.0.0.1"
+      - "localhost"
+      - "kubernetes"
+      - "kubernetes.default"
+      - "kubernetes.default.svc"
+      - "kubernetes.default.svc.cluster"
+      - "kubernetes.default.svc.cluster.local"
+      - "{{ kubernetes.serviceSubnet | ansible.utils.ipaddr('net') | ansible.utils.ipaddr(1) | ansible.utils.ipaddr('address') }}"
+    sans_lb: "{{ [loadbalance.domain_name] if loadbalance.domain_name is defined else [] }}"
+    sans_lb_ip: "{{ [loadbalance.ip] if loadbalance.ip is defined else [] }}"
+    sans_access_ip: "{{ loadbalance.access_ip | list if loadbalance.access_ip is defined else [] }}"
+  tags: facts
+
+- name: "Debug all SANs"
+  vars:
+    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
+    apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
+  debug:
+    msg: "{{ apiserver_ips | map('regex_replace', '^(.*)$', 'IP:\\1') | list  +  apiserver_hosts | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
+
+- name: "Generate apiserver request"
+  vars:
+    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
+    apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/apiserver.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
+    common_name: kube-apiserver
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+    subject_alt_name: "{{ apiserver_ips | map('regex_replace', '^(.*)$', 'IP:\\1') | list  +  apiserver_hosts | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/apiserver.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/apiserver.csr"
+    ownca_path: "{{ cert.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# apiserver-kubelet-client
+- name: "Generate apiserver-kubelet-client private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver-kubelet-client request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.key"
+    organization_name: system:masters
+    common_name: kube-apiserver-kubelet-client
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate apiserver-kubelet-client certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.csr"
+    ownca_path: "{{ cert.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# admin
+- name: "Generate admin private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/admin.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate admin request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/admin.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/admin.key"
+    organization_name: system:masters
+    common_name: kubernetes-admin
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    use_common_name_for_san: no
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate admin certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/admin.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/admin.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/admin.csr"
+    ownca_path: "{{ cert.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# controller-manager
+- name: "Generate controller-manager private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate controller-manager request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/controller-manager.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
+    common_name: system:kube-controller-manager
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate controller-manager certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/controller-manager.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/controller-manager.csr"
+    ownca_path: "{{ cert.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# scheduler
+- name: "Generate scheduler private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/scheduler.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate scheduler request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/scheduler.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/scheduler.key"
+    common_name: system:kube-scheduler
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate scheduler certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/scheduler.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/scheduler.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/scheduler.csr"
+    ownca_path: "{{ cert.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# kube-proxy
+- name: "Generate kube-proxy private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['worker'] }}"
+
+- name: "Generate kube-proxy request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/kube-proxy.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
+    common_name: system:kube-proxy
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['worker'] }}"
+
+- name: "Generate kube-proxy certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/kube-proxy.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/kube-proxy.csr"
+    ownca_path: "{{ cert.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['worker'] }}"
+
+
+#front-proxy-ca
+- stat:
+    path: "{{ cert.dir }}/front-proxy-ca.key"
+  register: front_proxy_ca_key
+
+- name: "Generate front proxy CA private key"
+  when: not front_proxy_ca_key.stat.exists
+  openssl_privatekey:
+    path: "{{ cert.dir }}/front-proxy-ca.key"
+    type: RSA
+    size: "{{ cert.size }}"
+
+- stat:
+    path: "{{ cert.dir }}/front-proxy-ca.csr"
+  register: front_proxy_ca_csr
+
+- name: "Generate front proxy CA request"
+  when: not front_proxy_ca_csr.stat.exists
+  openssl_csr:
+    path: "{{ cert.dir }}/front-proxy-ca.csr"
+    privatekey_path: "{{ cert.dir }}/front-proxy-ca.key"
+    use_common_name_for_san: no
+    common_name: front-proxy-ca
+    create_subject_key_identifier: yes
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+      - keyCertSign
+
+- stat:
+    path: "{{ cert.dir }}/front-proxy-ca.pem"
+  register: front_proxy_ca_pem
+
+- name: "Generate front proxy CA certificate"
+  when: not front_proxy_ca_pem.stat.exists
+  openssl_certificate:
+    path: "{{ cert.dir }}/front-proxy-ca.pem"
+    provider: selfsigned
+    selfsigned_not_after: "+{{cert.day}}"
+    selfsigned_create_subject_key_identifier: never_create
+    privatekey_path: "{{ cert.dir }}/front-proxy-ca.key"
+    csr_path: "{{ cert.dir }}/front-proxy-ca.csr"
+
+# front-proxy-client
+- name: "Generate front-proxy-client private key"
+  openssl_privatekey:
+    path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
+    type: RSA
+    size: "{{ cert.size }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate front-proxy-client request"
+  openssl_csr:
+    path: "{{ cert.dir }}/{{ item }}/front-proxy-client.csr"
+    privatekey_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
+    common_name: front-proxy-client
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: "Generate front-proxy-client certificate"
+  openssl_certificate:
+    path: "{{ cert.dir }}/{{ item }}/front-proxy-client.pem"
+    provider: ownca
+    ownca_not_after: "+{{cert.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: no
+    privatekey_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
+    csr_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.csr"
+    ownca_path: "{{ cert.dir }}/front-proxy-ca.pem"
+    ownca_privatekey_path: "{{ cert.dir }}/front-proxy-ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+#sa
+- stat:
+    path: "{{ cert.dir }}/sa.key"
+  register: sa_key
+
+- name: "Generate sa private key"
+  when: not sa_key.stat.exists
+  openssl_privatekey:
+    path: "{{ cert.dir }}/sa.key"
+    type: RSA
+    size: "{{ cert.size }}"
+
+- stat:
+    path: "{{ cert.dir }}/sa.pub"
+  register: sa_pub
+
+- name: "Generate sa pub certificate"
+  when: not sa_pub.stat.exists
+  openssl_publickey:
+    path: "{{ cert.dir }}/sa.pub"
+    privatekey_path: "{{ cert.dir }}/sa.key"
+
+# token
+- stat:
+    path: "{{ cert.dir }}/token"
+  register: token
+
+- name: "Generate bootstrap-token"
+  when: not token.stat.exists
+  shell: echo $(openssl rand -hex 3).$(openssl rand -hex 8)
+  register: bootstrap_token
+
+- name: "Generate bootstrap-token file"
+  when: not token.stat.exists
+  blockinfile:
+    path: "{{ cert.dir }}/token"
+    block: "{{ bootstrap_token.stdout }}"
+    create: true

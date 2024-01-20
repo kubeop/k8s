@@ -1,0 +1,281 @@
+---
+- name: stop service
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+  with_items:
+    - kubelet.service
+    - kube-proxy.service
+  failed_when: false
+  tags: 
+    - stop_service
+
+- name: remove services
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+    - /etc/sysconfig/kubelet
+    - /etc/kubernetes
+    - /usr/lib/systemd/system/kubelet.service
+    - /usr/lib/systemd/system/kube-proxy.service
+    - /usr/bin/kubelet
+    - /usr/bin/kube-proxy
+  register: services_removed
+  tags:
+    - services
+
+- name: systemctl daemon-reload  # noqa no-handler
+  systemd:
+    daemon_reload: true
+  when: services_removed.changed
+
+- name: check if crictl is present
+  stat:
+    path: "/usr/local/bin/crictl"
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: crictl
+
+- name: stop all cri containers
+  shell: "set -o pipefail && /usr/local/bin/crictl ps -q | xargs -r /usr/local/bin/crictl -t 60s stop"
+  args:
+    executable: /bin/bash
+  register: remove_all_cri_containers
+  retries: 5
+  until: remove_all_cri_containers.rc == 0
+  delay: 5
+  tags:
+    - containerd
+  when:
+    - crictl.stat.exists
+    - ansible_facts.services['containerd.service'] is defined
+  ignore_errors: true  # noqa ignore-errors
+
+- name: force remove all cri containers
+  command: "/usr/local/bin/crictl rm -a -f"
+  register: remove_all_cri_containers
+  retries: 5
+  until: remove_all_cri_containers.rc == 0
+  delay: 5
+  tags:
+    - containerd
+  when:
+    - crictl.stat.exists
+    - ansible_facts.services['containerd.service'] is defined
+  ignore_errors: true  # noqa ignore-errors
+
+- name: stop all cri pods
+  shell: "set -o pipefail && /usr/local/bin/crictl pods -q | xargs -r /usr/local/bin/crictl -t 60s stopp"
+  args:
+    executable: /bin/bash
+  register: remove_all_cri_containers
+  retries: 5
+  until: remove_all_cri_containers.rc == 0
+  delay: 5
+  tags: [ containerd ]
+  when:
+    - crictl.stat.exists
+    - ansible_facts.services['containerd.service'] is defined
+  ignore_errors: true  # noqa ignore-errors
+
+- name: force remove all cri pods
+  block:
+    - name: force remove all cri pods
+      command: "/usr/local/bin/crictl rmp -a -f"
+      register: remove_all_cri_containers
+      retries: 5
+      until: remove_all_cri_containers.rc == 0
+      delay: 5
+      tags: [ containerd ]
+      when:
+        - crictl.stat.exists
+        - ansible_facts.services['containerd.service'] is defined
+
+  rescue:
+    - name: force remove all cri pods (rescue)
+      shell: "ip netns list | cut -d' ' -f 1 | xargs -n1 ip netns delete && /usr/local/bin/crictl rmp -a -f"
+      ignore_errors: true  # noqa ignore-errors
+      changed_when: true
+
+- name: stop containerd
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+  with_items:
+    - containerd.service
+  failed_when: false
+  tags: 
+    - stop_containerd
+
+- name: remove containerd
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /usr/lib/systemd/system/containerd.service
+    - /etc/containerd/config.toml
+    - /etc/crictl.yaml
+    - /usr/local/bin/crictl
+  register: containerd_removed
+  tags:
+    - remove_containerd
+
+- name: gather mounted kubelet dirs
+  shell: set -o pipefail && mount | grep /var/lib/kubelet/ | awk '{print $3}' | tac
+  args:
+    executable: /bin/bash
+  check_mode: no
+  register: mounted_dirs
+  failed_when: false
+  changed_when: false
+  tags:
+    - mounts
+
+- name: unmount kubelet dirs
+  command: umount -f {{ item }}
+  with_items: "{{ mounted_dirs.stdout_lines }}"
+  register: umount_dir
+  when: mounted_dirs
+  retries: 4
+  until: umount_dir.rc == 0
+  delay: 5
+  tags:
+    - mounts
+
+- name: Flush iptables
+  iptables:
+    table: "{{ item }}"
+    flush: yes
+  with_items:
+    - filter
+    - nat
+    - mangle
+    - raw
+  when: flush_iptables | bool
+  tags:
+    - iptables
+
+- name: Flush ip6tables
+  iptables:
+    table: "{{ item }}"
+    flush: yes
+    ip_version: ipv6
+  with_items:
+    - filter
+    - nat
+    - mangle
+    - raw
+  when: flush_iptables | bool and enable_dual_stack_networks
+  tags:
+    - ip6tables
+
+- name: Clear IPVS virtual server table
+  command: "ipvsadm -C"
+  ignore_errors: true  # noqa ignore-errors
+  when:
+    - inventory_hostname in groups['worker']
+
+- name: check kube-ipvs0 network device
+  stat:
+    path: /sys/class/net/kube-ipvs0
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: kube_ipvs0
+
+- name: Remove kube-ipvs0
+  command: "ip link del kube-ipvs0"
+  when:
+    - kube_ipvs0.stat.exists
+
+- name: check nodelocaldns network device
+  stat:
+    path: /sys/class/net/nodelocaldns
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: nodelocaldns_device
+
+- name: Remove nodelocaldns
+  command: "ip link del nodelocaldns"
+  when:
+    - nodelocaldns.enabled | default(false) | bool
+    - nodelocaldns_device.stat.exists
+
+- name: Check whether /var/lib/kubelet directory exists
+  stat:
+    path: /var/lib/kubelet
+    get_attributes: no
+    get_checksum: no
+    get_mime: no
+  register: var_lib_kubelet_directory
+
+- name: Find files/dirs with immutable flag in /var/lib/kubelet
+  command: lsattr -laR /var/lib/kubelet
+  become: true
+  register: var_lib_kubelet_files_dirs_w_attrs
+  changed_when: false
+  no_log: true
+  when: var_lib_kubelet_directory.stat.exists
+
+- name: Remove immutable flag from files/dirs in /var/lib/kubelet
+  file:
+    path: "{{ filedir_path }}"
+    state: touch
+    attributes: "-i"
+    mode: 0644
+  loop: "{{ var_lib_kubelet_files_dirs_w_attrs.stdout_lines | select('search', 'Immutable') | list }}"
+  loop_control:
+    loop_var: file_dir_line
+    label: "{{ filedir_path }}"
+  vars:
+    filedir_path: "{{ file_dir_line.split(' ')[0] }}"
+  when: var_lib_kubelet_directory.stat.exists
+
+- name: delete some files and directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ kubernetes.kubelet_dir }}"
+    - "{{ containerd.root }}"
+    - "{{ ansible_env.HOME | default('/root') }}/.kube"
+    - /var/log/kubernetes
+    - /etc/cni
+    - /opt/cni
+    - /run/flannel
+    - /etc/flannel
+    - /var/log/pods/
+    - /var/lib/cni
+    - /var/lib/kube-router
+    - /var/lib/calico
+    - /etc/cilium
+    - /run/calico
+    - /etc/bash_completion.d/kubectl.sh
+    - /etc/bash_completion.d/crictl
+    - /usr/libexec/kubernetes
+  ignore_errors: true  # noqa ignore-errors
+  tags:
+    - files
+
+- name: remove containerd binary files
+  file:
+    path: "/usr/local/bin/{{ item }}"
+    state: absent
+  with_items:
+    - containerd
+    - containerd-shim
+    - containerd-shim-runc-v1
+    - containerd-shim-runc-v2
+    - containerd-stress
+    - crictl
+    - critest
+    - ctd-decoder
+    - ctr
+    - runc
+  ignore_errors: true  # noqa ignore-errors
+  tags:
+    - files

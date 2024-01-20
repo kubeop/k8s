@@ -1,0 +1,14 @@
+---
+- name: "Generate metrics-server yaml"
+  template:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+  with_items:
+    - {src: "metrics-server.yaml.j2", dest: "/tmp/metrics-server.yaml"}
+  tags: metrics-server
+
+- name: "Deploy metrics-server"
+  shell: "kubectl apply -f /tmp/metrics-server.yaml"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: metrics-server

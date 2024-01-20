@@ -1,0 +1,188 @@
+# Download offline package
+download:
+  # 离线包保存目录，节点安装包从该目录拷贝
+  dest: /data/mirrors/k8s/
+  # 下载超时时间
+  timeout: 60
+  # 重试次数
+  retries: 4
+  # 重试的时间间隔
+  retry_stagger: 5
+
+# Kubernetes Cert
+cert:
+  # 签发集群整数保存目录，默认签发10年有限期证书
+  dir: /opt/certs
+  # 签发证书大小
+  size: 2048
+  # 签发证书的时间
+  day: 3650d
+
+# https://github.com/etcd-io/etcd
+etcd:
+  # etcd 版本
+  version: v3.5.11
+  # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
+  data_dir: "/var/lib/etcd"
+
+# High Availability
+# kube-apiserver负载均衡的信息
+# 如使用haproxy + keepalived请填写VIP及端口
+# 如使用公有云负载均衡请填写负载均衡IP及端口（需再安装之前自行配置）
+# 如使用域名，需提前配置解析。不使用域名时，请注释掉
+# 如使用haproxy + keepalived ，并且跟master节点部署在一起时，请修改port以避免端口冲突
+loadbalance:
+  ip: 172.16.90.100
+  port: 6443
+  # domain_name: apiserver.kubeop.com
+  # access_ip:
+  #   - 172.16.90.100
+
+# https://github.com/kubernetes/kubernetes
+kubernetes:
+  # kubernetes 版本
+  version: v1.28.5
+  # 集群Pod网段
+  podSubnet: 10.64.0.0/12
+  # 节点Pod网段掩码大小
+  maskSize: 25
+  # 集群Service网段
+  serviceSubnet: 192.168.0.0/16
+  # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
+  kubelet_dir: "/var/lib/kubelet"
+  # 节点最大Pod数量
+  kubelet_max_pods: 110
+  # 配置kube-proxy的ipvs调度策略，支持rr(轮询),wrr(加权轮训),lc(最少连接数),wlc(加权最少连接数),sh(源地址哈希),dh(目标地址哈希),sed(最短预期延迟),nq(最少队列)
+  scheduler: rr
+
+# https://github.com/opencontainers/runc
+runc:
+  # runc 版本
+  version: v1.1.10
+
+# https://github.com/containernetworking/plugins
+cniplugins:
+  # cni-plugins 版本
+  version: v1.4.0
+
+# https://github.com/kubernetes-sigs/cri-tools
+critools:
+  # cri-tools 版本
+  version: v1.29.0
+
+# https://github.com/containerd/containerd
+containerd:
+  # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
+  version: 1.6.26
+  # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
+  root: "/var/lib/containerd"
+  # containerd 临时数据目录
+  state: "/run/containerd"
+  # containerd oom_score
+  oom_score: -999
+  grpc:
+    max_recv_message_size: 16777216
+    max_send_message_size: 16777216
+  debug:
+    level: ""
+  metrics:
+    address: ""
+    grpc_histogram: false
+  cri:
+    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.9"
+    max_concurrent_downloads: 3
+    max_container_log_line_size: -1
+  containerd:
+    snapshotter: overlayfs
+  options:
+    SystemdCgroup: true
+  registries:
+    "docker.io": "https://registry-1.docker.io"
+    "k8s.gcr.io": "https://k8s-gcr-io.mirrors.sjtug.sjtu.edu.cn"
+
+# Network Plugin
+network_plugin: calico
+# cilium need linux kernel >= 4.9.17
+cilium:
+  # https://github.com/cilium/cilium
+  version: v1.13.4
+  # {{cilium.registry}}/operator-generic:{{cilium.version}}
+  # {{cilium.registry}}/cilium:{{cilium.version}}
+  registry: dockerproxy.com/cilium
+  # "disabled" or "vxlan" or "geneve"
+  network_mode: vxlan
+
+flannel:
+  # https://github.com/flannel-io/flannel
+  version: v0.22.0
+  plugin_version: v1.1.0
+  # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
+  # {{flannel.registry}}/flannel:{{flannel.version}}
+  registry: dockerproxy.com/flannel
+  # "vxlan" or "host-gw"
+  network_mode: vxlan
+  # 运行参数
+  args:
+    - "--ip-masq"
+    - "--kube-subnet-mgr"
+  # 当主机位于同一子网上时启用直接路由
+  directRouting: false
+  # 传出数据包的所需 MTU，如果未定义，则使用外部接口的 MTU。
+  # mtu: 1500
+
+calico:
+  # https://github.com/projectcalico/calico
+  version: v3.26.1
+  # {{calico.registry}}/kube-controllers:{{calico.version}}
+  # {{calico.registry}}/node:{{calico.version}}
+  # {{calico.registry}}/cni:{{calico.version}}
+  registry: dockerproxy.com/calico
+  # "ipip" or "bgp" or "mix"
+  network_mode: ipip
+  # mtu 默认为0，表示自动自动检测
+  mtu: 0
+  # 可指定网卡或使用can-reach=网关
+  ip_autodetection_method: interface=eth0
+
+kuberouter:
+  # https://github.com/cloudnativelabs/kube-router
+  version: v1.5.4
+  # {{kube-router.registry}}/kube-router
+  registry: dockerproxy.com/cloudnativelabs
+  # Setups node CNI to allow hairpin mode, requires node reboots, see
+  # https://github.com/cloudnativelabs/kube-router/blob/master/docs/user-guide.md#hairpin-mode
+  # 即让Pod可以通过Service访问自己
+  hairpin_mode: true
+  # 启用Pod网络，通过iBGP通告和学习到Pod的路由
+  run_router: true
+  # 启用网络策略，设置iptables为Pod提供入口防火墙
+  run_firewall: true
+  # 启用服务代理，为Kubernetes服务设置IPVS
+  run_service_proxy: false
+
+# Addons
+coredns:
+  version: 1.10.1
+  # {{coredns.registry}}/coredns:{{coredns.version}}
+  registry: dockerproxy.com/coredns
+nodelocaldns:
+  enabled: true
+  version: 1.22.23
+  # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
+  registry: k8s.dockerproxy.com/dns
+  ip: 169.254.20.10
+metrics_server:
+  enabled: true
+  version: v0.6.3
+  # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
+  registry: k8s.dockerproxy.com/metrics-server
+npd:
+  enabled: false
+  version: v0.8.13
+  # {{npd.registry}}/node-problem-detector:{{npd.version}}
+  registry: k8s.dockerproxy.com/node-problem-detector
+nvidia_device_plugin:
+  enabled: false
+  version: v0.14.1
+  # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
+  registry: nvcr.io/nvidia

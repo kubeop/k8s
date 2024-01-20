@@ -1,0 +1,9 @@
+apiVersion: projectcalico.org/v3
+kind: CalicoAPIConfig
+metadata:
+spec:
+  datastoreType: "etcdv3"
+  etcdEndpoints: "{% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
+  etcdKeyFile: /etc/etcd/pki/etcd-healthcheck-client.key
+  etcdCertFile: /etc/etcd/pki/etcd-healthcheck-client.pem
+  etcdCACertFile: /etc/etcd/pki/etcd-ca.pem

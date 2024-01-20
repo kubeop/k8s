@@ -1,0 +1,12 @@
+---
+- name: "Install haproxy"
+  package:
+    name: haproxy
+    state: present
+
+- name: "Generate haproxy.cfg"
+  template:
+    src: "haproxy.cfg.j2"
+    dest: "/etc/haproxy/haproxy.cfg"
+  notify:
+    - restart haproxy

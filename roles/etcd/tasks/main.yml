@@ -1,0 +1,75 @@
+---
+- name: "Create etcd user group"
+  group:
+    name: etcd
+    gid: 201
+    system: yes
+
+- name: Create etcd user
+  user:
+    name: etcd
+    uid: 201
+    group: etcd
+    comment: "Etcd User"
+    createhome: no
+    home: "{{ etcd.data_dir }}"
+    shell: /sbin/nologin
+    system: yes
+
+- name: "Download etcd"
+  unarchive:
+    src: "{{ download.dest }}/etcd/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-amd64.tar.gz"
+    dest: /tmp/
+    remote_src: no
+  tags: install_etcd
+
+- name: "Install etcd"
+  copy:
+    src: "{{ item.src }}"
+    dest: "/usr/bin/"
+    owner: etcd
+    group: etcd
+    mode: 0750
+    remote_src: yes
+  with_items:
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcd"}
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdctl"}
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdutl"}
+  tags: install_etcd
+
+- name: "Distribution certs"
+  copy:
+    src: "{{ item.line }}"
+    dest: "/etc/etcd/pki/"
+    owner: etcd
+    group: etcd
+    mode: 0640
+  with_items:
+    - {line: '{{ cert.dir }}/etcd-ca.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-server.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-server.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.key'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.pem'}
+    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.key'}
+  tags:
+    - dis_etcd_certs
+    - dis_certs
+
+- name: "Create etcd data directory"
+  file:
+    path: "{{ etcd.data_dir }}"
+    owner: etcd
+    group: etcd
+    mode: 0700
+    state: directory
+  notify:
+    - restart etcd
+    
+- name: "Generate etcd configure"
+  template:
+    src: "etcd.service.j2"
+    dest: "/usr/lib/systemd/system/etcd.service"
+  tags: dis_etcd_config
+  notify:
+    - restart etcd

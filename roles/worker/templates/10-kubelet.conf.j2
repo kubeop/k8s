@@ -1,0 +1,13 @@
+KUBELET_ARGS="\
+    --hostname-override={{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }} \
+    --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
+    --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
+    --config=/etc/kubernetes/kubelet.conf \
+    --runtime-cgroups=/system.slice/containerd.service \
+{% if kubernetes.version | regex_replace('v') is version("1.28.0","le") %}
+    --container-runtime-endpoint=unix://{{containerd.state}}/containerd.sock \
+    --image-service-endpoint=unix://{{containerd.state}}/containerd.sock \
+{% endif %}
+    --cert-dir=/etc/kubernetes/pki \
+    --root-dir={{ kubernetes.kubelet_dir | default("/var/lib/kubelet") }} \
+    --v=2"

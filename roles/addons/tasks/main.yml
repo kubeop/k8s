@@ -1,0 +1,24 @@
+---
+- import_tasks: coredns.yml
+  tags:
+    - coredns
+
+- import_tasks: nodelocaldns.yml
+  when: nodelocaldns.enabled == true
+  tags:
+    - nodelocaldns
+
+- import_tasks: metrics-server.yml
+  when: metrics_server.enabled == true
+  tags:
+    - metrics-server
+
+- import_tasks: node-problem-detector.yml
+  when: npd.enabled == true
+  tags:
+    - node-problem-detector
+
+- import_tasks: nvidia-device-plugin.yml
+  when: nvidia_device_plugin.enabled == true
+  tags:
+    - nvidia_device_plugin
