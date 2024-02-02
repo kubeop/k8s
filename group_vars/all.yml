@@ -52,6 +52,8 @@ kubernetes:
   kubelet_dir: "/var/lib/kubelet"
   # 节点最大Pod数量
   kubelet_max_pods: 110
+  # kube-proxy模式，支持iptables和ipvs
+  kube_proxy_mode: ipvs
   # 配置kube-proxy的ipvs调度策略，支持rr(轮询),wrr(加权轮训),lc(最少连接数),wlc(加权最少连接数),sh(源地址哈希),dh(目标地址哈希),sed(最短预期延迟),nq(最少队列)
   scheduler: rr
 
