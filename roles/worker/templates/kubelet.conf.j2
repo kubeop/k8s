@@ -27,7 +27,7 @@ containerLogMaxSize: 200Mi
 containerLogMaxFiles: 10
 maxPods: {{ kubernetes.kubelet_max_pods | default(110) }}
 evictionHard:
-  imagefs.available: 15%
+  imagefs.available: 10%
   memory.available: 500Mi
   nodefs.available: 10%
   nodefs.inodesFree: 5%
@@ -37,8 +37,8 @@ httpCheckFrequency: 20s
 healthzBindAddress: 0.0.0.0
 healthzPort: 10248
 imageMinimumGCAge: 2m
-imageGCHighThresholdPercent: 90
-imageGCLowThresholdPercent: 85
+imageGCHighThresholdPercent: 85
+imageGCLowThresholdPercent: 80
 rotateCertificates: true
 runtimeRequestTimeout: 2m
 staticPodPath: /etc/kubernetes/manifests
