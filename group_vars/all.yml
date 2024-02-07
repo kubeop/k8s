@@ -21,7 +21,7 @@ cert:
 # https://github.com/etcd-io/etcd
 etcd:
   # etcd 版本
-  version: v3.5.11
+  version: v3.5.12
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -41,7 +41,7 @@ loadbalance:
 # https://github.com/kubernetes/kubernetes
 kubernetes:
   # kubernetes 版本
-  version: v1.28.5
+  version: v1.29.1
   # 集群Pod网段
   podSubnet: 10.64.0.0/12
   # 节点Pod网段掩码大小
@@ -60,7 +60,7 @@ kubernetes:
 # https://github.com/opencontainers/runc
 runc:
   # runc 版本
-  version: v1.1.10
+  version: v1.1.12
 
 # https://github.com/containernetworking/plugins
 cniplugins:
@@ -75,7 +75,7 @@ critools:
 # https://github.com/containerd/containerd
 containerd:
   # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
-  version: 1.6.26
+  version: 1.6.28
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -107,7 +107,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.13.4
+  version: v1.14.6
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: dockerproxy.com/cilium
@@ -116,8 +116,8 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.22.0
-  plugin_version: v1.1.0
+  version: v0.24.2
+  plugin_version: v1.2.0
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: dockerproxy.com/flannel
@@ -134,7 +134,7 @@ flannel:
 
 calico:
   # https://github.com/projectcalico/calico
-  version: v3.26.1
+  version: v3.27.0
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
@@ -164,12 +164,12 @@ kuberouter:
 
 # Addons
 coredns:
-  version: 1.10.1
+  version: 1.11.1
   # {{coredns.registry}}/coredns:{{coredns.version}}
   registry: dockerproxy.com/coredns
 nodelocaldns:
   enabled: true
-  version: 1.22.23
+  version: 1.22.28
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
   registry: k8s.dockerproxy.com/dns
   ip: 169.254.20.10
@@ -185,6 +185,6 @@ npd:
   registry: k8s.dockerproxy.com/node-problem-detector
 nvidia_device_plugin:
   enabled: false
-  version: v0.14.1
+  version: v0.14.4
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: nvcr.io/nvidia
