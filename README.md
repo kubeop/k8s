@@ -7,6 +7,7 @@
 - Debian 12
 
 
+
 ## 支持组件
 
 - Core
@@ -32,13 +33,24 @@
 
 ### 安装Ansible
 
+请根据下表安装合适的Python版本和Ansible版本
+
+| Python | Ansible  |
+| ------ | -------- |
+| >=3.9  | >=2.15.5 |
+
+
+
+安装Ansible示例
+
 ```shell
 pip3 install ansible -i https://mirrors.ustc.edu.cn/pypi/web/simple
 pip3 install netaddr -i https://mirrors.ustc.edu.cn/pypi/web/simple
 ```
 
-- 如使用Python3，请在ansible.cfg的defaults配置下添加`interpreter_python = /usr/bin/python3`。
+- 请使用对应Python版本的pip安装ansible和netaddr。
 - 控制节点和被控节点Python版本尽量保持一致，否则执行可能出现问题。
+- 更详细的版本支持矩阵，请参考：https://docs.ansible.com/ansible-core/devel/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
 
 
 
