@@ -257,6 +257,25 @@ subjects:
   name: calico-cni-plugin
   namespace: kube-system
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: calico-node
+  name: calico-node
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+  - name: metrics
+    port: 9091
+    protocol: TCP
+    targetPort: 9091
+  selector:
+    k8s-app: calico-node
+  sessionAffinity: None
+  type: ClusterIP
+---
 # Source: calico/templates/calico-node.yaml
 # This manifest installs the calico-node container, as well
 # as the CNI plugins and network config on
@@ -582,6 +601,25 @@ spec:
           hostPath:
             type: DirectoryOrCreate
             path: /var/run/nodeagent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    k8s-app: calico-kube-controllers
+  name: calico-kube-controllers
+  namespace: kube-system
+spec:
+  clusterIP: None
+  ports:
+  - name: metrics
+    port: 9094
+    protocol: TCP
+    targetPort: 9094
+  selector:
+    k8s-app: calico-kube-controllers
+  sessionAffinity: None
+  type: ClusterIP
 ---
 # Source: calico/templates/calico-kube-controllers.yaml
 # See https://github.com/projectcalico/kube-controllers
