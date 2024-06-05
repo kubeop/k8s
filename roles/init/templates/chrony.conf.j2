@@ -1,0 +1,18 @@
+# {{ ansible_managed }}
+{% for server in ntp.servers %}
+server {{ server }}
+{% endfor %}
+
+# Record the rate at which the system clock gains/losses time.
+driftfile /var/lib/chrony/drift
+# Enable kernel RTC synchronization.
+rtcsync
+# Allow the system clock to be stepped in the first three updates
+# if its offset is larger than 1 second.
+makestep 1.0 3
+# Disable logging of client accesses.
+noclientlog
+# Send a message to syslog if a clock adjustment is larger than 0.5 seconds.
+logchange 0.5
+# Specify directory for log files.
+logdir /var/log/chrony

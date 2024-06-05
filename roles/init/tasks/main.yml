@@ -12,35 +12,30 @@
   tags: os_env
 
 - name: "Set timezone"
-  timezone:
+  community.general.timezone:
     name: Asia/Shanghai
+  tags: timezone
 
 - name: "Install chrony"
   package:
     name: chrony
     state: present
-  when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
   tags: ntp
 
-- name: "Set chrony.service"
-  copy:
-    src: "chrony.conf"
+- name: "Generate NTP configuration file"
+  template:
+    src: "chrony.conf.j2"
     dest: "/etc/chrony.conf"
-  notify:
-    - restart chrony
   when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+    - ntp.manage_config
   tags: ntp
 
-- name: "Set systemd-timesyncd.service"
-  copy:
-    src: "timesyncd.conf"
-    dest: "/etc/systemd/timesyncd.conf"
-  notify:
-    - restart systemd-timesyncd
-  when:
-    - ansible_os_family in ["Debian"]
+- name: Ensure NTP service is started and enabled
+  systemd:
+     name: chronyd
+     state: restarted
+     enabled: yes
+     masked: false
   tags: ntp
 
 - name: "Disable swap"
@@ -94,42 +89,6 @@
   notify:
     - restart sshd
   tags: sshd
-
-- name: "Set password expiration time"
-  lineinfile:
-    dest: "/etc/login.defs"
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - { regexp: "PASS_MIN_DAYS", line: "PASS_MIN_DAYS 0" }
-    - { regexp: "PASS_MAX_DAYS", line: "PASS_MAX_DAYS 99999" }
-  tags: passwd
-
-- name: "Set password complexity"
-  lineinfile:
-    dest: "/etc/security/pwquality.conf"
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - { regexp: "minlen", line: "minlen=10" }
-    - { regexp: "minclass", line: "minclass=3" }
-  when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
-  tags: passwd
-
-- name: "Set password remember"
-  replace:
-    path: "{{ item.path }}"
-    regexp: "use_authtok$"
-    replace: "use_authtok remember=5"
-  with_items:
-    - { path: "/etc/pam.d/password-auth" }
-    - { path: "/etc/pam.d/system-auth" }
-  when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
-  tags: passwd
 
 - name: "Set limits"
   pam_limits:

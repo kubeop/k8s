@@ -481,7 +481,7 @@ spec:
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
             - name: CALICO_IPV4POOL_CIDR
-              value: "{{ kubernetes.podSubnet }}"
+              value: "{{ kubernetes.pods_subnet }}"
             - name: IP_AUTODETECTION_METHOD
               value: "{{calico.ip_autodetection_method}}"
             # Disable file logging so `kubectl logs` works.

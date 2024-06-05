@@ -19,8 +19,3 @@ dependencies:
     when: network_plugin == 'kuberouter'
     tags:
       - kuberouter
-
-  - role: network-plugins/macvlan
-    when: network_plugin == 'macvlan'
-    tags:
-      - macvlan

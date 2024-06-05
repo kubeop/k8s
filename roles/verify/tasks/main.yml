@@ -24,7 +24,7 @@
 
     - name: Get currently configured nameservers
       set_fact:
-        configured_nameservers: "{{ resolvconf_slurp.content | b64decode | regex_findall('^nameserver\\s*(\\S*)', multiline=True) | ansible.utils.ipaddr }}"
+        configured_nameservers: "{{ resolvconf_slurp.content | b64decode | regex_findall('^nameserver\\s*(\\S*)', multiline=True) | ipaddr }}"
       when: resolvconf_slurp.content is defined
 
 - name: Stop if /etc/resolv.conf not configured nameservers
@@ -86,30 +86,30 @@
   when:
     - network_plugin == 'cilium'
 
-- name: "Check that serviceSubnet is a network range"
+- name: "Check that service_addresses is a network range"
   assert:
     that:
-      - kubernetes.serviceSubnet | ansible.utils.ipaddr('net')
-    msg: "kubernetes.serviceSubnet = '{{ kubernetes.serviceSubnet }}' is not a valid network range"
+      - kubernetes.service_addresses | ipaddr('net')
+    msg: "kubernetes.service_addresses = '{{ kubernetes.service_addresses }}' is not a valid network range"
   run_once: yes
 
-- name: "Check that podSubnet is a network range"
+- name: "Check that pods_subnet is a network range"
   assert:
     that:
-      - kubernetes.podSubnet | ansible.utils.ipaddr('net')
-    msg: "kubernetes.podSubnet = '{{ kubernetes.podSubnet }}' is not a valid network range"
+      - kubernetes.pods_subnet | ipaddr('net')
+    msg: "kubernetes.pods_subnet = '{{ kubernetes.pods_subnet }}' is not a valid network range"
   run_once: yes
 
-- name: "Check that podSubnet does not collide with serviceSubnet"
+- name: "Check that pods_subnet does not collide with service_addresses"
   assert:
     that:
-      - kubernetes.podSubnet | ansible.utils.ipaddr(kubernetes.serviceSubnet) | string == 'None'
-    msg: "podSubnet cannot be the same network segment as serviceSubnet"
+      - kubernetes.pods_subnet | ipaddr(kubernetes.service_addresses) | string == 'None'
+    msg: "pods_subnet cannot be the same network segment as service_addresses"
   run_once: yes
 
 - name: "Guarantee that enough network address space is available for all pods"
   assert:
-    that: "{{ (kubernetes.kubelet_max_pods | default(110)) | int <= (2 ** (32 - kubernetes.maskSize | int)) - 2 }}"
+    that: "{{ (kubernetes.kubelet_max_pods | default(110)) | int <= (2 ** (32 - kubernetes.node_prefix | int)) - 2 }}"
     msg: "Do not schedule more pods on a node than inet addresses are available."
   when: network_plugin != 'calico'
   run_once: yes

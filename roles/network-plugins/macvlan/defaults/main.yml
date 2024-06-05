@@ -1,2 +1,0 @@
-macvlan_interface: eth0
-enable_nat_default_gateway: true

@@ -5,7 +5,7 @@ hostnameOverride: "{{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{
 clientConnection:
   contentType: application/vnd.kubernetes.protobuf
   kubeconfig: /etc/kubernetes/proxy.kubeconfig
-clusterCIDR: {{ kubernetes.podSubnet }}
+clusterCIDR: {{ kubernetes.pods_subnet }}
 configSyncPeriod: 0s
 conntrack:
   maxPerCore: 32768
@@ -20,7 +20,7 @@ iptables:
 ipvs:
   minSyncPeriod: 2s
   scheduler: {{ kubernetes.scheduler | default("rr") }}
-  strictARP: false
+  strictARP: {{ kubernetes.strict_arp }}
   syncPeriod: 30s
 metricsBindAddress: {{ ansible_default_ipv4.address }}:10249
 nodePortAddresses: null

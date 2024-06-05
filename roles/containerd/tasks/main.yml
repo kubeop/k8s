@@ -26,14 +26,13 @@
     description: "{{ item.description}}"
     file: nvidia-container-toolkit
     baseurl: "{{ item.baseurl }}"
-    repo_gpgcheck: yes
-    gpgcheck: yes
-    gpgkey: "{{ item.gpgkey }}"
+    repo_gpgcheck: no
+    gpgcheck: no
     sslverify: yes
     sslcacert: "/etc/pki/tls/certs/ca-bundle.crt"
     enabled: yes
   with_items:
-    - { name: "nvidia-container-toolkit",description: "nvidia-container-toolkit",baseurl: "https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch",gpgkey: "https://nvidia.github.io/libnvidia-container/gpgkey" }
+    - { name: "nvidia-container-toolkit",description: "nvidia-container-toolkit",baseurl: "{{ repo.nvidia_container_toolkit_centos }}" }
   when:
     - gpu is defined and gpu == 'true'
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
@@ -41,7 +40,7 @@
 
 - name: "Add nvidia-container-toolkit repository"
   apt_repository:
-    repo: "deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
+    repo: "{{ repo.nvidia_container_toolkit_ubuntu }}"
     filename: nvidia-container-toolkit
     state: present
   when:

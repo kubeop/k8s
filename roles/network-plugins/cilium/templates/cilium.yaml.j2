@@ -190,8 +190,8 @@ data:
   hubble-tls-key-file: /var/lib/cilium/tls/hubble/server.key
   hubble-tls-client-ca-files: /var/lib/cilium/tls/hubble/client-ca.crt
   ipam: "cluster-pool"
-  cluster-pool-ipv4-cidr: "{{ kubernetes.podSubnet }}"
-  cluster-pool-ipv4-mask-size: "{{ kubernetes.maskSize }}"
+  cluster-pool-ipv4-cidr: "{{ kubernetes.pods_subnet }}"
+  cluster-pool-ipv4-mask-size: "{{ kubernetes.node_prefix }}"
   disable-cnp-status-updates: "true"
   enable-vtep: "false"
   vtep-endpoint: ""

@@ -1,13 +1,29 @@
 # Download offline package
 download:
   # 离线包保存目录，节点安装包从该目录拷贝
-  dest: /data/mirrors/k8s/
+  dest: /data/web/mirrors/k8s/
   # 下载超时时间
   timeout: 60
   # 重试次数
   retries: 4
   # 重试的时间间隔
   retry_stagger: 5
+
+# NTP Settings
+ntp:
+  # 需要自定义NTP服务器时需设置为true
+  manage_config: false
+  servers:
+    - "ntp1.aliyun.com iburst"
+    - "ntp2.aliyun.com iburst"
+    - "ntp3.aliyun.com iburst"
+    - "ntp4.aliyun.com iburst"
+
+# Repository 软件源
+repo:
+  # 建议使用nexus配置代理使用
+  nvidia_container_toolkit_centos: "https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch"
+  nvidia_container_toolkit_ubuntu: "deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
 
 # Kubernetes Cert
 cert:
@@ -21,7 +37,7 @@ cert:
 # https://github.com/etcd-io/etcd
 etcd:
   # etcd 版本
-  version: v3.5.12
+  version: v3.5.13
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -41,21 +57,23 @@ loadbalance:
 # https://github.com/kubernetes/kubernetes
 kubernetes:
   # kubernetes 版本
-  version: v1.29.1
+  version: v1.30.1
   # 集群Pod网段
-  podSubnet: 10.64.0.0/12
-  # 节点Pod网段掩码大小
-  maskSize: 25
+  pods_subnet: 10.64.0.0/12
   # 集群Service网段
-  serviceSubnet: 192.168.0.0/16
-  # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
-  kubelet_dir: "/var/lib/kubelet"
+  service_addresses: 192.168.0.0/16
+  # 节点Pod网段掩码大小
+  node_prefix: 25
   # 节点最大Pod数量
   kubelet_max_pods: 110
+  # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
+  kubelet_dir: "/var/lib/kubelet"
   # kube-proxy模式，支持iptables和ipvs
   kube_proxy_mode: ipvs
   # 配置kube-proxy的ipvs调度策略，支持rr(轮询),wrr(加权轮训),lc(最少连接数),wlc(加权最少连接数),sh(源地址哈希),dh(目标地址哈希),sed(最短预期延迟),nq(最少队列)
   scheduler: rr
+  # 使用 MetalLB、kube-vip 必须设置为 true 才能正常工作
+  strict_arp: false
 
 # https://github.com/opencontainers/runc
 runc:
@@ -65,17 +83,17 @@ runc:
 # https://github.com/containernetworking/plugins
 cniplugins:
   # cni-plugins 版本
-  version: v1.4.0
+  version: v1.4.1
 
 # https://github.com/kubernetes-sigs/cri-tools
 critools:
   # cri-tools 版本
-  version: v1.29.0
+  version: v1.30.0
 
 # https://github.com/containerd/containerd
 containerd:
   # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
-  version: 1.6.28
+  version: 1.6.33
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -100,27 +118,27 @@ containerd:
     SystemdCgroup: true
   registries:
     "docker.io": "https://registry-1.docker.io"
-    "k8s.gcr.io": "https://k8s-gcr-io.mirrors.sjtug.sjtu.edu.cn"
+    "registry.k8s.io": "https://registry.k8s.io"
 
 # Network Plugin
 network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.14.6
+  version: v1.15.4
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
-  registry: dockerproxy.com/cilium
+  registry: m.daocloud.io/docker.io/cilium
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.24.2
-  plugin_version: v1.2.0
+  version: v0.25.1
+  plugin_version: v1.4.1-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
-  registry: dockerproxy.com/flannel
+  registry: m.daocloud.io/docker.io/flannel
   # "vxlan" or "host-gw"
   network_mode: vxlan
   # 运行参数
@@ -134,23 +152,23 @@ flannel:
 
 calico:
   # https://github.com/projectcalico/calico
-  version: v3.27.0
+  version: v3.27.3
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
-  registry: dockerproxy.com/calico
+  registry: m.daocloud.io/docker.io/calico
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
   # mtu 默认为0，表示自动自动检测
   mtu: 0
-  # 可指定网卡或使用can-reach=网关
+  # 可指定网卡interface=eth.*或使用can-reach=网关
   ip_autodetection_method: interface=eth0
 
 kuberouter:
   # https://github.com/cloudnativelabs/kube-router
-  version: v1.5.4
+  version: v1.6.1
   # {{kube-router.registry}}/kube-router
-  registry: dockerproxy.com/cloudnativelabs
+  registry: m.daocloud.io/docker.io/cloudnativelabs
   # Setups node CNI to allow hairpin mode, requires node reboots, see
   # https://github.com/cloudnativelabs/kube-router/blob/master/docs/user-guide.md#hairpin-mode
   # 即让Pod可以通过Service访问自己
@@ -166,25 +184,25 @@ kuberouter:
 coredns:
   version: 1.11.1
   # {{coredns.registry}}/coredns:{{coredns.version}}
-  registry: dockerproxy.com/coredns
+  registry: m.daocloud.io/docker.io/coredns
 nodelocaldns:
   enabled: true
-  version: 1.22.28
+  version: 1.23.0
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
-  registry: k8s.dockerproxy.com/dns
+  registry: m.daocloud.io/registry.k8s.io/dns
   ip: 169.254.20.10
 metrics_server:
   enabled: true
-  version: v0.6.3
+  version: v0.7.1
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
-  registry: k8s.dockerproxy.com/metrics-server
+  registry: m.daocloud.io/registry.k8s.io/metrics-server
 npd:
   enabled: false
-  version: v0.8.13
+  version: v0.8.18
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
-  registry: k8s.dockerproxy.com/node-problem-detector
+  registry: m.daocloud.io/registry.k8s.io/node-problem-detector
 nvidia_device_plugin:
   enabled: false
-  version: v0.14.4
+  version: v0.15.0
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: nvcr.io/nvidia

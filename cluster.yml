@@ -8,13 +8,6 @@
     - role: verify
       tags: verify
 
-- name: "Download Offline Package"
-  hosts: localhost
-  connection: local
-  roles:
-    - role: download
-      tags: download
-
 - name: "Generate Certs"
   hosts: localhost
   connection: local

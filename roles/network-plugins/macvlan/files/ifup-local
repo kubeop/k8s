@@ -1,6 +1,0 @@
-#!/bin/bash
-
-POSTUPNAME="/etc/sysconfig/network-scripts/post-up-$1"
-if [ -x $POSTUPNAME ]; then
-  exec $POSTUPNAME
-fi

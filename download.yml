@@ -1,0 +1,7 @@
+---
+- name: "Download Offline Package"
+  hosts: localhost
+  connection: local
+  roles:
+    - role: download
+      tags: download

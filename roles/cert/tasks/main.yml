@@ -299,7 +299,7 @@
       - "kubernetes.default.svc"
       - "kubernetes.default.svc.cluster"
       - "kubernetes.default.svc.cluster.local"
-      - "{{ kubernetes.serviceSubnet | ansible.utils.ipaddr('net') | ansible.utils.ipaddr(1) | ansible.utils.ipaddr('address') }}"
+      - "{{ kubernetes.service_addresses | ipaddr('net') | ipaddr(1) | ipaddr('address') }}"
     sans_lb: "{{ [loadbalance.domain_name] if loadbalance.domain_name is defined else [] }}"
     sans_lb_ip: "{{ [loadbalance.ip] if loadbalance.ip is defined else [] }}"
     sans_access_ip: "{{ loadbalance.access_ip | list if loadbalance.access_ip is defined else [] }}"
@@ -307,14 +307,14 @@
 
 - name: "Debug all SANs"
   vars:
-    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
+    apiserver_ips: "{{ apiserver_sans | map('ipaddr') | reject('equalto', False) | list }}"
     apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
   debug:
     msg: "{{ apiserver_ips | map('regex_replace', '^(.*)$', 'IP:\\1') | list  +  apiserver_hosts | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
 
 - name: "Generate apiserver request"
   vars:
-    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
+    apiserver_ips: "{{ apiserver_sans | map('ipaddr') | reject('equalto', False) | list }}"
     apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
   openssl_csr:
     path: "{{ cert.dir }}/{{ item }}/apiserver.csr"

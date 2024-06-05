@@ -33,11 +33,11 @@
 
 ### 安装Ansible
 
-请根据下表安装合适的Python版本和Ansible版本
+建议根据下表安装合适的Python版本和Ansible版本
 
-| Python | Ansible  |
-| ------ | -------- |
-| >=3.9  | >=2.15.5 |
+| Python | Ansible   |
+| ------ | --------- |
+| >=3.9  | >=2.11.12 |
 
 
 
@@ -123,12 +123,12 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/data" -t bin
 ### 下载离线包
 
 ```shell
-# 如从自建文件服务器，请修改roles/download/defaults/main.yml文件中的默认地址
-ansible-playbook cluster.yml -i inventory -t download
+# 如从自建文件服务器下载，请修改roles/download/defaults/main.yml文件中的默认下载地址
+ansible-playbook download.yml
 ```
 
 - 请确保Ansible控制端可以访问**Internet**，否则无法下载离线安装包。
-- 在其他**Internet**节点下载后，按照要求目录结构拷贝到{{ download.dest }}目录中也可。
+- 或在其他**Internet**节点下载后，按照要求目录结构拷贝到{{ download.dest }}目录中也可。
 
 
 
@@ -142,17 +142,75 @@ ansible-playbook cluster.yml -i inventory -t download
 
 
 
+### 安装GPU驱动
+
+当集群节点为GPU节点时，请先按照以下步骤安装驱动
+
+```shell
+# 查看显卡信息（若找不到lspci命令，可以安装 yum install pciutils）
+lspci | grep -i nvidia
+
+# 查看内核版本
+uname -r
+
+# 查看可以安装的kernel-devel版本
+yum list | grep kernel-devel
+
+# 安装kernel-devel（安装的版本要和当前内核版本一致）
+yum install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r)
+
+# 安装gcc dkms
+yum -y install gcc dkms
+
+# 查看nouveau加载情况
+lsmod | grep nouveau
+
+# 阻止 nouveau 模块加载
+cat >  /etc/modprobe.d/blacklist.conf << EOF
+blacklist nouveau
+options nouveau modeset=0
+EOF
+
+# 重新建立initramfs image文件（此步骤操作完成之后，需重启机器）
+mv /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r).img.bak
+dracut /boot/initramfs-$(uname -r).img $(uname -r)
+
+# 安装驱动
+bash NVIDIA-Linux-x86_64-470.199.02.run
+
+# 验证驱动是否安装成功
+nvidia-smi
+
+# 添加nvidia-container-toolkit软件源
+# 企业内部建议使用nexus配置nvidia-container-toolkit软件源的代理，并将group_vars/all.yml中repo修改为nexus代理地址，即可实现自动安装
+# 其他操作系统请参考: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#linux-distributions
+cat  >  /etc/yum.repos.d/nvidia-container-toolkit.repo  << EOF
+[nvidia-container-toolkit]
+name=nvidia-container-toolkit
+baseurl=https://nvidia.github.io/libnvidia-container/stable/rpm/\$basearch
+repo_gpgcheck=1
+gpgcheck=0
+enabled=1
+gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+EOF
+
+# 安装nvidia-container-toolkit
+yum -y install nvidia-container-runtime nvidia-container-toolkit
+```
+
+
+
 ## 部署集群
 
 ```shell
-# 如未执行下载，可以执行以下命令
+# 执行之前，请确认已经进行过磁盘分区
+# 执行之前，请确认已经执行`ansible-playbook download.yml`完成安装包下载
 ansible-playbook cluster.yml -i inventory
-
-# 如已执行下载离线包，可以跳过下载
-ansible-playbook cluster.yml -i inventory --skip-tags=download
 ```
 
-如是公有云环境，使用公有云的负载均衡即可（需提前配置好负载均衡），无需安装haproxy和keepalived。
+如是公有云/私有云环境，使用公有云/私有云的负载均衡即可（需提前配置好负载均衡），无需安装haproxy和keepalived。
 
 ```shell
 ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
@@ -160,7 +218,7 @@ ansible-playbook cluster.yml -i inventory --skip-tags=haproxy,keepalived
 
 - 默认会对节点进行初始化操作，集群节点会取主机名最后两段和IP作为集群节点名称。
 
-如果想让master节点也进行调度，可以添加使用以下方式
+如果想让master节点也进行调度，可以使用以下参数
 
 ```shell
 ansible-playbook cluster.yml -i inventory --skip-tags=create_master_taint
@@ -290,7 +348,7 @@ kubectl get pod -n kube-system | grep -v NAME | grep cilium | awk '{print $1}' |
 下载新版本安装包
 
 ```shell
-ansible-playbook cluster.yml -i inventory -t download
+ansible-playbook download.yml
 ```
 
 安装kubernetes组件
