@@ -93,8 +93,8 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-server.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
     csr_path: "{{ cert.dir }}/{{ item }}/etcd-server.csr"
     ownca_path: "{{ cert.dir }}/etcd-ca.pem"
@@ -139,8 +139,8 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-peer.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
     csr_path: "{{ cert.dir }}/{{ item }}/etcd-peer.csr"
     ownca_path: "{{ cert.dir }}/etcd-ca.pem"
@@ -180,8 +180,8 @@
     path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
     csr_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.csr"
     ownca_path: "{{ cert.dir }}/etcd-ca.pem"
@@ -221,8 +221,8 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
     csr_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.csr"
     ownca_path: "{{ cert.dir }}/etcd-ca.pem"
@@ -339,8 +339,8 @@
     path: "{{ cert.dir }}/{{ item }}/apiserver.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
     csr_path: "{{ cert.dir }}/{{ item }}/apiserver.csr"
     ownca_path: "{{ cert.dir }}/ca.pem"
@@ -381,8 +381,8 @@
     path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.key"
     csr_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.csr"
     ownca_path: "{{ cert.dir }}/ca.pem"
@@ -423,8 +423,8 @@
     path: "{{ cert.dir }}/{{ item }}/admin.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/admin.key"
     csr_path: "{{ cert.dir }}/{{ item }}/admin.csr"
     ownca_path: "{{ cert.dir }}/ca.pem"
@@ -464,8 +464,8 @@
     path: "{{ cert.dir }}/{{ item }}/controller-manager.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
     csr_path: "{{ cert.dir }}/{{ item }}/controller-manager.csr"
     ownca_path: "{{ cert.dir }}/ca.pem"
@@ -505,8 +505,8 @@
     path: "{{ cert.dir }}/{{ item }}/scheduler.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/scheduler.key"
     csr_path: "{{ cert.dir }}/{{ item }}/scheduler.csr"
     ownca_path: "{{ cert.dir }}/ca.pem"
@@ -548,8 +548,8 @@
     path: "{{ cert.dir }}/{{ item }}/kube-proxy.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
     csr_path: "{{ cert.dir }}/{{ item }}/kube-proxy.csr"
     ownca_path: "{{ cert.dir }}/ca.pem"
@@ -639,8 +639,8 @@
     path: "{{ cert.dir }}/{{ item }}/front-proxy-client.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: create_if_not_provided
-    ownca_create_authority_key_identifier: no
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
     privatekey_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
     csr_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.csr"
     ownca_path: "{{ cert.dir }}/front-proxy-ca.pem"
