@@ -1,7 +1,7 @@
 ---
 - name: "Download Offline Package"
   hosts: localhost
-  connection: local
+  run_once: true
   roles:
     - role: download
       tags: download

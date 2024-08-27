@@ -24,7 +24,7 @@
 
     - name: Get currently configured nameservers
       set_fact:
-        configured_nameservers: "{{ resolvconf_slurp.content | b64decode | regex_findall('^nameserver\\s*(\\S*)', multiline=True) | ipaddr }}"
+        configured_nameservers: "{{ resolvconf_slurp.content | b64decode | regex_findall('^nameserver\\s*(\\S*)', multiline=True) | ansible.utils.ipaddr }}"
       when: resolvconf_slurp.content is defined
 
 - name: Stop if /etc/resolv.conf not configured nameservers
@@ -89,21 +89,21 @@
 - name: "Check that service_addresses is a network range"
   assert:
     that:
-      - kubernetes.service_addresses | ipaddr('net')
+      - kubernetes.service_addresses | ansible.utils.ipaddr('net')
     msg: "kubernetes.service_addresses = '{{ kubernetes.service_addresses }}' is not a valid network range"
   run_once: yes
 
 - name: "Check that pods_subnet is a network range"
   assert:
     that:
-      - kubernetes.pods_subnet | ipaddr('net')
+      - kubernetes.pods_subnet | ansible.utils.ipaddr('net')
     msg: "kubernetes.pods_subnet = '{{ kubernetes.pods_subnet }}' is not a valid network range"
   run_once: yes
 
 - name: "Check that pods_subnet does not collide with service_addresses"
   assert:
     that:
-      - kubernetes.pods_subnet | ipaddr(kubernetes.service_addresses) | string == 'None'
+      - kubernetes.pods_subnet | ansible.utils.ipaddr(kubernetes.service_addresses) | string == 'None'
     msg: "pods_subnet cannot be the same network segment as service_addresses"
   run_once: yes
 

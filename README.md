@@ -1,6 +1,5 @@
 ## 支持的发型版
 
-- CentOS/RHEL 7，8，9
 - AlmaLinux 8，9
 - RockyLinux 8，9
 - Ubuntu Server 20.04，22.04
@@ -20,7 +19,6 @@
   - [cilium](https://github.com/cilium/cilium)
   - [flanneld](https://github.com/flannel-io/flannel)
   - [kube-router](https://github.com/cloudnativelabs/kube-router)
-  - [macvlan](https://github.com/containernetworking/plugins)
 - Application
   - [coredns](https://github.com/coredns/coredns)
   - [node-local-dns](https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/dns/nodelocaldns)
@@ -29,28 +27,38 @@
 
 
 
-## 前期配置
+## 开始配置
 
-### 安装Ansible
+### 配置Ansible控制端
 
 建议根据下表安装合适的Python版本和Ansible版本
 
-| Python | Ansible   |
-| ------ | --------- |
-| >=3.9  | >=2.11.12 |
+| 组件                 | 版本     |
+| -------------------- | -------- |
+| AlmaLinux/RockyLinux | >=8      |
+| Python               | >=3.9    |
+| Ansible              | >=2.14.0 |
 
 
 
-安装Ansible示例
+安装Ansible
 
 ```shell
-pip3 install ansible -i https://mirrors.ustc.edu.cn/pypi/web/simple
-pip3 install netaddr -i https://mirrors.ustc.edu.cn/pypi/web/simple
+# 安装ansible
+yum -y install ansible
+
+# 查看ansible使用的python版本
+ansible --version
+
+# 查看netaddr网络模块版本
+dnf list | grep netaddr
+
+# 根据前面查询的版本信息，选择跟ansible匹配的python版本的netaddr
+dnf -y install python3-netaddr
 ```
 
-- 请使用对应Python版本的pip安装ansible和netaddr。
 - 控制节点和被控节点Python版本尽量保持一致，否则执行可能出现问题。
-- 更详细的版本支持矩阵，请参考：https://docs.ansible.com/ansible-core/devel/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
+- 不同Python版本Anisble支持矩阵详情，请参考：https://docs.ansible.com/ansible-core/devel/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
 
 
 
@@ -71,10 +79,10 @@ pip3 install netaddr -i https://mirrors.ustc.edu.cn/pypi/web/simple
 - **Kubernetes** 的最低版本要求为 v1.26
 
 - 请尽量将etcd安装在独立的服务器上，不建议跟master安装在一起。数据盘尽量使用SSD盘。
-- Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复，同时也避免与docker0网卡的网段冲突。）：
+- Pod 和Service IP网段建议使用保留私有IP段，建议（Pod IP不与Service IP重复，也不要与主机IP段重复，同时也避免与docker0网卡的网段冲突）从以下网段及子网选择：
   - Pod 网段
     - A类地址：10.0.0.0/8
-    - B类地址：172.16-31.0.0/12-16
+    - B类地址：172.16.0.0/12
     - C类地址：192.168.0.0/16
   - Service网段
     - A类地址：10.0.0.0/16-24
@@ -93,29 +101,31 @@ pip3 install netaddr -i https://mirrors.ustc.edu.cn/pypi/web/simple
 ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data"
 ```
 
+- 可选变量`-e "disk=sdb dir=/data num=1"`
+
 如果是NVME的磁盘，请使用以下方式:
 
 ```shell
-ansible-playbook fdisk.yml -i inventory -e "disk=sdb dir=/data type=nvme"
+ansible-playbook fdisk.yml -i inventory -e "disk=nvme0n1 dir=/data num=p1"
 ```
 
 ⚠️：
 
 - 此脚本会格式化{{disk}}指定的硬盘，并挂载到{{dir}}目录。
-- 会将`/var/lib/etcd`、`/var/lib/containerd`、`/var/lib/kubelet`、`/var/log/pods`数据目录绑定到此数据盘`{{dir}}/containers/etcd`、`{{dir}}/containers/containerd`、`{{dir}}/containers/kubelet`、`{{dir}}/containers/pods`目录，以达到多个数据目录共用一个数据盘，而无需修改kubernetes相关数据目录。
+- 同时会将`/var/lib/etcd`、`/var/lib/containerd`、`/var/lib/kubelet`、`/var/log/pods`数据目录绑定到此数据盘`{{dir}}/containers/etcd`、`{{dir}}/containers/containerd`、`{{dir}}/containers/kubelet`、`{{dir}}/containers/pods`目录，以达到多个数据目录共用一个数据盘，而无需修改kubernetes相关数据目录。
 
 
 
 如需不同目录挂载不同数据盘，可以使用以下命令单独挂载
 
 ```shell
-ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/var/lib/etcd" --skip-tags=bind_dir
+ansible-playbook fdisk.yml -i inventory -l etcd -e "disk=sdb dir=/var/lib/etcd" --skip-tags=bind_dir
 ```
 
 如已经格式化并挂载过数据盘，可以使用以下命令将数据目录绑定到数据盘
 
 ```shell
-ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/data" -t bind_dir
+ansible-playbook fdisk.yml -i inventory -l master,worker -e "disk=sdb dir=/data" -t bind_dir
 ```
 
 
@@ -123,7 +133,7 @@ ansible-playbook fdisk.yml -i inventory -l master -e "disk=sdb dir=/data" -t bin
 ### 下载离线包
 
 ```shell
-# 如从自建文件服务器下载，请修改roles/download/defaults/main.yml文件中的默认下载地址
+# 如从自建文件服务器下载，请修改group_vars/all.yml文件中的默认下载地址
 ansible-playbook download.yml
 ```
 
@@ -135,9 +145,8 @@ ansible-playbook download.yml
 ### 同步镜像
 
 ```shell
-# 如集群节点可以连接公网，可以跳过此步骤。
-# 如不能连接公网或需使用私有镜像仓库，请自行同步group_vars/all.yml中定义的镜像至私有镜像仓库。
-# 也可以使用 https://github.com/AliyunContainerService/image-syncer/releases 同步
+# 建议将group_vars/all.yml中定义的镜像自行同步至私有镜像仓库中，官网或代理可能不稳定或失效。
+# 建议使用 https://github.com/AliyunContainerService/image-syncer/releases 同步
 ```
 
 
@@ -206,7 +215,7 @@ yum -y install nvidia-container-runtime nvidia-container-toolkit
 
 ```shell
 # 执行之前，请确认已经进行过磁盘分区
-# 执行之前，请确认已经执行`ansible-playbook download.yml`完成安装包下载
+# 执行之前，请确认已经执行ansible-playbook download.yml完成安装包下载
 ansible-playbook cluster.yml -i inventory
 ```
 
@@ -311,7 +320,7 @@ etcdctl endpoint health \
         --cacert=/etc/etcd/pki/etcd-ca.pem \
         --cert=/etc/etcd/pki/etcd-healthcheck-client.pem \
         --key=/etc/etcd/pki/etcd-healthcheck-client.key \
-        --endpoints=https://172.16.90.101:2379,https://172.16.90.102:2379,https://172.16.90.103:2379
+        --endpoints=https://10.43.75.201:2379,https://10.43.75.202:2379,https://10.43.75.203:2379
 ```
 
 逐个删除旧的kubelet证书

@@ -2,7 +2,7 @@
 - name: "Check ansible version"
   import_playbook: ansible_version.yml
 
-- name: "Verify Settings"
+- name: "Check Configs"
   hosts: haproxy etcd master worker
   roles:
     - role: verify

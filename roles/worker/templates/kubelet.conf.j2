@@ -20,7 +20,7 @@ clusterDNS:
 {% if nodelocaldns.enabled %}
   - "{{ nodelocaldns.ip }}"
 {% else %}
-  - "{{ kubernetes.service_addresses | next_nth_usable(10) }}"
+  - "{{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }}"
 {% endif %}
 cpuManagerReconcilePeriod: 10s
 containerLogMaxSize: 200Mi

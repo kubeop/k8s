@@ -40,6 +40,7 @@
       - digitalSignature
       - keyEncipherment
       - keyCertSign
+    subject_alt_name: "DNS:etcd-ca"
 
 - stat:
     path: "{{ cert.dir }}/etcd-ca.pem"
@@ -68,7 +69,7 @@
   openssl_csr:
     path: "{{ cert.dir }}/{{ item }}/etcd-server.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
-    common_name: "{{ item }}"
+    common_name: "{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower  }}-{{ item }}"
     basic_constraints_critical: yes
     basic_constraints:
       - CA:FALSE
@@ -81,7 +82,7 @@
       - clientAuth
     subject_alt_name:
       - DNS:localhost
-      - DNS:{{ item }}
+      - DNS:{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower  }}-{{ item }}
       - IP:127.0.0.1
       - IP:{{ item }}
   with_items:
@@ -92,7 +93,7 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-server.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-server.key"
     csr_path: "{{ cert.dir }}/{{ item }}/etcd-server.csr"
@@ -114,7 +115,7 @@
   openssl_csr:
     path: "{{ cert.dir }}/{{ item }}/etcd-peer.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
-    common_name: "{{ item }}"
+    common_name: "{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower  }}-{{ item }}"
     basic_constraints_critical: yes
     basic_constraints:
       - CA:FALSE
@@ -127,7 +128,7 @@
       - clientAuth
     subject_alt_name:
       - DNS:localhost
-      - DNS:{{ item }}
+      - DNS:{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower  }}-{{ item }}
       - IP:127.0.0.1
       - IP:{{ item }}
   with_items:
@@ -138,7 +139,7 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-peer.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-peer.key"
     csr_path: "{{ cert.dir }}/{{ item }}/etcd-peer.csr"
@@ -160,7 +161,6 @@
   openssl_csr:
     path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
-    organization_name: system:masters
     common_name: kube-apiserver-etcd-client
     basic_constraints_critical: yes
     basic_constraints:
@@ -180,7 +180,7 @@
     path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.key"
     csr_path: "{{ cert.dir }}/{{ item }}/apiserver-etcd-client.csr"
@@ -202,7 +202,6 @@
   openssl_csr:
     path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.csr"
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
-    organization_name: system:masters
     common_name: kube-etcd-healthcheck-client
     basic_constraints_critical: yes
     basic_constraints:
@@ -222,7 +221,7 @@
     path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.key"
     csr_path: "{{ cert.dir }}/{{ item }}/etcd-healthcheck-client.csr"
@@ -263,6 +262,7 @@
       - digitalSignature
       - keyEncipherment
       - keyCertSign
+    subject_alt_name: "DNS:kubernetes"
 
 - stat:
     path: "{{ cert.dir }}/ca.pem"
@@ -299,7 +299,7 @@
       - "kubernetes.default.svc"
       - "kubernetes.default.svc.cluster"
       - "kubernetes.default.svc.cluster.local"
-      - "{{ kubernetes.service_addresses | ipaddr('net') | ipaddr(1) | ipaddr('address') }}"
+      - "{{ kubernetes.service_addresses | ansible.utils.ipaddr('net') | ansible.utils.ipaddr(1) | ansible.utils.ipaddr('address') }}"
     sans_lb: "{{ [loadbalance.domain_name] if loadbalance.domain_name is defined else [] }}"
     sans_lb_ip: "{{ [loadbalance.ip] if loadbalance.ip is defined else [] }}"
     sans_access_ip: "{{ loadbalance.access_ip | list if loadbalance.access_ip is defined else [] }}"
@@ -307,14 +307,14 @@
 
 - name: "Debug all SANs"
   vars:
-    apiserver_ips: "{{ apiserver_sans | map('ipaddr') | reject('equalto', False) | list }}"
+    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
     apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
   debug:
     msg: "{{ apiserver_ips | map('regex_replace', '^(.*)$', 'IP:\\1') | list  +  apiserver_hosts | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
 
 - name: "Generate apiserver request"
   vars:
-    apiserver_ips: "{{ apiserver_sans | map('ipaddr') | reject('equalto', False) | list }}"
+    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
     apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
   openssl_csr:
     path: "{{ cert.dir }}/{{ item }}/apiserver.csr"
@@ -339,7 +339,7 @@
     path: "{{ cert.dir }}/{{ item }}/apiserver.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver.key"
     csr_path: "{{ cert.dir }}/{{ item }}/apiserver.csr"
@@ -381,7 +381,7 @@
     path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.key"
     csr_path: "{{ cert.dir }}/{{ item }}/apiserver-kubelet-client.csr"
@@ -423,7 +423,7 @@
     path: "{{ cert.dir }}/{{ item }}/admin.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/admin.key"
     csr_path: "{{ cert.dir }}/{{ item }}/admin.csr"
@@ -464,7 +464,7 @@
     path: "{{ cert.dir }}/{{ item }}/controller-manager.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/controller-manager.key"
     csr_path: "{{ cert.dir }}/{{ item }}/controller-manager.csr"
@@ -505,7 +505,7 @@
     path: "{{ cert.dir }}/{{ item }}/scheduler.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/scheduler.key"
     csr_path: "{{ cert.dir }}/{{ item }}/scheduler.csr"
@@ -548,7 +548,7 @@
     path: "{{ cert.dir }}/{{ item }}/kube-proxy.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/kube-proxy.key"
     csr_path: "{{ cert.dir }}/{{ item }}/kube-proxy.csr"
@@ -591,6 +591,7 @@
       - digitalSignature
       - keyEncipherment
       - keyCertSign
+    subject_alt_name: "DNS:front-proxy-ca"
 
 - stat:
     path: "{{ cert.dir }}/front-proxy-ca.pem"
@@ -638,7 +639,7 @@
     path: "{{ cert.dir }}/{{ item }}/front-proxy-client.pem"
     provider: ownca
     ownca_not_after: "+{{cert.day}}"
-    ownca_create_subject_key_identifier: never_create
+    ownca_create_subject_key_identifier: create_if_not_provided
     ownca_create_authority_key_identifier: no
     privatekey_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.key"
     csr_path: "{{ cert.dir }}/{{ item }}/front-proxy-client.csr"

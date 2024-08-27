@@ -1,7 +1,7 @@
 # Download offline package
 download:
   # 离线包保存目录，节点安装包从该目录拷贝
-  dest: /data/web/mirrors/k8s/
+  dest: /data/mirrors/k8s/
   # 下载超时时间
   timeout: 60
   # 重试次数
@@ -36,8 +36,11 @@ cert:
 
 # https://github.com/etcd-io/etcd
 etcd:
+  # etcd 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
+  download_url: https://mirror.ghproxy.com/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.13
+  version: v3.5.15
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -48,18 +51,23 @@ etcd:
 # 如使用域名，需提前配置解析。不使用域名时，请注释掉
 # 如使用haproxy + keepalived ，并且跟master节点部署在一起时，请修改port以避免端口冲突
 loadbalance:
-  ip: 172.16.90.100
+  ip: 10.43.75.200
   port: 6443
   # domain_name: apiserver.kubeop.com
   # access_ip:
-  #   - 172.16.90.100
+  #   - 10.43.75.200
 
 # https://github.com/kubernetes/kubernetes
 kubernetes:
+  # kubernetes 二进制安装包下载地址，默认为阿里云从Google同步过来的镜像，更新较慢，最新版本可能未同步过来。
+  # 官方下载源，下载较慢。 https://storage.googleapis.com/kubernetes-release/release
+  # 阿里云下载源，可能更新不及时，无法下载最新版本。https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
+  # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
+  download_url: https://storage.googleapis.com/kubernetes-release/release
   # kubernetes 版本
-  version: v1.30.1
+  version: v1.30.4
   # 集群Pod网段
-  pods_subnet: 10.64.0.0/12
+  pods_subnet: 172.16.0.0/12
   # 集群Service网段
   service_addresses: 192.168.0.0/16
   # 节点Pod网段掩码大小
@@ -77,23 +85,35 @@ kubernetes:
 
 # https://github.com/opencontainers/runc
 runc:
+  # runc 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{runc.download_url}}/{{runc.version}}/runc.amd64
+  download_url: https://mirror.ghproxy.com/https://github.com/opencontainers/runc/releases/download
   # runc 版本
-  version: v1.1.12
+  version: v1.1.13
 
 # https://github.com/containernetworking/plugins
 cniplugins:
+  # cni-plugins 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz
+  download_url: https://mirror.ghproxy.com/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
-  version: v1.4.1
+  version: v1.5.1
 
 # https://github.com/kubernetes-sigs/cri-tools
 critools:
+  # cri-tools 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
+  download_url: https://mirror.ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.30.0
+  version: v1.31.1
 
 # https://github.com/containerd/containerd
 containerd:
+  # containerd 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
+  download_url: https://mirror.ghproxy.com/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
-  version: 1.6.33
+  version: 1.6.35
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
@@ -125,20 +145,20 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.15.4
+  version: v1.16.1
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
-  registry: m.daocloud.io/docker.io/cilium
+  registry: docker.mrxn.net/cilium
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.25.1
-  plugin_version: v1.4.1-flannel1
+  version: v0.25.5
+  plugin_version: v1.5.1-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
-  registry: m.daocloud.io/docker.io/flannel
+  registry: docker.mrxn.net/flannel
   # "vxlan" or "host-gw"
   network_mode: vxlan
   # 运行参数
@@ -151,12 +171,15 @@ flannel:
   # mtu: 1500
 
 calico:
+  # calicoctl 安装包下载地址
+  # 如使用自建文件服务器，请保证下载路径为: {{calico.download_url}}/calico/{{ calico.version }}/calicoctl-linux-amd64
+  download_url: https://mirror.ghproxy.com/https://github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
-  version: v3.27.3
+  version: v3.28.1
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
-  registry: m.daocloud.io/docker.io/calico
+  registry: docker.mrxn.net/calico
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
   # mtu 默认为0，表示自动自动检测
@@ -168,7 +191,7 @@ kuberouter:
   # https://github.com/cloudnativelabs/kube-router
   version: v1.6.1
   # {{kube-router.registry}}/kube-router
-  registry: m.daocloud.io/docker.io/cloudnativelabs
+  registry: docker.mrxn.net/cloudnativelabs
   # Setups node CNI to allow hairpin mode, requires node reboots, see
   # https://github.com/cloudnativelabs/kube-router/blob/master/docs/user-guide.md#hairpin-mode
   # 即让Pod可以通过Service访问自己
@@ -184,25 +207,25 @@ kuberouter:
 coredns:
   version: 1.11.1
   # {{coredns.registry}}/coredns:{{coredns.version}}
-  registry: m.daocloud.io/docker.io/coredns
+  registry: docker.mrxn.net/coredns
 nodelocaldns:
   enabled: true
-  version: 1.23.0
+  version: 1.23.1
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
-  registry: m.daocloud.io/registry.k8s.io/dns
+  registry: k8s.mrxn.net/dns
   ip: 169.254.20.10
 metrics_server:
   enabled: true
   version: v0.7.1
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
-  registry: m.daocloud.io/registry.k8s.io/metrics-server
+  registry: k8s.mrxn.net/metrics-server
 npd:
   enabled: false
-  version: v0.8.18
+  version: v0.8.19
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
-  registry: m.daocloud.io/registry.k8s.io/node-problem-detector
+  registry: k8s.mrxn.net/node-problem-detector
 nvidia_device_plugin:
   enabled: false
-  version: v0.15.0
+  version: v0.16.2
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: nvcr.io/nvidia
