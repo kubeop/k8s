@@ -19,6 +19,6 @@
 # 最后面添加gpu=true 表示节点为GPU节点，运行时会配置使用GPU并且添加nvidia.com/gpu=true标签
 # 启用GPU时，请先参考README自行在节点安装GPU驱动
 [worker]
-10.43.75.213 hostname=worker-01 gpu=false
-10.43.75.214 hostname=worker-02 gpu=false
-10.43.75.215 hostname=worker-03 gpu=false
+10.43.75.220 hostname=worker-01 gpu=false
+10.43.75.221 hostname=worker-02 gpu=false
+10.43.75.222 hostname=worker-03 gpu=false
