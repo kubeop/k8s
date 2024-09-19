@@ -148,17 +148,17 @@ cilium:
   version: v1.16.1
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
-  registry: docker.mrxn.net/cilium
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.25.5
-  plugin_version: v1.5.1-flannel1
+  version: v0.25.6
+  plugin_version: v1.5.1-flannel2
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
-  registry: docker.mrxn.net/flannel
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # "vxlan" or "host-gw"
   network_mode: vxlan
   # 运行参数
@@ -175,11 +175,11 @@ calico:
   # 如使用自建文件服务器，请保证下载路径为: {{calico.download_url}}/calico/{{ calico.version }}/calicoctl-linux-amd64
   download_url: https://mirror.ghproxy.com/https://github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
-  version: v3.28.1
+  version: v3.28.2
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
-  registry: docker.mrxn.net/calico
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
   # mtu 默认为0，表示自动自动检测
@@ -189,9 +189,9 @@ calico:
 
 kuberouter:
   # https://github.com/cloudnativelabs/kube-router
-  version: v1.6.1
+  version: v2.2.1
   # {{kube-router.registry}}/kube-router
-  registry: docker.mrxn.net/cloudnativelabs
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # Setups node CNI to allow hairpin mode, requires node reboots, see
   # https://github.com/cloudnativelabs/kube-router/blob/master/docs/user-guide.md#hairpin-mode
   # 即让Pod可以通过Service访问自己
@@ -205,27 +205,27 @@ kuberouter:
 
 # Addons
 coredns:
-  version: 1.11.1
+  version: 1.11.3
   # {{coredns.registry}}/coredns:{{coredns.version}}
-  registry: docker.mrxn.net/coredns
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nodelocaldns:
   enabled: true
   version: 1.23.1
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
-  registry: k8s.mrxn.net/dns
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   ip: 169.254.20.10
 metrics_server:
   enabled: true
-  version: v0.7.1
+  version: v0.7.2
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
-  registry: k8s.mrxn.net/metrics-server
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 npd:
   enabled: false
   version: v0.8.19
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
-  registry: k8s.mrxn.net/node-problem-detector
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nvidia_device_plugin:
   enabled: false
   version: v0.16.2
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
-  registry: nvcr.io/nvidia
+  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
