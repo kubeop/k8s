@@ -11,7 +11,7 @@
       - socat
     state: present
   when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: worker_app
 
 - name: "Install dependency"

@@ -56,7 +56,7 @@
   selinux:
     state: disabled
   when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: selinux
 
 - name: "Get firewalld is installed"
@@ -153,7 +153,7 @@
   notify:
     - restart systemd-journald
   when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: journal
 
 - name: "Install base application"
@@ -182,7 +182,7 @@
       - iproute
     state: present
   when:
-    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky']
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: install_app
 
 - name: "Install base application"

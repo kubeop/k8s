@@ -2,6 +2,7 @@
 
 - AlmaLinux 8，9
 - RockyLinux 8，9
+- TencentOS 3.1
 - Ubuntu Server 20.04，22.04
 - Debian 12
 
