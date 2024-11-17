@@ -1,7 +1,7 @@
 # Download offline package
 download:
   # 离线包保存目录，节点安装包从该目录拷贝
-  dest: /data/mirrors/k8s/
+  dest: /data/mirrors/k8s
   # 下载超时时间
   timeout: 60
   # 重试次数
