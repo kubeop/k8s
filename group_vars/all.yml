@@ -38,7 +38,7 @@ cert:
 etcd:
   # etcd 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{etcd.download_url}}/{{etcd.version}}/etcd-{{etcd.version}}-linux-amd64.tar.gz
-  download_url: https://mirror.ghproxy.com/https://github.com/etcd-io/etcd/releases/download
+  download_url: https://mirrors.chenby.cn/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
   version: v3.5.16
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
@@ -59,13 +59,13 @@ loadbalance:
 
 # https://github.com/kubernetes/kubernetes
 kubernetes:
-  # kubernetes 二进制安装包下载地址，默认为阿里云从Google同步过来的镜像，更新较慢，最新版本可能未同步过来。
-  # 官方下载源，下载较慢。 https://storage.googleapis.com/kubernetes-release/release
-  # 阿里云下载源，可能更新不及时，无法下载最新版本。https://kubernetes.oss-cn-hangzhou.aliyuncs.com/kubernetes-release/release
-  # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/bin/linux/amd64/kube-apiserver。
-  download_url: https://storage.googleapis.com/kubernetes-release/release
+  # kubernetes 二进制安装包下载地址
+  # 因官方下载源调整，且调整后下载较慢，故调整为个人仓库加速下载：https://github.com/kubeop/sync_images
+  # 使用Github Action同步二进制文件到Github Release, 并使用代理加速下载。该仓库也会同步相关容器镜像到阿里云镜像仓库
+  # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/kube-apiserver
+  download_url: https://mirrors.chenby.cn/https://github.com/kubeop/sync_images/releases/download
   # kubernetes 版本
-  version: v1.30.4
+  version: v1.31.3
   # 集群Pod网段
   pods_subnet: 172.16.0.0/12
   # 集群Service网段
@@ -87,7 +87,7 @@ kubernetes:
 runc:
   # runc 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{runc.download_url}}/{{runc.version}}/runc.amd64
-  download_url: https://mirror.ghproxy.com/https://github.com/opencontainers/runc/releases/download
+  download_url: https://mirrors.chenby.cn/https://github.com/opencontainers/runc/releases/download
   # runc 版本
   version: v1.1.15
 
@@ -95,7 +95,7 @@ runc:
 cniplugins:
   # cni-plugins 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{cniplugins.download_url}}/{{cniplugins.version}}/cni-plugins-linux-amd64-{{cniplugins.version}}.tgz
-  download_url: https://mirror.ghproxy.com/https://github.com/containernetworking/plugins/releases/download
+  download_url: https://mirrors.chenby.cn/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
   version: v1.5.1
 
@@ -103,7 +103,7 @@ cniplugins:
 critools:
   # cri-tools 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{critools.download_url}}/{{critools.version}}/crictl-{{critools.version}}-linux-amd64.tar.gz
-  download_url: https://mirror.ghproxy.com/https://github.com/kubernetes-sigs/cri-tools/releases/download
+  download_url: https://mirrors.chenby.cn/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
   version: v1.31.1
 
@@ -111,7 +111,7 @@ critools:
 containerd:
   # containerd 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为:{{containerd.download_url}}/v{{containerd.version}}/containerd-{{containerd.version}}-linux-amd64.tar.gz
-  download_url: https://mirror.ghproxy.com/https://github.com/containerd/containerd/releases/download
+  download_url: https://mirrors.chenby.cn/https://github.com/containerd/containerd/releases/download
   # containerd 版本,建议使用1.6.x版本(1.6.x当前为长期稳定版本)
   version: 1.6.36
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
@@ -173,7 +173,7 @@ flannel:
 calico:
   # calicoctl 安装包下载地址
   # 如使用自建文件服务器，请保证下载路径为: {{calico.download_url}}/calico/{{ calico.version }}/calicoctl-linux-amd64
-  download_url: https://mirror.ghproxy.com/https://github.com/projectcalico/calico/releases/download
+  download_url: https://mirrors.chenby.cn/https://github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
   version: v3.28.2
   # {{calico.registry}}/kube-controllers:{{calico.version}}

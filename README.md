@@ -148,6 +148,8 @@ ansible-playbook download.yml
 ```shell
 # 建议将group_vars/all.yml中定义的镜像自行同步至私有镜像仓库中，官网或代理可能不稳定或失效。
 # 建议使用 https://github.com/AliyunContainerService/image-syncer/releases 同步
+# 我已将相关镜像同步至阿里云镜像仓库, https://github.com/kubeop/sync_images.git
+# 如需增加镜像或缺少镜像版本，请提交PR
 ```
 
 

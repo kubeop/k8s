@@ -28,8 +28,8 @@
 
 - name: "Download kubernetes"
   get_url:
-    url: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/bin/linux/amd64/{{ item }}"
-    dest: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/amd64"
+    url: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/{{ item }}"
+    dest: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}"
     timeout: "{{ download.timeout }}"
   with_items:
     - kube-apiserver
