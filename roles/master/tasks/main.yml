@@ -41,7 +41,7 @@
 
 - name: "Install kubectl"
   copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/amd64/kubectl"
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/kubectl"
     dest: "/usr/bin/"
     owner: kube
     group: kube
@@ -50,7 +50,7 @@
 
 - name: "Install master"
   copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/amd64/{{ item }}"
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{{ item }}"
     dest: "/usr/bin/"
     owner: kube
     group: kube

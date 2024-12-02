@@ -105,7 +105,7 @@
 
 - name: "Install worker"
   copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/amd64/{{ item }}"
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{{ item }}"
     dest: "/usr/bin/"
     owner: root
     group: root

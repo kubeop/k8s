@@ -196,6 +196,7 @@ nvidia-smi
 # 添加nvidia-container-toolkit软件源
 # 企业内部建议使用nexus配置nvidia-container-toolkit软件源的代理，并将group_vars/all.yml中repo修改为nexus代理地址，即可实现自动安装
 # 其他操作系统请参考: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#linux-distributions
+# Almalinux/Rockylinux
 cat  >  /etc/yum.repos.d/nvidia-container-toolkit.repo  << EOF
 [nvidia-container-toolkit]
 name=nvidia-container-toolkit
@@ -208,8 +209,18 @@ sslverify=1
 sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 EOF
 
+# Ubuntu
+# 导入gpg
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg 
+# 配置apt源
+echo "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/\$(ARCH) /" > /etc/apt/sources.list.d/nvidia-container-toolkit.list
+
 # 安装nvidia-container-toolkit
+# Almalinux/Rockylinux
 yum -y install nvidia-container-runtime nvidia-container-toolkit
+
+# Ubuntu
+apt -y install nvidia-container-runtime nvidia-container-toolkit
 ```
 
 

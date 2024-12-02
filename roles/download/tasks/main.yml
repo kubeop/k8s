@@ -5,7 +5,7 @@
     state: directory
   with_items:
     - etcd/{{ etcd.version }}
-    - kubernetes/{{ kubernetes.version }}/bin/linux/amd64
+    - kubernetes/{{ kubernetes.version }}
     - runc/{{ runc.version }}
     - cniplugins/{{ cniplugins.version }}
     - critools/{{ critools.version }}
