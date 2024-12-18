@@ -3,6 +3,7 @@
   package:
     name: keepalived
     state: present
+  tags: install_keepalived
 
 - name: "Generate keepalived.conf"
   template:

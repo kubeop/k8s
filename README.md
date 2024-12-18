@@ -46,7 +46,7 @@
 
 ```shell
 # 安装ansible
-yum -y install ansible
+dnf -y install ansible
 
 # 查看ansible使用的python版本
 ansible --version

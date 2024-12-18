@@ -3,6 +3,7 @@
   package:
     name: haproxy
     state: present
+  tags: install_haproxy
 
 - name: "Generate haproxy.cfg"
   template:
