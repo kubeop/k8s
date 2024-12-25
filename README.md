@@ -56,6 +56,10 @@ dnf list | grep netaddr
 
 # 根据前面查询的版本信息，选择跟ansible匹配的python版本的netaddr
 dnf -y install python3-netaddr
+
+# 或使用PIP进行安装
+pip3 install "ansible>=2.14.0" -i https://mirrors.ustc.edu.cn/pypi/web/simple
+pip3 install "netaddr>=0.8.0" -i https://mirrors.ustc.edu.cn/pypi/web/simple
 ```
 
 - 控制节点和被控节点Python版本尽量保持一致，否则执行可能出现问题。
@@ -288,7 +292,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 格式化挂载数据盘
 
 ```shell
-ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/data"
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_WORKER_IP} -e "disk=sdb dir=/data"
 ```
 
 执行生成节点证书
