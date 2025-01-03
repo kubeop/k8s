@@ -3,13 +3,13 @@ name: Docker Image && Kubernetes Release
 on:
   push:
     branches:
-      - main
+      - "v*.*.*"
     paths:
       - 'group_vars/all.yml'
 
   pull_request:
     branches:
-      - main
+      - "v*.*.*"
     paths:
       - 'group_vars/all.yml'
 
@@ -25,16 +25,55 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v4
 
+    - name: Get k8s Version
+      id: get_k8s_version
+      run: |
+        k8s_version=$(python -c "import yaml; data = yaml.safe_load(open('group_vars/all.yml')); print(data['kubernetes']['version'])")
+        echo "k8s_version=$k8s_version" >> $GITHUB_ENV
+
+    - name: Download
+      if: startsWith(github.ref, 'refs/heads/')
+      run: |
+        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kubectl
+        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-apiserver
+        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-controller-manager
+        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-scheduler
+        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kubelet
+        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-proxy
+    
+    - name: Push Release
+      uses: softprops/action-gh-release@v2
+      if: startsWith(github.ref, 'refs/heads/')
+      with:
+        token: ${{ secrets.GIT_TOKEN }}
+        tag_name:  ${{ env.k8s_version }}
+        preserve_order: true
+        files: |
+          kubectl
+          kube-apiserver
+          kube-controller-manager
+          kube-scheduler
+          kubelet
+          kube-proxy
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install wget docker pyyaml PyGithub requests
+        pip install pyyaml
 
     - name: Run script
+      run: |
+        python generate.py
+
+    - name: Sync Images
+      uses: hhyasdf/image-sync-action@v1.1
+      with:
+        auth_file: ./auth.yaml
+        images_file: ./images.yaml
+        version: latest
+        proc: 6
       env:
         ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
         ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_REPO: ${{ github.repository }}
-      run: |
-        python k8s.py
+        DKH_USERNAME: ${{ secrets.DKH_USERNAME }}
+        DKH_PASSWORD: ${{ secrets.DKH_PASSWORD }}
