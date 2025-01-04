@@ -6,7 +6,8 @@
   run_once: true
   vars:
     minimal_ansible_version: 2.14.0
-    maximal_ansible_version: 2.19.0
+    # 从2.17.0开始，被控端的python版本必须是3.7以上, 因RHEL8默认python版本为3.6，所以暂时限制在2.17.0 
+    maximal_ansible_version: 2.17.0
   tags: always
   tasks:
     - name: "Check {{ minimal_ansible_version }} <= Ansible version < {{ maximal_ansible_version }}"

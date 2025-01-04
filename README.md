@@ -1,12 +1,16 @@
 ## 支持的发型版
 
 - AlmaLinux 8，9
+
 - RockyLinux 8，9
+
 - TencentOS 3.1
+
 - Ubuntu Server 20.04，22.04
+
 - Debian 12
 
-
+  
 
 ## 支持组件
 
@@ -34,35 +38,21 @@
 
 建议根据下表安装合适的Python版本和Ansible版本
 
-| 组件                 | 版本     |
-| -------------------- | -------- |
-| AlmaLinux/RockyLinux | >=8      |
-| Python               | >=3.9    |
-| Ansible              | >=2.14.0 |
+| 组件                    | 版本     |
+| ----------------------- | -------- |
+| **Control Node Python** | >=3.9    |
+| **Target Python**       | >=3.6    |
+| **Ansible**             | >=2.14.0 |
 
 
 
 安装Ansible
 
 ```shell
-# 安装ansible
-dnf -y install ansible
-
-# 查看ansible使用的python版本
-ansible --version
-
-# 查看netaddr网络模块版本
-dnf list | grep netaddr
-
-# 根据前面查询的版本信息，选择跟ansible匹配的python版本的netaddr
-dnf -y install python3-netaddr
-
-# 或使用PIP进行安装
-pip3 install "ansible>=2.14.0" -i https://mirrors.ustc.edu.cn/pypi/web/simple
-pip3 install "netaddr>=0.8.0" -i https://mirrors.ustc.edu.cn/pypi/web/simple
+pip3 install "ansible>=7.0.0,<10.0.0" -i https://mirrors.ustc.edu.cn/pypi/web/simple
+pip3 install "netaddr>=0.10.1" -i https://mirrors.ustc.edu.cn/pypi/web/simple
 ```
 
-- 控制节点和被控节点Python版本尽量保持一致，否则执行可能出现问题。
 - 不同Python版本Anisble支持矩阵详情，请参考：https://docs.ansible.com/ansible-core/devel/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
 
 
