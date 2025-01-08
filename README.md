@@ -84,7 +84,6 @@ pip3 install "netaddr>=0.10.1" -i https://mirrors.ustc.edu.cn/pypi/web/simple
     - B类地址：172.16-31.0.0/16-24
     - C类地址：192.168.0.0/16-24
 
-- 如是离线环境，提前将相关包下载放到内网下载服务器，然后将groups/all.yml替换为内网下载地址即可（确保可以使用yum/apt/dnf等安装系统依赖包）
 
 
 
@@ -125,6 +124,12 @@ ansible-playbook fdisk.yml -i inventory -l master,worker -e "disk=sdb dir=/data"
 
 
 
+### 安装GPU驱动
+
+当集群节点为GPU节点时，请先参考[nvidia](nvidia.md)完成驱动安装。
+
+
+
 ### 下载离线包
 
 ```shell
@@ -133,88 +138,15 @@ ansible-playbook download.yml
 ```
 
 - 请确保Ansible控制端可以访问**Internet**，否则无法下载离线安装包。
-- 或在其他**Internet**节点下载后，按照要求目录结构拷贝到{{ download.dest }}目录中也可。
+- 或在其他**Internet**节点下载后，按照对应目录结构拷贝到{{ download.dest }}目录中也可。
 
 
 
 ### 同步镜像
 
 ```shell
-# 建议将group_vars/all.yml中定义的镜像自行同步至私有镜像仓库中，官网或代理可能不稳定或失效。
-# 建议使用 https://github.com/AliyunContainerService/image-syncer/releases 同步
-# 我已将相关镜像同步至阿里云镜像仓库:https://github.com/kubeop/sync_images.git
-# 如需增加镜像或缺少镜像版本，请提交PR
-```
-
-
-
-### 安装GPU驱动
-
-当集群节点为GPU节点时，请先按照以下步骤安装驱动
-
-```shell
-# 查看显卡信息（若找不到lspci命令，可以安装 yum install pciutils）
-lspci | grep -i nvidia
-
-# 查看内核版本
-uname -r
-
-# 查看可以安装的kernel-devel版本
-yum list | grep kernel-devel
-
-# 安装kernel-devel（安装的版本要和当前内核版本一致）
-yum install -y kernel-devel-$(uname -r) kernel-headers-$(uname -r)
-
-# 安装gcc dkms
-yum -y install gcc dkms
-
-# 查看nouveau加载情况
-lsmod | grep nouveau
-
-# 阻止 nouveau 模块加载
-cat >  /etc/modprobe.d/blacklist.conf << EOF
-blacklist nouveau
-options nouveau modeset=0
-EOF
-
-# 重新建立initramfs image文件（此步骤操作完成之后，需重启机器）
-mv /boot/initramfs-$(uname -r).img /boot/initramfs-$(uname -r).img.bak
-dracut /boot/initramfs-$(uname -r).img $(uname -r)
-
-# 安装驱动
-bash NVIDIA-Linux-x86_64-470.199.02.run
-
-# 验证驱动是否安装成功
-nvidia-smi
-
-# 添加nvidia-container-toolkit软件源
-# 企业内部建议使用nexus配置nvidia-container-toolkit软件源的代理，并将group_vars/all.yml中repo修改为nexus代理地址，即可实现自动安装
-# 其他操作系统请参考: https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html#linux-distributions
-# Almalinux/Rockylinux
-cat  >  /etc/yum.repos.d/nvidia-container-toolkit.repo  << EOF
-[nvidia-container-toolkit]
-name=nvidia-container-toolkit
-baseurl=https://nvidia.github.io/libnvidia-container/stable/rpm/\$basearch
-repo_gpgcheck=1
-gpgcheck=0
-enabled=1
-gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
-sslverify=1
-sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-EOF
-
-# Ubuntu
-# 导入gpg
-curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg 
-# 配置apt源
-echo "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/\$(ARCH) /" > /etc/apt/sources.list.d/nvidia-container-toolkit.list
-
-# 安装nvidia-container-toolkit
-# Almalinux/Rockylinux
-yum -y install nvidia-container-runtime nvidia-container-toolkit
-
-# Ubuntu
-apt -y install nvidia-container-runtime nvidia-container-toolkit
+# 建议将group_vars/all.yml中定义的镜像自行同步至私有镜像仓库中，并将地址修改为私有镜像仓库地址
+# 目前创建对应版本分支后，会自动同步镜像到阿里云镜像仓库，可能不稳定或失效。
 ```
 
 
@@ -346,19 +278,20 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t restart_apiserver,restart_
 ```
 
 - 如calico、metrics-server等服务也使用了集群证书，请记得一起更新相关证书。
--  `-l`参数更换为具体节点IP。
+- `-l`参数更换为具体节点IP。
 
 重启网络插件
 
 ```shell
 kubectl get pod -n kube-system | grep -v NAME | grep cilium | awk '{print $1}' | xargs kubectl -n kube-system delete pod
 ```
+
 -  更新证书可能会导致网络插件异常，建议重启。
 -  示例为重启cilium插件命令，请根据不同网络插件自行替换。
 
 
 
-## 升级kubernetes版本
+## 升级集群版本
 
 请先编辑group_vars/all.yml，修改kubernetes.version为新版本。
 
@@ -371,14 +304,32 @@ ansible-playbook download.yml
 安装kubernetes组件
 
 ```shell
-ansible-playbook cluster.yml -i inventory -t install_kubectl,install_master,install_worker
+ansible-playbook cluster.yml -i inventory -l ${IP} -t install_kubectl,install_master,install_worker
 ```
+
+- `-l`参数更换为具体节点IP。
 
 更新配置文件
 
 ```shell
-ansible-playbook cluster.yml -i inventory -t dis_master_config,dis_worker_config
+ansible-playbook cluster.yml -i inventory -l ${IP} -t dis_master_config,dis_worker_config
 ```
+
+- `-l`参数更换为具体节点IP。
+
+清空节点
+
+```shell
+kubectl drain --ignore-daemonsets <节点名称>
+```
+
+升级containerd组件（升级会自动重启containerd，可自行选择是否升级）
+
+```shell
+ansible-playbook cluster.yml -i inventory -l ${IP} -t install_runc,install_cni,install_containerd,install_critools
+```
+
+- `-l`参数更换为具体节点IP。
 
 然后依次重启每个kubernetes组件。
 
@@ -388,10 +339,17 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t restart_apiserver,restart_
 
 - `-l`参数更换为具体节点IP。
 
+恢复调度
+
+```shell
+kubectl uncordon <节点名称>
+```
 
 
-## 清理worker节点
+
+## 清理集群节点
 
 ```shell
 ansible-playbook reset.yml -i inventory -l ${IP} -e "flush_iptables=true enable_dual_stack_networks=false"
 ```
+
