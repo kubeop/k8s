@@ -9,6 +9,7 @@
   template:
     src: "keepalived.conf.j2"
     dest: "/etc/keepalived/keepalived.conf"
+  tags: generate_keepalived_conf
   notify:
     - restart keepalived
 
@@ -17,5 +18,6 @@
     src: "check_haproxy.sh.j2"
     dest: "/etc/keepalived/check_haproxy.sh"
     mode: 0777
+  tags: generate_check_haproxy_sh
   notify:
     - restart keepalived

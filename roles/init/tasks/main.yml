@@ -62,6 +62,7 @@
 - name: "Get firewalld is installed"
   command: whereis firewalld
   register: firewalld_state
+  tags: firewalld
 
 - name: "Stop firewalld"
   when: "'/usr/sbin/firewalld' in firewalld_state.stdout"

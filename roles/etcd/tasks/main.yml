@@ -4,6 +4,9 @@
     name: etcd
     gid: 201
     system: yes
+  tags:
+    - create_etcd_group
+    - install_etcd
 
 - name: Create etcd user
   user:
@@ -15,13 +18,18 @@
     home: "{{ etcd.data_dir }}"
     shell: /sbin/nologin
     system: yes
+  tags:
+    - create_etcd_user
+    - install_etcd
 
 - name: "Download etcd"
   unarchive:
     src: "{{ download.dest }}/etcd/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-amd64.tar.gz"
     dest: /tmp/
     remote_src: no
-  tags: install_etcd
+  tags:
+    - download_etcd
+    - install_etcd
 
 - name: "Install etcd"
   copy:
@@ -63,9 +71,11 @@
     group: etcd
     mode: 0700
     state: directory
+  tags:
+    - create_etcd_data_dir
   notify:
     - restart etcd
-    
+
 - name: "Generate etcd configure"
   template:
     src: "etcd.service.j2"

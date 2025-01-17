@@ -4,6 +4,7 @@
     name: kube
     gid: 200
     system: yes
+  tags: create_kube_group
 
 - name: Create kubernetes user
   user:
@@ -14,6 +15,7 @@
     createhome: no
     shell: /sbin/nologin
     system: yes
+  tags: create_kube_user
 
 - name: "Create kubernetes config directory"
   file:

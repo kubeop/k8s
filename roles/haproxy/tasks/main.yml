@@ -9,5 +9,6 @@
   template:
     src: "haproxy.cfg.j2"
     dest: "/etc/haproxy/haproxy.cfg"
+  tags: generate_haproxy_cfg
   notify:
     - restart haproxy
