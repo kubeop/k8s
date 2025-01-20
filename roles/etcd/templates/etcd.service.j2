@@ -32,7 +32,9 @@ ExecStart=/usr/bin/etcd \
          --snapshot-count=50000 \
          --log-level=info
 
-Restart=on-failure
+NotifyAccess=all
+Restart=always
+RestartSec=10s
 LimitNOFILE=65536
 
 [Install]

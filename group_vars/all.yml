@@ -65,7 +65,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/kube-apiserver
   download_url: https://mirrors.chenby.cn/https://github.com/kubeop/k8s/releases/download
   # kubernetes 版本
-  version: v1.32.0
+  version: v1.30.9
   # 集群Pod网段
   pods_subnet: 172.16.0.0/12
   # 集群Service网段
@@ -115,7 +115,9 @@ containerd:
   download_url: https://mirrors.chenby.cn/https://github.com/containerd/containerd/releases/download
   # containerd 版本
   version: 1.7.24
-  # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
+  # containerd 配置文件目录
+  cfg_dir: /etc/containerd
+  # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请保持默认目录
   root: "/var/lib/containerd"
   # containerd 临时数据目录
   state: "/run/containerd"
@@ -125,21 +127,44 @@ containerd:
     max_recv_message_size: 16777216
     max_send_message_size: 16777216
   debug:
-    level: ""
+    address: ""
+    level: "info"
+    format: ""
+    uid: 0
+    gid: 0
   metrics:
     address: ""
     grpc_histogram: false
   cri:
-    sandbox_image: "registry.aliyuncs.com/google_containers/pause:3.10"
-    max_concurrent_downloads: 3
-    max_container_log_line_size: -1
+    sandbox_image: 
+      repo: "registry.aliyuncs.com/google_containers/pause"
+      tag: "3.10"
+    max_container_log_line_size: 16384
+    enable_unprivileged_ports: false
+    enable_unprivileged_icmp: false
+    enable_selinux: false
+    disable_apparmor: false
+    tolerate_missing_hugetlb_controller: true
+    disable_hugetlb_controller: true
+    image_pull_progress_timeout: 5m
+    enable_cdi: false
   containerd:
     snapshotter: overlayfs
+    discard_unpacked_layers: true
   options:
     SystemdCgroup: true
-  registries:
-    "docker.io": "https://registry-1.docker.io"
-    "registry.k8s.io": "https://registry.k8s.io"
+  nri:
+    enabled: false
+  registry_mirrors:
+    - prefix: docker.io
+      mirrors:
+        - host: https://registry-1.docker.io
+          capabilities: ["pull", "resolve"]
+          skip_verify: false
+  registry_auth: []
+    #- registry: 10.0.0.2:5000
+    #  username: user
+    #  password: pass
 
 # Network Plugin
 network_plugin: calico
@@ -155,8 +180,8 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.26.2
-  plugin_version: v1.5.1-flannel2
+  version: v0.26.3
+  plugin_version: v1.6.0-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -176,7 +201,7 @@ calico:
   # 如使用自建文件服务器，请保证下载路径为: {{calico.download_url}}/calico/{{ calico.version }}/calicoctl-linux-amd64
   download_url: https://mirrors.chenby.cn/https://github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
-  version: v3.29.1
+  version: v3.28.2
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}

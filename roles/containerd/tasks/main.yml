@@ -113,7 +113,7 @@
 
 - name: "Create containerd config directory"
   file:
-    path: "/etc/containerd"
+    path: "{{ containerd.cfg_dir }}"
     owner: root
     group: root
     mode: 0755
@@ -123,10 +123,28 @@
 - name: "Set containerd config"
   template:
     src: "config.toml.j2"
-    dest: "/etc/containerd/config.toml"
+    dest: "{{ containerd.cfg_dir }}/config.toml"
     owner: root
     group: root
-    mode: 0644
+    mode: "0640"
+  tags: containerd_config
+  notify:
+    - restart containerd
+
+- name: Configure containerd registries
+  block:
+    - name: Create registry directories
+      file:
+        path: "{{ containerd.cfg_dir }}/certs.d/{{ item.prefix }}"
+        state: directory
+        mode: "0755"
+      loop: "{{ containerd.registry_mirrors }}"
+    - name: Write hosts.toml file
+      template:
+        src: hosts.toml.j2
+        dest: "{{ containerd.cfg_dir }}/certs.d/{{ item.prefix }}/hosts.toml"
+        mode: "0640"
+      loop: "{{ containerd.registry_mirrors }}"
   tags: containerd_config
   notify:
     - restart containerd

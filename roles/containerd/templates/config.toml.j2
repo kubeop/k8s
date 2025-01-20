@@ -1,51 +1,23 @@
 version = 2
 root = "{{ containerd.root | default("/var/lib/containerd") }}"
 state = "{{ containerd.state | default("/run/containerd") }}"
-plugin_dir = ""
-disabled_plugins = []
-required_plugins = []
-imports = []
 oom_score = {{ containerd.oom_score | default(0) }}
 
-[cgroup]
-  path = ""
-
-[debug]
-  address = ""
-  format = ""
-  gid = 0
-  level = "{{ containerd.debug.level | default("") }}"
-  uid = 0
-
-{% if 'grpc' in containerd %}
 [grpc]
   address = "{{ containerd.state | default("/run/containerd") }}/containerd.sock"
-  tcp_address = ""
-  tcp_tls_cert = ""
-  tcp_tls_key = ""
-  uid = 0
-  gid = 0
-{% for param, value in containerd.grpc.items() %}
-  {{ param }} = {{ value }}
-{% endfor %}
-{% endif %}
+  max_recv_message_size = {{ containerd.grpc.max_recv_message_size }}
+  max_send_message_size = {{ containerd.grpc.max_send_message_size }}
 
-[ttrpc]
-  address = ""
-  gid = 0
-  uid = 0
+[debug]
+  address = "{{ containerd.debug.address }}"
+  level = "{{ containerd.debug.level }}"
+  format = "{{ containerd.debug.format }}"
+  uid = {{ containerd.debug.uid }}
+  gid = {{ containerd.debug.gid }}
 
-{% if 'metrics' in containerd %}
 [metrics]
   address = "{{ containerd.metrics.address | default('') }}"
   grpc_histogram = {{ containerd.metrics.grpc_histogram | default(false) | lower }}
-{% endif %}
-
-[timeouts]
-  "io.containerd.timeout.shim.cleanup" = "5s"
-  "io.containerd.timeout.shim.load" = "5s"
-  "io.containerd.timeout.shim.shutdown" = "3s"
-  "io.containerd.timeout.task.state" = "2s"
 
 [plugins]
 
@@ -57,27 +29,19 @@ oom_score = {{ containerd.oom_score | default(0) }}
     startup_delay = "100ms"
 
   [plugins."io.containerd.grpc.v1.cri"]
-    disable_apparmor = false
-    disable_cgroup = false
-    disable_hugetlb_controller = true
-    disable_proc_mount = false
-    disable_tcp_service = true
-    enable_selinux = false
-    enable_tls_streaming = false
-    ignore_image_defined_volumes = false
-    max_concurrent_downloads = {{ containerd.cri.max_concurrent_downloads | default(3)}}
+    sandbox_image = "{{ containerd.cri.sandbox_image.repo }}:{{ containerd.cri.sandbox_image.tag }}"
     max_container_log_line_size = {{ containerd.cri.max_container_log_line_size }}
-    netns_mounts_under_state_dir = false
-    restrict_oom_score_adj = false
-    sandbox_image = "{{ containerd.cri.sandbox_image }}"
-    selinux_category_range = 1024
-    stats_collect_period = 10
-    stream_idle_timeout = "4h0m0s"
-    stream_server_address = "127.0.0.1"
-    stream_server_port = "0"
-    systemd_cgroup = false
-    tolerate_missing_hugetlb_controller = true
-    unset_seccomp_profile = ""
+    enable_unprivileged_ports = {{ containerd.cri.enable_unprivileged_ports | lower }}
+    enable_unprivileged_icmp = {{ containerd.cri.enable_unprivileged_icmp | lower }}
+    enable_selinux = {{ containerd.cri.enable_selinux | lower }}
+    disable_apparmor = {{ containerd.cri.disable_apparmor | lower }}
+    tolerate_missing_hugetlb_controller = {{ containerd.cri.tolerate_missing_hugetlb_controller | lower }}
+    disable_hugetlb_controller = {{ containerd.cri.disable_hugetlb_controller | lower }}
+    image_pull_progress_timeout = "{{ containerd.cri.image_pull_progress_timeout }}"
+{% if containerd.cri.enable_cdi %}
+    enable_cdi = true
+    cdi_spec_dirs = ["/etc/cdi", "/var/run/cdi"]
+{% endif %}
 
     [plugins."io.containerd.grpc.v1.cri".cni]
       bin_dir = "/opt/cni/bin"
@@ -91,21 +55,8 @@ oom_score = {{ containerd.oom_score | default(0) }}
 {% else %}
       default_runtime_name = "runc"
 {% endif %}
-      disable_snapshot_annotations = true
-      discard_unpacked_layers = false
-      no_pivot = false
       snapshotter = "{{ containerd.containerd.snapshotter | default("overlayfs") }}"
-
-      [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime]
-        base_runtime_spec = ""
-        container_annotations = []
-        pod_annotations = []
-        privileged_without_host_devices = false
-        runtime_engine = ""
-        runtime_root = ""
-        runtime_type = ""
-
-        [plugins."io.containerd.grpc.v1.cri".containerd.default_runtime.options]
+      discard_unpacked_layers = {{ containerd.containerd.discard_unpacked_layers | lower }}
 
       [plugins."io.containerd.grpc.v1.cri".containerd.runtimes]
 {% if gpu is defined and  gpu == 'true' %}
@@ -140,39 +91,19 @@ oom_score = {{ containerd.oom_score | default(0) }}
 {% endif %}
 {% endif %}
 
-
-      [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime]
-        base_runtime_spec = ""
-        container_annotations = []
-        pod_annotations = []
-        privileged_without_host_devices = false
-        runtime_engine = ""
-        runtime_root = ""
-        runtime_type = ""
-
-        [plugins."io.containerd.grpc.v1.cri".containerd.untrusted_workload_runtime.options]
-
-    [plugins."io.containerd.grpc.v1.cri".image_decryption]
-      key_model = "node"
-
     [plugins."io.containerd.grpc.v1.cri".registry]
-      config_path = ""
-
-      [plugins."io.containerd.grpc.v1.cri".registry.auths]
-
-      [plugins."io.containerd.grpc.v1.cri".registry.configs]
-
-      [plugins."io.containerd.grpc.v1.cri".registry.headers]
-
-      [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
-{% for registry, addr in containerd.registries.items() %}
-        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ registry }}"]
-          endpoint = ["{{ ([ addr ] | flatten ) | join('","') }}"]
+      config_path = "{{ containerd.cfg_dir }}/certs.d"
+{% for registry in containerd.registry_auth if registry['registry'] is defined %}
+{% if (registry['username'] is defined and registry['password'] is defined) or registry['auth'] is defined %}
+      [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ registry['registry'] }}".auth]
+{% if registry['username'] is defined and registry['password'] is defined %}
+        password = "{{ registry['password'] }}"
+        username = "{{ registry['username'] }}"
+{% else %}
+        auth = "{{ registry['auth'] }}"
+{% endif %}
+{% endif %}
 {% endfor %}
-
-    [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]
-      tls_cert_file = ""
-      tls_key_file = ""
 
   [plugins."io.containerd.internal.v1.opt"]
     path = "/opt/containerd"
@@ -180,60 +111,7 @@ oom_score = {{ containerd.oom_score | default(0) }}
   [plugins."io.containerd.internal.v1.restart"]
     interval = "10s"
 
-  [plugins."io.containerd.metadata.v1.bolt"]
-    content_sharing_policy = "shared"
-
-  [plugins."io.containerd.monitor.v1.cgroups"]
-    no_prometheus = false
-
-  [plugins."io.containerd.runtime.v1.linux"]
-    no_shim = false
-    runtime = "runc"
-    runtime_root = ""
-    shim = "containerd-shim"
-    shim_debug = false
-
-  [plugins."io.containerd.runtime.v2.task"]
-    platforms = ["linux/amd64"]
-
-  [plugins."io.containerd.service.v1.diff-service"]
-    default = ["walking"]
-
-  [plugins."io.containerd.snapshotter.v1.aufs"]
-    root_path = ""
-
-  [plugins."io.containerd.snapshotter.v1.btrfs"]
-    root_path = ""
-
-  [plugins."io.containerd.snapshotter.v1.devmapper"]
-    async_remove = false
-    base_image_size = ""
-    pool_name = ""
-    root_path = ""
-
-  [plugins."io.containerd.snapshotter.v1.native"]
-    root_path = ""
-
-  [plugins."io.containerd.snapshotter.v1.overlayfs"]
-    root_path = ""
-
-  [plugins."io.containerd.snapshotter.v1.zfs"]
-    root_path = ""
-
-[proxy_plugins]
-
-[stream_processors]
-
-  [stream_processors."io.containerd.ocicrypt.decoder.v1.tar"]
-    accepts = ["application/vnd.oci.image.layer.v1.tar+encrypted"]
-    args = ["--decryption-keys-path", "/etc/containerd/ocicrypt/keys"]
-    env = ["OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf"]
-    path = "ctd-decoder"
-    returns = "application/vnd.oci.image.layer.v1.tar"
-
-  [stream_processors."io.containerd.ocicrypt.decoder.v1.tar.gzip"]
-    accepts = ["application/vnd.oci.image.layer.v1.tar+gzip+encrypted"]
-    args = ["--decryption-keys-path", "/etc/containerd/ocicrypt/keys"]
-    env = ["OCICRYPT_KEYPROVIDER_CONFIG=/etc/containerd/ocicrypt/ocicrypt_keyprovider.conf"]
-    path = "ctd-decoder"
-    returns = "application/vnd.oci.image.layer.v1.tar+gzip"
+{% if containerd.nri.enabled and containerd.version is version('1.7.0', '>=') %}
+  [plugins."io.containerd.nri.v1.nri"]
+    disable = false
+{% endif %}

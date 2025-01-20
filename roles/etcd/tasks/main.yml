@@ -44,6 +44,8 @@
     - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdctl"}
     - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdutl"}
   tags: install_etcd
+  notify:
+    - restart etcd
 
 - name: "Distribution certs"
   copy:

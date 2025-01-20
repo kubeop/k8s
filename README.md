@@ -179,7 +179,7 @@ ansible-playbook cluster.yml -i inventory --skip-tags=create_master_taint
 
 ### 扩容master节点
 
-扩容时，建议注释inventory文件master组中旧服务器信息，仅保留扩容节点的信息。
+扩容时，在inventory文件master组中依次添加新增服务器信息（执行时请务必使用-l参数指定IP）。
 
 格式化挂载数据盘
 
@@ -209,7 +209,7 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t master,contai
 
 ### 扩容worker节点
 
-扩容时，建议注释inventory文件worker组中旧服务器信息，仅保留扩容节点的信息。
+扩容时，在inventory文件worker组中依次添加新增服务器信息（执行时请务必使用-l参数指定IP）。
 
 格式化挂载数据盘
 
@@ -301,6 +301,15 @@ kubectl get pod -n kube-system | grep -v NAME | grep cilium | awk '{print $1}' |
 ansible-playbook download.yml
 ```
 
+升级etcd（升级会自动重启etcd，可根据需求自行选择是否升级）
+
+```shell
+ansible-playbook cluster.yml -i inventory -l ${IP} -t install_etcd
+ansible-playbook cluster.yml -i inventory -l ${IP} -t dis_etcd_config
+```
+
+- `-l`参数更换为具体节点IP。
+
 安装kubernetes组件
 
 ```shell
@@ -323,7 +332,7 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t dis_master_config,dis_work
 kubectl drain --ignore-daemonsets <节点名称>
 ```
 
-升级containerd组件（升级会自动重启containerd，可自行选择是否升级）
+升级containerd组件（升级会自动重启containerd，可根据需求自行选择是否升级）
 
 ```shell
 ansible-playbook cluster.yml -i inventory -l ${IP} -t install_runc,install_cni,install_containerd,install_critools
