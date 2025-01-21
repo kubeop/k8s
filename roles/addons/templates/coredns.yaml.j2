@@ -4,8 +4,8 @@ metadata:
   name: coredns
   namespace: kube-system
   labels:
-      kubernetes.io/cluster-service: "true"
-      addonmanager.kubernetes.io/mode: Reconcile
+    kubernetes.io/cluster-service: "true"
+    addonmanager.kubernetes.io/mode: Reconcile
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -63,7 +63,7 @@ metadata:
   name: coredns
   namespace: kube-system
   labels:
-      addonmanager.kubernetes.io/mode: EnsureExists
+    addonmanager.kubernetes.io/mode: EnsureExists
 data:
   Corefile: |
     .:53 {

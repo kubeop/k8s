@@ -1,46 +1,46 @@
 global
-   log /dev/log local0
-   log /dev/log local1 notice
-   chroot      /var/lib/haproxy
-   pidfile     /var/run/haproxy.pid
-   maxconn     4000
-   stats timeout 30s
-   user        haproxy
-   group       haproxy
-   daemon
-   stats socket /var/lib/haproxy/stats
+  log /dev/log local0
+  log /dev/log local1 notice
+  chroot      /var/lib/haproxy
+  pidfile     /var/run/haproxy.pid
+  maxconn     4000
+  stats timeout 30s
+  user        haproxy
+  group       haproxy
+  daemon
+  stats socket /var/lib/haproxy/stats
 
 defaults
-    mode                    tcp
-    log                     global
-    option                  tcplog
-    option                  dontlognull
-    retries                 3
-    timeout http-request    10s     #默认http请求超时时间
-    timeout queue           1m      #默认队列超时时间
-    timeout connect         10s     #默认连接超时时间
-    timeout client          1m      #默认客户端超时时间
-    timeout server          1m      #默认服务器超时时间
-    timeout http-keep-alive 10s     #默认持久连接超时时间
-    timeout check           10s     #设置心跳检查超时时间
-    maxconn                 3000
+  mode                    tcp
+  log                     global
+  option                  tcplog
+  option                  dontlognull
+  retries                 3
+  timeout http-request    10s     #默认http请求超时时间
+  timeout queue           1m      #默认队列超时时间
+  timeout connect         10s     #默认连接超时时间
+  timeout client          1m      #默认客户端超时时间
+  timeout server          1m      #默认服务器超时时间
+  timeout http-keep-alive 10s     #默认持久连接超时时间
+  timeout check           10s     #设置心跳检查超时时间
+  maxconn                 3000
 
 frontend http_stats
-   bind *:58080
-   mode http
-   option httplog
-   stats uri /haproxy?stats
+  bind *:58080
+  mode http
+  option httplog
+  stats uri /haproxy?stats
 
 frontend control-plane
-    bind *:{{loadbalance.port}}
-    mode tcp
-    option tcplog
-    default_backend kube-apiservers
+  bind *:{{loadbalance.port}}
+  mode tcp
+  option tcplog
+  default_backend kube-apiservers
 
 backend kube-apiservers
-    mode tcp
-    balance roundrobin
-    default-server inter 15s downinter 15s rise 2 fall 2 slowstart 60s maxconn 1000 maxqueue 256 weight 100
-    {% for host in groups['master'] %}
-    server  {{hostvars[host].hostname}}  {{host}}:6443 check
-    {% endfor %}
+  mode tcp
+  balance roundrobin
+  default-server inter 15s downinter 15s rise 2 fall 2 slowstart 60s maxconn 1000 maxqueue 256 weight 100
+  {% for host in groups['master'] %}
+  server  {{hostvars[host].hostname}}  {{host}}:6443 check
+  {% endfor %}

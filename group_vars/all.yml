@@ -65,7 +65,7 @@ kubernetes:
   # 如使用自建文件服务器，请保证下载路径为:{{kubernetes.download_url}}/{{kubernetes.version}}/kube-apiserver
   download_url: https://mirrors.chenby.cn/https://github.com/kubeop/k8s/releases/download
   # kubernetes 版本
-  version: v1.30.9
+  version: v1.32.0
   # 集群Pod网段
   pods_subnet: 172.16.0.0/12
   # 集群Service网段

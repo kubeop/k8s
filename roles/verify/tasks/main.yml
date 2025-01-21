@@ -40,7 +40,7 @@
     - etcd
     - master
     - worker
-  run_once: yes
+  run_once: true
 
 - name: Fail if non systemd OS type
   assert:
@@ -91,25 +91,25 @@
     that:
       - kubernetes.service_addresses | ansible.utils.ipaddr('net')
     msg: "kubernetes.service_addresses = '{{ kubernetes.service_addresses }}' is not a valid network range"
-  run_once: yes
+  run_once: true
 
 - name: "Check that pods_subnet is a network range"
   assert:
     that:
       - kubernetes.pods_subnet | ansible.utils.ipaddr('net')
     msg: "kubernetes.pods_subnet = '{{ kubernetes.pods_subnet }}' is not a valid network range"
-  run_once: yes
+  run_once: true
 
 - name: "Check that pods_subnet does not collide with service_addresses"
   assert:
     that:
       - kubernetes.pods_subnet | ansible.utils.ipaddr(kubernetes.service_addresses) | string == 'None'
     msg: "pods_subnet cannot be the same network segment as service_addresses"
-  run_once: yes
+  run_once: true
 
 - name: "Guarantee that enough network address space is available for all pods"
   assert:
     that: "{{ (kubernetes.kubelet_max_pods | default(110)) | int <= (2 ** (32 - kubernetes.node_prefix | int)) - 2 }}"
     msg: "Do not schedule more pods on a node than inet addresses are available."
   when: network_plugin != 'calico'
-  run_once: yes
+  run_once: true
