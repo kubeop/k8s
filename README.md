@@ -304,8 +304,7 @@ ansible-playbook download.yml
 升级etcd（升级会自动重启etcd，可根据需求自行选择是否升级）
 
 ```shell
-ansible-playbook cluster.yml -i inventory -l ${IP} -t install_etcd
-ansible-playbook cluster.yml -i inventory -l ${IP} -t dis_etcd_config
+ansible-playbook cluster.yml -i inventory -l ${IP} -t install_etcd,dis_etcd_config
 ```
 
 - `-l`参数更换为具体节点IP。
@@ -329,13 +328,13 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t dis_master_config,dis_work
 清空节点
 
 ```shell
-kubectl drain --ignore-daemonsets <节点名称>
+kubectl drain --ignore-daemonsets --force <节点名称>
 ```
 
 升级containerd组件（升级会自动重启containerd，可根据需求自行选择是否升级）
 
 ```shell
-ansible-playbook cluster.yml -i inventory -l ${IP} -t install_runc,install_cni,install_containerd,install_critools
+ansible-playbook cluster.yml -i inventory -l ${IP} -t install_runc,install_cni,install_containerd,install_critools,containerd_config
 ```
 
 - `-l`参数更换为具体节点IP。
