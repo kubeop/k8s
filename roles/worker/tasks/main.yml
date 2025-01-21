@@ -268,7 +268,6 @@
     validate_certs: no
   register: kubelet
   failed_when: "'ok' not in kubelet.content"
-  connection: local
   tags: healthcheck
 
 - name: "Restart kube-proxy"
@@ -295,7 +294,6 @@
     validate_certs: no
     status_code: 200
   register: proxy
-  connection: local
   tags: healthcheck
 
 - name: "Check whether the master is ready?"

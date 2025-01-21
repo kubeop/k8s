@@ -216,11 +216,10 @@
     url: "https://{{ ansible_default_ipv4.address }}:6443/healthz"
     return_content: yes
     validate_certs: no
-    client_cert: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.pem"
-    client_key: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.key"
+    client_cert: "/etc/kubernetes/pki/admin.pem"
+    client_key: "/etc/kubernetes/pki/admin.key"
   register: apiserver
   failed_when: "'ok' not in apiserver.content"
-  connection: local
   tags: healthcheck
 
 - name: "Kube-controller-manager health check"
@@ -230,7 +229,6 @@
     validate_certs: no
   register: controller
   failed_when: "'ok' not in controller.content"
-  connection: local
   tags: healthcheck
 
 - name: "Kube-scheduler health check"
@@ -240,5 +238,4 @@
     validate_certs: no
   register: scheduler
   failed_when: "'ok' not in scheduler.content"
-  connection: local
   tags: healthcheck

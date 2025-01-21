@@ -3,13 +3,13 @@ name: Docker Image && Kubernetes Release
 on:
   push:
     branches:
-      - "v*.*.*"
+      - main
     paths:
       - 'group_vars/all.yml'
 
   pull_request:
     branches:
-      - "v*.*.*"
+      - main
     paths:
       - 'group_vars/all.yml'
 
@@ -24,6 +24,8 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
 
     - name: Get k8s Version
       id: get_k8s_version
@@ -31,8 +33,22 @@ jobs:
         k8s_version=$(python -c "import yaml; data = yaml.safe_load(open('group_vars/all.yml')); print(data['kubernetes']['version'])")
         echo "k8s_version=$k8s_version" >> $GITHUB_ENV
 
+    - name: Check if tag exists
+      id: check_tag
+      run: |
+        TAG_NAME=${{ env.k8s_version }}
+        
+        # Check if tag exists
+        if git tag --list | grep -q "^${TAG_NAME}$"; then
+          echo "Tag '${TAG_NAME}' exists, skipping release upload."
+          echo "exists=true" >> $GITHUB_ENV
+        else
+          echo "Tag '${TAG_NAME}' does not exist, preparing to upload release."
+          echo "exists=false" >> $GITHUB_ENV
+        fi
+
     - name: Download
-      if: startsWith(github.ref, 'refs/heads/')
+      if: env.exists == 'false'
       run: |
         wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kubectl
         wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-apiserver
@@ -43,7 +59,7 @@ jobs:
     
     - name: Push Release
       uses: softprops/action-gh-release@v2
-      if: startsWith(github.ref, 'refs/heads/')
+      if: env.exists == 'false'
       with:
         token: ${{ secrets.GIT_TOKEN }}
         tag_name:  ${{ env.k8s_version }}
