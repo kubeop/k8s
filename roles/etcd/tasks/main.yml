@@ -24,7 +24,7 @@
 
 - name: "Download etcd"
   unarchive:
-    src: "{{ download.dest }}/etcd/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-amd64.tar.gz"
+    src: "{{ download.dest }}/etcd/{{ etcd.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/etcd-{{ etcd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
     dest: /tmp/
     remote_src: no
   tags:
@@ -40,9 +40,9 @@
     mode: 0750
     remote_src: yes
   with_items:
-    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcd"}
-    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdctl"}
-    - {src: "/tmp/etcd-{{ etcd.version }}-linux-amd64/etcdutl"}
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/etcd"}
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/etcdctl"}
+    - {src: "/tmp/etcd-{{ etcd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/etcdutl"}
   tags: install_etcd
   notify:
     - restart etcd

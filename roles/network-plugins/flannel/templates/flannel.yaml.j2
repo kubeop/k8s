@@ -82,6 +82,11 @@ data:
   net-conf.json: |
     {
       "Network": "{{ kubernetes.pods_subnet }}",
+      "EnableIPv4": true,
+{%   if kubernetes.enable_dual_stack_networks %}
+      "EnableIPv6": true,
+      "IPv6Network": "{{ kubernetes.pods_subnet_ipv6 }}",
+{%   endif %}
       "Backend": {
 {% if flannel.network_mode == 'vxlan' %}
         "DirectRouting": {{ flannel.directRouting | lower}},

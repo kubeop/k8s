@@ -50,13 +50,12 @@ jobs:
     - name: Download
       if: env.exists == 'false'
       run: |
-        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kubectl
-        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-apiserver
-        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-controller-manager
-        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-scheduler
-        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kubelet
-        wget https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/amd64/kube-proxy
-    
+        for file in kubectl kube-apiserver kube-controller-manager kube-scheduler kubelet kube-proxy; do
+          for arch in amd64 arm64; do
+            wget -O ${file}-${arch} https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/${arch}/${file}
+          done
+        done
+
     - name: Push Release
       uses: softprops/action-gh-release@v2
       if: env.exists == 'false'
@@ -65,12 +64,18 @@ jobs:
         tag_name:  ${{ env.k8s_version }}
         preserve_order: true
         files: |
-          kubectl
-          kube-apiserver
-          kube-controller-manager
-          kube-scheduler
-          kubelet
-          kube-proxy
+          kubectl-amd64
+          kube-apiserver-amd64
+          kube-controller-manager-amd64
+          kube-scheduler-amd64
+          kubelet-amd64
+          kube-proxy-amd64
+          kubectl-arm64
+          kube-apiserver-arm64
+          kube-controller-manager-arm64
+          kube-scheduler-arm64
+          kubelet-arm64
+          kube-proxy-arm64
 
     - name: Install dependencies
       run: |
@@ -87,6 +92,7 @@ jobs:
         auth_file: ./auth.yaml
         images_file: ./images.yaml
         version: latest
+        arch: amd64, arm64
         proc: 6
       env:
         ACR_USERNAME: ${{ secrets.ACR_USERNAME }}

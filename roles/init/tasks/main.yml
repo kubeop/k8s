@@ -118,7 +118,7 @@
   tags: limits
 
 - name: "Modify sysctl"
-  sysctl:
+  ansible.posix.sysctl:
     name: "{{ item.name }}"
     value: "{{ item.value }}"
     state: present
@@ -142,6 +142,19 @@
     - {name: 'net.ipv4.tcp_keepalive_intvl',value: '30' }
     - {name: 'net.ipv4.tcp_keepalive_probes',value: '10' }
     - {name: 'net.ipv4.ip_local_port_range',value: '20000 60999' }
+  tags: sysctl
+
+- name: Enable ipv6 forwarding
+  ansible.posix.sysctl:
+    name: "{{ item.name }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: yes
+  with_items:
+    - {name: 'net.ipv6.conf.all.disable_ipv6',value: '0' }
+    - {name: 'net.ipv6.conf.default.disable_ipv6',value: '0' }
+    - {name: 'net.ipv6.conf.all.forwarding ',value: '1' }
+  when: ( kubernetes.enable_dual_stack_networks is defined ) and ( kubernetes.enable_dual_stack_networks | bool )
   tags: sysctl
 
 - name: "Config systemd-journald"

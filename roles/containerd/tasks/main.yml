@@ -59,7 +59,7 @@
 
 - name: Install runc
   copy:
-    src: "{{ download.dest }}/runc/{{ runc.version }}/runc.amd64"
+    src: "{{ download.dest }}/runc/{{ runc.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/runc.{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}"
     dest: "/usr/local/sbin/runc"
     owner: root
     group: root
@@ -77,14 +77,14 @@
 
 - name: Install cni
   unarchive:
-    src: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}/cni-plugins-linux-amd64-{{ cniplugins.version }}.tgz"
+    src: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/cni-plugins-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}-{{ cniplugins.version }}.tgz"
     dest: "/opt/cni/bin/"
     remote_src: no
   tags: install_cni
 
 - name: Install containerd
   unarchive:
-    src: "{{ download.dest }}/containerd/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-amd64.tar.gz"
+    src: "{{ download.dest }}/containerd/v{{ containerd.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/containerd-{{ containerd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
     dest: "/usr/local/bin/"
     remote_src: no
     extra_opts:
@@ -151,7 +151,7 @@
 
 - name: Install cri-tools
   unarchive:
-    src: "{{ download.dest }}/critools/{{ critools.version }}/crictl-{{ critools.version }}-linux-amd64.tar.gz"
+    src: "{{ download.dest }}/critools/{{ critools.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/crictl-{{ critools.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
     dest: "/usr/local/bin/"
     remote_src: no
   tags: install_critools

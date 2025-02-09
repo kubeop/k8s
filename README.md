@@ -34,6 +34,12 @@
 
 ## 开始配置
 
+> 本脚本向前兼容，拉取最新代码，根据需求调整`group_vars/all.yml`和`inventory`中相关参数即可。
+>
+> 如需更新本地代码至最新，建议备份`group_vars/all.yml`和`inventory`并更新代码至最新，然后将原`group_vars/all.yml`和`inventory`中需要的配置添加到最新的`group_vars/all.yml`和`inventory`文件即可。
+
+
+
 ### 配置Ansible控制端
 
 建议根据下表安装合适的Python版本和Ansible版本
@@ -54,6 +60,14 @@ pip3 install "netaddr>=0.10.1" -i https://mirrors.ustc.edu.cn/pypi/web/simple
 ```
 
 - 不同Python版本Anisble支持矩阵详情，请参考：https://docs.ansible.com/ansible-core/devel/reference_appendices/release_and_maintenance.html#ansible-core-support-matrix
+
+
+
+### 开启双栈网络
+
+在`group_vars/all.yml`配置中将enable_dual_stack_networks设置为`true`。使用之前请务必确认集群节点所在网络已开启支持IPv6。
+
+⚠️：在云平台使用Calico IPIP时，请勿开启双栈网络，Calico IPv6网络不支持IPIP，[参考](https://github.com/projectcalico/calico/issues/5206)。
 
 
 

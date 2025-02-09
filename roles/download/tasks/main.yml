@@ -1,7 +1,7 @@
 ---
 - name: "Create download directory"
   file:
-    path: "{{ download.dest }}/{{ item }}"
+    path: "{{ download.dest }}/{{ item }}/{{ download.arch }}"
     state: directory
   with_items:
     - etcd/{{ etcd.version }}
@@ -15,8 +15,8 @@
 
 - name: "Download etcd"
   get_url:
-    url: "{{ etcd.download_url }}/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-amd64.tar.gz"
-    dest: "{{ download.dest }}/etcd/{{ etcd.version }}"
+    url: "{{ etcd.download_url }}/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-{{ download.arch }}.tar.gz"
+    dest: "{{ download.dest }}/etcd/{{ etcd.version }}/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -28,8 +28,8 @@
 
 - name: "Download kubernetes"
   get_url:
-    url: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/{{ item }}"
-    dest: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}"
+    url: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/{{ item }}-{{ download.arch }}"
+    dest: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   with_items:
     - kube-apiserver
@@ -48,8 +48,8 @@
 
 - name: "Download runc"
   get_url:
-    url: "{{ runc.download_url }}/{{ runc.version }}/runc.amd64"
-    dest: "{{ download.dest }}/runc/{{ runc.version }}"
+    url: "{{ runc.download_url }}/{{ runc.version }}/runc.{{ download.arch }}"
+    dest: "{{ download.dest }}/runc/{{ runc.version }}/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -61,8 +61,8 @@
 
 - name: "Download cniplugins"
   get_url:
-    url: "{{ cniplugins.download_url }}/{{ cniplugins.version }}/cni-plugins-linux-amd64-{{ cniplugins.version }}.tgz"
-    dest: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}"
+    url: "{{ cniplugins.download_url }}/{{ cniplugins.version }}/cni-plugins-linux-{{ download.arch }}-{{ cniplugins.version }}.tgz"
+    dest: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -74,8 +74,8 @@
 
 - name: "Download critools"
   get_url:
-    url: "{{ critools.download_url }}/{{ critools.version }}/crictl-{{ critools.version }}-linux-amd64.tar.gz"
-    dest: "{{ download.dest }}/critools/{{ critools.version }}"
+    url: "{{ critools.download_url }}/{{ critools.version }}/crictl-{{ critools.version }}-linux-{{ download.arch }}.tar.gz"
+    dest: "{{ download.dest }}/critools/{{ critools.version }}/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -87,8 +87,8 @@
 
 - name: "Download containerd"
   get_url:
-    url: "{{ containerd.download_url }}/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-amd64.tar.gz"
-    dest: "{{ download.dest }}/containerd/v{{ containerd.version }}"
+    url: "{{ containerd.download_url }}/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-{{ download.arch }}.tar.gz"
+    dest: "{{ download.dest }}/containerd/v{{ containerd.version }}/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -100,8 +100,8 @@
 
 - name: "Download calicoctl"
   get_url:
-    url: "{{ calico.download_url }}/{{ calico.version }}/calicoctl-linux-amd64"
-    dest: "{{ download.dest }}/calico/{{ calico.version }}"
+    url: "{{ calico.download_url }}/{{ calico.version }}/calicoctl-linux-{{ download.arch }}"
+    dest: "{{ download.dest }}/calico/{{ calico.version }}/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or

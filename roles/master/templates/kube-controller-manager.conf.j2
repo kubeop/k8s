@@ -5,9 +5,14 @@ KUBE_CONTROLLER_MANAGER_ARGS="\
     --authentication-kubeconfig=/etc/kubernetes/controller-manager.kubeconfig \
     --authorization-kubeconfig=/etc/kubernetes/controller-manager.kubeconfig \
     --client-ca-file=/etc/kubernetes/pki/ca.pem \
-    --cluster-cidr={{ kubernetes.pods_subnet }} \
+    --cluster-cidr={{ kubernetes.pods_subnet }}{{ ',' + kubernetes.pods_subnet_ipv6 if kubernetes.enable_dual_stack_networks else '' }} \
+{% if kubernetes.enable_dual_stack_networks %}
+    --node-cidr-mask-size-ipv4={{ kubernetes.node_prefix }} \
+    --node-cidr-mask-size-ipv6={{ kubernetes.node_prefix_ipv6 }} \
+{% else %}
     --node-cidr-mask-size={{ kubernetes.node_prefix }} \
-    --service-cluster-ip-range={{ kubernetes.service_addresses }} \
+{% endif %}
+    --service-cluster-ip-range={{ kubernetes.service_addresses }}{{ ',' + kubernetes.service_addresses_ipv6 if kubernetes.enable_dual_stack_networks else '' }} \
     --cluster-name=kubernetes \
     --cluster-signing-cert-file=/etc/kubernetes/pki/ca.pem \
     --cluster-signing-key-file=/etc/kubernetes/pki/ca.key \

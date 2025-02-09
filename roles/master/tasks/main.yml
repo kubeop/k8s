@@ -43,8 +43,8 @@
 
 - name: "Install kubectl"
   copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/kubectl"
-    dest: "/usr/bin/"
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/kubectl-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}"
+    dest: "/usr/bin/kubectl"
     owner: kube
     group: kube
     mode: 0755
@@ -52,8 +52,8 @@
 
 - name: "Install master"
   copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{{ item }}"
-    dest: "/usr/bin/"
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/{{ item }}-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}"
+    dest: "/usr/bin/{{ item }}"
     owner: kube
     group: kube
     mode: 0750

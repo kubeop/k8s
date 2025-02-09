@@ -97,7 +97,11 @@ data:
           "etcd_ca_cert_file": "__ETCD_CA_CERT_FILE__",
           "mtu": __CNI_MTU__,
           "ipam": {
-              "type": "calico-ipam"
+              "type": "calico-ipam",
+{% if kubernetes.enable_dual_stack_networks %}
+              "assign_ipv6": "true",
+{% endif %}
+              "assign_ipv4": "true"
           },
           "policy": {
               "type": "k8s"
@@ -445,7 +449,10 @@ spec:
             # Auto-detect the BGP IP address.
             - name: IP
               value: "autodetect"
-            # Enable IPIP
+{% if kubernetes.enable_dual_stack_networks %}
+            - name: IP6
+              value: autodetect
+{% endif %}
             - name: CALICO_IPV4POOL_IPIP
 {% if calico.network_mode == 'bgp' %}
               value: "Never"
@@ -485,8 +492,14 @@ spec:
             # no effect. This should fall within `--cluster-cidr`.
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ kubernetes.pods_subnet }}"
+            - name: CALICO_IPV6POOL_CIDR
+              value: "{{ kubernetes.pods_subnet_ipv6 }}"
             - name: IP_AUTODETECTION_METHOD
               value: "{{calico.ip_autodetection_method}}"
+{% if calico.ipv6_autodetection_method is defined and kubernetes.enable_dual_stack_networks %}
+            - name: IP6_AUTODETECTION_METHOD
+              value: "{{ calico.ipv6_autodetection_method }}"
+{% endif %}
             # Disable file logging so `kubectl logs` works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
@@ -495,7 +508,7 @@ spec:
               value: "ACCEPT"
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
-              value: "false"
+              value: "{{ kubernetes.enable_dual_stack_networks | default(false) | lower }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
           securityContext:

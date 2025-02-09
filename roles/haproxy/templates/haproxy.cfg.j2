@@ -27,12 +27,18 @@ defaults
 
 frontend http_stats
   bind *:58080
+  {% if kubernetes.enable_dual_stack_networks -%}
+  bind :::58080
+  {% endif -%}
   mode http
   option httplog
   stats uri /haproxy?stats
 
 frontend control-plane
   bind *:{{loadbalance.port}}
+  {% if kubernetes.enable_dual_stack_networks -%}
+  bind :::{{loadbalance.port}}
+  {% endif -%}
   mode tcp
   option tcplog
   default_backend kube-apiservers

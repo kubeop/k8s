@@ -5,7 +5,7 @@ hostnameOverride: "{{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{
 clientConnection:
   contentType: application/vnd.kubernetes.protobuf
   kubeconfig: /etc/kubernetes/proxy.kubeconfig
-clusterCIDR: {{ kubernetes.pods_subnet }}
+clusterCIDR: "{{ kubernetes.pods_subnet }}{{ ',' + kubernetes.pods_subnet_ipv6 if kubernetes.enable_dual_stack_networks else '' }}"
 configSyncPeriod: 0s
 conntrack:
   maxPerCore: 32768

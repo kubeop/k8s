@@ -113,3 +113,16 @@
     msg: "Do not schedule more pods on a node than inet addresses are available."
   when: network_plugin != 'calico'
   run_once: true
+
+- name: Stop if ip var does not match local ips
+  assert:
+    that: ( ansible_default_ipv4 is defined ) and ( ansible_default_ipv4.address is defined )
+    msg: "IPv4: '{{ ansible_default_ipv4 }}' do not contain host ip"
+  run_once: true
+
+- name: Stop if ip does not match local ips
+  assert:
+    that: ( ansible_default_ipv6 is defined ) and ( ansible_default_ipv6.address is defined )
+    msg: "IPv6: '{{ ansible_default_ipv6 }}' do not contain host ip"
+  when: kubernetes.enable_dual_stack_networks
+  run_once: true

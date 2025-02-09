@@ -168,7 +168,7 @@
     - nat
     - mangle
     - raw
-  when: flush_iptables | bool and enable_dual_stack_networks
+  when: flush_iptables | bool and kubernetes.enable_dual_stack_networks
   tags:
     - ip6tables
 

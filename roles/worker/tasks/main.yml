@@ -77,6 +77,7 @@
     - {name: 'net.netfilter.nf_conntrack_max',value: '2310720' }
     - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
     - {name: 'net.bridge.bridge-nf-call-ip6tables',value: '1' }
+    - {name: 'net.bridge.bridge-nf-call-arptables',value: '1' }
   tags: worker_sysctl
 
 - name: "Create kubernetes directory"
@@ -105,8 +106,8 @@
 
 - name: "Install worker"
   copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{{ item }}"
-    dest: "/usr/bin/"
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/{{ item }}-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}"
+    dest: "/usr/bin/{{ item }}"
     owner: root
     group: root
     mode: 0750
