@@ -22,7 +22,7 @@
     - create_etcd_user
     - install_etcd
 
-- name: "Download etcd"
+- name: "Sync etcd"
   unarchive:
     src: "{{ download.dest }}/etcd/{{ etcd.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/etcd-{{ etcd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
     dest: /tmp/

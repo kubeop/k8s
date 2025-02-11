@@ -106,8 +106,8 @@
 
 - name: "Install worker"
   copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/{{ item }}-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}"
-    dest: "/usr/bin/{{ item }}"
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/{{ item }}"
+    dest: "/usr/bin/"
     owner: root
     group: root
     mode: 0750

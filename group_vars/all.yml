@@ -61,9 +61,8 @@ loadbalance:
 # https://github.com/kubernetes/kubernetes
 kubernetes:
   # kubernetes 二进制安装包下载地址
-  # 因官方下载源调整，调整后下载较慢，故改为个人仓库加速下载：https://github.com/kubeop/k8s/releases
-  # 使用Github Action同步二进制文件到Github Release, 并使用代理加速下载。该仓库也会同步相关容器镜像到阿里云镜像仓库
-  download_url: https://mirrors.chenby.cn/https://github.com/kubeop/k8s/releases/download
+  # 因官方下载源调整，调整后下载较慢，默认使用DaoCloud二进制加速下载
+  download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
   version: v1.32.1
   # 配置双栈网络IPv4 and IPv6

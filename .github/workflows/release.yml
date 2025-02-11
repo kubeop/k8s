@@ -27,56 +27,6 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Get k8s Version
-      id: get_k8s_version
-      run: |
-        k8s_version=$(python -c "import yaml; data = yaml.safe_load(open('group_vars/all.yml')); print(data['kubernetes']['version'])")
-        echo "k8s_version=$k8s_version" >> $GITHUB_ENV
-
-    - name: Check if tag exists
-      id: check_tag
-      run: |
-        TAG_NAME=${{ env.k8s_version }}
-        
-        # Check if tag exists
-        if git tag --list | grep -q "^${TAG_NAME}$"; then
-          echo "Tag '${TAG_NAME}' exists, skipping release upload."
-          echo "exists=true" >> $GITHUB_ENV
-        else
-          echo "Tag '${TAG_NAME}' does not exist, preparing to upload release."
-          echo "exists=false" >> $GITHUB_ENV
-        fi
-
-    - name: Download
-      if: env.exists == 'false'
-      run: |
-        for file in kubectl kube-apiserver kube-controller-manager kube-scheduler kubelet kube-proxy; do
-          for arch in amd64 arm64; do
-            wget -O ${file}-${arch} https://dl.k8s.io/release/${{ env.k8s_version }}/bin/linux/${arch}/${file}
-          done
-        done
-
-    - name: Push Release
-      uses: softprops/action-gh-release@v2
-      if: env.exists == 'false'
-      with:
-        token: ${{ secrets.GIT_TOKEN }}
-        tag_name:  ${{ env.k8s_version }}
-        preserve_order: true
-        files: |
-          kubectl-amd64
-          kube-apiserver-amd64
-          kube-controller-manager-amd64
-          kube-scheduler-amd64
-          kubelet-amd64
-          kube-proxy-amd64
-          kubectl-arm64
-          kube-apiserver-arm64
-          kube-controller-manager-arm64
-          kube-scheduler-arm64
-          kubelet-arm64
-          kube-proxy-arm64
-
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
