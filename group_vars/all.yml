@@ -41,7 +41,7 @@ etcd:
   # etcd 安装包下载地址
   download_url: https://mirrors.chenby.cn/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.16
+  version: v3.5.18
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -64,7 +64,7 @@ kubernetes:
   # 因官方下载源调整，调整后下载较慢，默认使用DaoCloud二进制加速下载
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
-  version: v1.32.1
+  version: v1.32.2
   # 配置双栈网络IPv4 and IPv6
   enable_dual_stack_networks: false
   # 集群Pod网段
@@ -92,7 +92,7 @@ cniplugins:
   # cni-plugins 安装包下载地址
   download_url: https://mirrors.chenby.cn/https://github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
-  version: v1.6.0
+  version: v1.6.2
 
 # https://github.com/kubernetes-sigs/cri-tools
 critools:
@@ -107,14 +107,14 @@ runc:
   download_url: https://mirrors.chenby.cn/https://github.com/opencontainers/runc/releases/download
   # runc 版本，建议根据containerd版本对应
   # https://github.com/containerd/containerd/blob/v1.7.24/script/setup/runc-version
-  version: v1.2.2
+  version: v1.2.4
 
 # https://github.com/containerd/containerd
 containerd:
   # containerd 安装包下载地址
   download_url: https://mirrors.chenby.cn/https://github.com/containerd/containerd/releases/download
   # containerd 版本
-  version: 1.7.24
+  version: 1.7.25
   # containerd 配置文件目录
   cfg_dir: /etc/containerd
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请保持默认目录
@@ -171,7 +171,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.16.5
+  version: v1.16.7
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -180,8 +180,8 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.26.3
-  plugin_version: v1.6.0-flannel1
+  version: v0.26.4
+  plugin_version: v1.6.2-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -200,7 +200,7 @@ calico:
   # calicoctl 安装包下载地址
   download_url: https://mirrors.chenby.cn/https://github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
-  version: v3.28.2
+  version: v3.28.3
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
