@@ -6,7 +6,7 @@
 
 - TencentOS 3.1
 
-- Ubuntu Server 20.04，22.04
+- Ubuntu Server 20.04，22.04，24.04
 
 - Debian 12
 
