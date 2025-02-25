@@ -1,4 +1,4 @@
-name: Docker Image && Kubernetes Release
+name: Docker Image Syncer
 
 on:
   push:
@@ -37,15 +37,13 @@ jobs:
         python generate.py
 
     - name: Sync Images
-      uses: hhyasdf/image-sync-action@v1.1
-      with:
-        auth_file: ./auth.yaml
-        images_file: ./images.yaml
-        version: latest
-        arch: amd64, arm64
-        proc: 6
       env:
         ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
         ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
         DKH_USERNAME: ${{ secrets.DKH_USERNAME }}
         DKH_PASSWORD: ${{ secrets.DKH_PASSWORD }}
+      run: |
+        target_tag=$(curl --silent "https://api.github.com/repos/AliyunContainerService/image-syncer/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+        wget --quiet https://github.com/AliyunContainerService/image-syncer/releases/download/"${target_tag}"/image-syncer-"${target_tag}"-linux-amd64.tar.gz
+        tar -xvf image-syncer-"${target_tag}"-linux-amd64.tar.gz
+        ./image-syncer --auth=./auth.yaml --images=./images.yaml --arch=amd64 --arch=arm64 --os=linux --proc=6 --retries=3
