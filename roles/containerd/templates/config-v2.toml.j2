@@ -1,0 +1,81 @@
+version = 3
+
+root = "{{ containerd.root | default("/var/lib/containerd") }}"
+state = "{{ containerd.state | default("/run/containerd") }}"
+oom_score = {{ containerd.oom_score | default(0) }}
+
+[grpc]
+  address = "{{ containerd.state | default("/run/containerd") }}/containerd.sock"
+  max_recv_message_size = {{ containerd.grpc.max_recv_message_size }}
+  max_send_message_size = {{ containerd.grpc.max_send_message_size }}
+
+[debug]
+  address = "{{ containerd.debug.address }}"
+  level = "{{ containerd.debug.level }}"
+  format = "{{ containerd.debug.format }}"
+  uid = {{ containerd.debug.uid }}
+  gid = {{ containerd.debug.gid }}
+
+[metrics]
+  address = "{{ containerd.metrics.address | default('') }}"
+  grpc_histogram = {{ containerd.metrics.grpc_histogram | default(false) | lower }}
+
+[plugins]
+
+  [plugins."io.containerd.cri.v1.runtime"]
+    max_container_log_line_size = {{ containerd.cri.max_container_log_line_size }}
+    enable_unprivileged_ports = {{ containerd.cri.enable_unprivileged_ports | lower }}
+    enable_unprivileged_icmp = {{ containerd.cri.enable_unprivileged_icmp | lower }}
+    enable_selinux = {{ containerd.cri.enable_selinux | lower }}
+    disable_apparmor = {{ containerd.cri.disable_apparmor | lower }}
+    tolerate_missing_hugetlb_controller = {{ containerd.cri.tolerate_missing_hugetlb_controller | lower }}
+    disable_hugetlb_controller = {{ containerd.cri.disable_hugetlb_controller | lower }}
+{% if containerd.cri.enable_cdi %}
+    enable_cdi = true
+    cdi_spec_dirs = ["/etc/cdi", "/var/run/cdi"]
+{% endif %}
+
+    [plugins."io.containerd.cri.v1.runtime".containerd]
+{% if gpu is defined and  gpu == 'true' %}
+      default_runtime_name = "nvidia"
+{% else %}
+      default_runtime_name = "runc"
+{% endif %}
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes]
+{% if gpu is defined and  gpu == 'true' %}
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.nvidia]
+{% else %}
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc]
+{% endif %}
+          privileged_without_host_devices = false
+          runtime_engine = ""
+          runtime_root = ""
+          runtime_type = "io.containerd.runc.v2"
+
+{% if gpu is defined and  gpu == 'true' %}
+          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.nvidia.options]
+            BinaryName = "/usr/bin/nvidia-container-runtime"
+{% else %}
+          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.runc.options]
+{% endif %}
+{% if 'options' in containerd %}
+{% for param, value in containerd.options.items() %}
+            {{ param }} = {{ value | lower }}
+{% endfor %}
+{% endif %}
+
+  [plugins."io.containerd.cri.v1.images"]
+    snapshotter = "{{ containerd.containerd.snapshotter | default("overlayfs") }}"
+    discard_unpacked_layers = {{ containerd.containerd.discard_unpacked_layers | lower }}
+    image_pull_progress_timeout = "{{ containerd.cri.image_pull_progress_timeout }}"
+
+  [plugins."io.containerd.cri.v1.images".pinned_images]
+    sandbox = "{{ containerd.cri.sandbox_image.repo }}:{{ containerd.cri.sandbox_image.tag }}"
+
+  [plugins."io.containerd.cri.v1.images".registry]
+    config_path = "{{ containerd.cfg_dir }}/certs.d"
+
+{% if containerd.nri.enabled and containerd.version is version('1.7.0', '>=') %}
+  [plugins."io.containerd.nri.v1.nri"]
+    disable = false
+{% endif %}

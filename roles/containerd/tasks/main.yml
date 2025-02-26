@@ -122,7 +122,7 @@
 
 - name: "Set containerd config"
   template:
-    src: "config.toml.j2"
+    src: "{{ 'config-v2.toml.j2' if containerd.version is version('2.0.0', '>=') else 'config-v1.toml.j2' }}"
     dest: "{{ containerd.cfg_dir }}/config.toml"
     owner: root
     group: root

@@ -1,3 +1,4 @@
+# https://github.com/containerd/containerd/blob/main/docs/hosts.md
 server = "{{ item.server | default("https://" + item.prefix) }}"
 {% for mirror in item.mirrors %}
 [host."{{ mirror.host }}"]
