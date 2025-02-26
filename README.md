@@ -72,7 +72,7 @@ pip3 install "netaddr>=0.10.1" -i https://mirrors.ustc.edu.cn/pypi/web/simple
 
 ### 开启双栈网络
 
-在`group_vars/all.yml`配置中将enable_dual_stack_networks设置为`true`。使用之前请务必确认集群节点所在网络已开启支持IPv6。
+在`group_vars/all.yml`配置中将ipv4_stack和ipv6_stack设置为`true`表明开启IPv4和IPv6双栈网络，将ipv4_stack设置为`true`表明开启IPv4单栈网络，将ipv6_stack设置为`true`表明开启IPv6单栈网络。使用IPv6网络之前请务必确认集群节点所在网络已开启支持IPv6。
 
 ⚠️：在云平台使用Calico IPIP时，请勿开启双栈网络，Calico IPv6网络不支持IPIP，[参考](https://github.com/projectcalico/calico/issues/5206)。
 
@@ -379,6 +379,6 @@ kubectl uncordon <节点名称>
 ## 清理集群节点
 
 ```shell
-ansible-playbook reset.yml -i inventory -l ${IP} -e "flush_iptables=true enable_dual_stack_networks=false"
+ansible-playbook reset.yml -i inventory -l ${IP} -e "flush_iptables=true"
 ```
 

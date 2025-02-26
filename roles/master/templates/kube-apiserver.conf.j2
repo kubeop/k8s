@@ -1,5 +1,11 @@
 KUBE_API_ARGS="\
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
     --advertise-address={{ ansible_default_ipv4.address }} \
+{% elif kubernetes.ipv4_stack %}
+    --advertise-address={{ ansible_default_ipv4.address }} \
+{% else %}
+    --advertise-address={{ ansible_default_ipv6.address }} \
+{% endif %}
     --secure-port=6443 \
     --allow-privileged=true \
     --audit-log-format=json \
@@ -15,7 +21,13 @@ KUBE_API_ARGS="\
     --etcd-cafile=/etc/kubernetes/pki/etcd-ca.pem \
     --etcd-certfile=/etc/kubernetes/pki/apiserver-etcd-client.pem \
     --etcd-keyfile=/etc/kubernetes/pki/apiserver-etcd-client.key \
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
     --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %} \
+{% elif kubernetes.ipv4_stack %}
+    --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %} \
+{% else %}
+    --etcd-servers={% set pk = groups['etcd'] %}{% for host in pk %}https://[{{ host }}]:2379{% if not loop.last %},{% endif %}{% endfor %} \
+{% endif %}
     --kubelet-client-certificate=/etc/kubernetes/pki/apiserver-kubelet-client.pem \
     --kubelet-client-key=/etc/kubernetes/pki/apiserver-kubelet-client.key \
     --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname \
@@ -29,7 +41,13 @@ KUBE_API_ARGS="\
     --service-account-key-file=/etc/kubernetes/pki/sa.pub \
     --service-account-issuer=https://kubernetes.default.svc.cluster.local \
     --service-account-signing-key-file=/etc/kubernetes/pki/sa.key \
-    --service-cluster-ip-range={{ kubernetes.service_addresses }}{{ ',' + kubernetes.service_addresses_ipv6 if kubernetes.enable_dual_stack_networks else '' }} \
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+    --service-cluster-ip-range={{ kubernetes.service_addresses }},{{ kubernetes.service_addresses_ipv6 }} \
+{% elif kubernetes.ipv4_stack %}
+    --service-cluster-ip-range={{ kubernetes.service_addresses }} \
+{% else %}
+    --service-cluster-ip-range={{ kubernetes.service_addresses_ipv6 }} \
+{% endif %}
     --tls-cert-file=/etc/kubernetes/pki/apiserver.pem \
     --tls-private-key-file=/etc/kubernetes/pki/apiserver.key \
     --service-node-port-range=30000-50000 \

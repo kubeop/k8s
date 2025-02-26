@@ -65,33 +65,33 @@
 
 - name: "Distribution master certs"
   copy:
-    src: "{{ item.line }}"
+    src: "{{ item }}"
     dest: "/etc/kubernetes/pki/"
     owner: kube
     group: kube
     mode: 0644
   with_items:
-    - {line: '{{ cert.dir }}/ca.key'}
-    - {line: '{{ cert.dir }}/ca.pem'}
-    - {line: '{{ cert.dir }}/sa.key'}
-    - {line: '{{ cert.dir }}/sa.pub'}
-    - {line: '{{ cert.dir }}/etcd-ca.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver-etcd-client.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver-etcd-client.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver-kubelet-client.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/apiserver-kubelet-client.pem'}
-    - {line: '{{ cert.dir }}/front-proxy-ca.key'}
-    - {line: '{{ cert.dir }}/front-proxy-ca.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/front-proxy-client.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/front-proxy-client.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/controller-manager.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/controller-manager.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/scheduler.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/scheduler.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/admin.pem'}
+    - "{{ cert.dir }}/ca.key"
+    - "{{ cert.dir }}/ca.pem"
+    - "{{ cert.dir }}/sa.key"
+    - "{{ cert.dir }}/sa.pub"
+    - "{{ cert.dir }}/etcd-ca.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.pem"
+    - "{{ cert.dir }}/front-proxy-ca.key"
+    - "{{ cert.dir }}/front-proxy-ca.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/scheduler.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/scheduler.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/admin.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/admin.pem"
   tags:
     - dis_master_certs
     - dis_certs
@@ -189,7 +189,7 @@
 
 - name: "Waiting kube-apiserver starting"
   wait_for:
-    host: "{{ ansible_default_ipv4.address }}"
+    host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 6443
     delay: 5
     sleep: 2
@@ -197,7 +197,7 @@
 
 - name: "Waiting kube-controller-manager starting"
   wait_for:
-    host: "{{ ansible_default_ipv4.address }}"
+    host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 10257
     delay: 5
     sleep: 2
@@ -205,7 +205,7 @@
 
 - name: "Waiting kube-scheduler starting"
   wait_for:
-    host: "{{ ansible_default_ipv4.address }}"
+    host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 10259
     delay: 5
     sleep: 2
@@ -213,7 +213,7 @@
 
 - name: "Kube-apiserver health check"
   uri:
-    url: "https://{{ ansible_default_ipv4.address }}:6443/healthz"
+    url: "https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}:6443/healthz"
     return_content: yes
     validate_certs: no
     client_cert: "/etc/kubernetes/pki/admin.pem"
@@ -224,7 +224,7 @@
 
 - name: "Kube-controller-manager health check"
   uri:
-    url: "https://{{ ansible_default_ipv4.address }}:10257/healthz"
+    url: "https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}:10257/healthz"
     return_content: yes
     validate_certs: no
   register: controller
@@ -233,7 +233,7 @@
 
 - name: "Kube-scheduler health check"
   uri:
-    url: "https://{{ ansible_default_ipv4.address }}:10259/healthz"
+    url: "https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}:10259/healthz"
     return_content: yes
     validate_certs: no
   register: scheduler

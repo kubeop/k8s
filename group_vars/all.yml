@@ -65,8 +65,10 @@ kubernetes:
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
   version: v1.32.2
-  # 配置双栈网络IPv4 and IPv6
-  enable_dual_stack_networks: false
+  # Configure IPv4 Stack networking
+  ipv4_stack: true
+  # Configure IPv6 Stack networking
+  ipv6_stack: false
   # 集群Pod网段
   pods_subnet: 172.16.0.0/12
   pods_subnet_ipv6: fd85:ee78:d8a6:8607:1::/107
@@ -239,7 +241,8 @@ nodelocaldns:
   version: 1.23.1
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
-  ip: 169.254.20.10
+  ip: "169.254.20.10"
+  ip6: "fd00::"
 metrics_server:
   enabled: true
   version: v0.7.2

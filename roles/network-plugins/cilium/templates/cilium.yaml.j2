@@ -1,16 +1,14 @@
 ---
-# Source: cilium/templates/cilium-agent/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: "cilium"
+  name: cilium
   namespace: kube-system
 ---
-# Source: cilium/templates/cilium-operator/serviceaccount.yaml
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: "cilium-operator"
+  name: cilium-operator
   namespace: kube-system
 ---
 # Source: cilium/templates/cilium-ca-secret.yaml
@@ -80,11 +78,11 @@ data:
 
   # Enable IPv4 addressing. If enabled, all endpoints are allocated an IPv4
   # address.
-  enable-ipv4: "true"
+  enable-ipv4: "{{ cilium_enable_ipv4 }}"
 
   # Enable IPv6 addressing. If enabled, all endpoints are allocated an IPv6
   # address.
-  enable-ipv6: "false"
+  enable-ipv6: "{{ cilium_enable_ipv4 }}"
   # Users who wish to specify their own custom CNI configuration file must set
   # custom-cni-conf to "true", otherwise Cilium may overwrite the configuration.
   custom-cni-conf: "false"

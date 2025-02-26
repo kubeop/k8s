@@ -86,26 +86,53 @@
   when:
     - network_plugin == 'cilium'
 
-- name: "Check that service_addresses is a network range"
+- name: "Check that kubernetes.service_addresses is a network range"
   assert:
     that:
       - kubernetes.service_addresses | ansible.utils.ipaddr('net')
     msg: "kubernetes.service_addresses = '{{ kubernetes.service_addresses }}' is not a valid network range"
   run_once: true
+  when: kubernetes.ipv4_stack | bool
 
-- name: "Check that pods_subnet is a network range"
+- name: "Check that kubernetes.pods_subnet is a network range"
   assert:
     that:
       - kubernetes.pods_subnet | ansible.utils.ipaddr('net')
     msg: "kubernetes.pods_subnet = '{{ kubernetes.pods_subnet }}' is not a valid network range"
   run_once: true
+  when: kubernetes.ipv4_stack | bool
 
-- name: "Check that pods_subnet does not collide with service_addresses"
+- name: "Check that kubernetes.pods_subnet does not collide with kubernetes.service_addresses"
   assert:
     that:
       - kubernetes.pods_subnet | ansible.utils.ipaddr(kubernetes.service_addresses) | string == 'None'
-    msg: "pods_subnet cannot be the same network segment as service_addresses"
+    msg: "kubernetes.pods_subnet cannot be the same network segment as kubernetes.service_addresses"
   run_once: true
+  when: kubernetes.ipv4_stack | bool
+
+- name: "Check that kubernetes.service_addresses_ipv6 is a network range"
+  assert:
+    that:
+      - kubernetes.service_addresses_ipv6 | ansible.utils.ipaddr('net')
+    msg: "kubernetes.service_addresses_ipv6 = '{{ kubernetes.service_addresses_ipv6 }}' is not a valid network range"
+  run_once: true
+  when: kubernetes.ipv6_stack | bool
+
+- name: "Check that kubernetes.pods_subnet_ipv6 is a network range"
+  assert:
+    that:
+      - kubernetes.pods_subnet_ipv6 | ansible.utils.ipaddr('net')
+    msg: "kubernetes.pods_subnet_ipv6 = '{{ kubernetes.pods_subnet_ipv6 }}' is not a valid network range"
+  run_once: true
+  when: kubernetes.ipv6_stack | bool
+
+- name: "Check that kubernetes.pods_subnet_ipv6 does not collide with kubernetes.service_addresses"
+  assert:
+    that:
+      - kubernetes.pods_subnet_ipv6 | ansible.utils.ipaddr(kubernetes.service_addresses_ipv6) | string == 'None'
+    msg: "kubernetes.pods_subnet_ipv6 cannot be the same network segment as kubernetes.service_addresses_ipv6"
+  run_once: true
+  when: kubernetes.ipv6_stack | bool
 
 - name: "Guarantee that enough network address space is available for all pods"
   assert:
@@ -114,15 +141,16 @@
   when: network_plugin != 'calico'
   run_once: true
 
-- name: Stop if ip var does not match local ips
+- name: "Stop if ip var does not match local ips"
   assert:
     that: ( ansible_default_ipv4 is defined ) and ( ansible_default_ipv4.address is defined )
     msg: "IPv4: '{{ ansible_default_ipv4 }}' do not contain host ip"
   run_once: true
+  when: kubernetes.ipv4_stack | bool
 
-- name: Stop if ip does not match local ips
+- name: "Stop if ip does not match local ips"
   assert:
     that: ( ansible_default_ipv6 is defined ) and ( ansible_default_ipv6.address is defined )
     msg: "IPv6: '{{ ansible_default_ipv6 }}' do not contain host ip"
-  when: kubernetes.enable_dual_stack_networks
   run_once: true
+  when: kubernetes.ipv6_stack | bool

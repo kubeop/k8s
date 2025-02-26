@@ -49,19 +49,19 @@
 
 - name: "Distribution certs"
   copy:
-    src: "{{ item.line }}"
+    src: "{{ item }}"
     dest: "/etc/etcd/pki/"
     owner: etcd
     group: etcd
     mode: 0640
   with_items:
-    - {line: '{{ cert.dir }}/etcd-ca.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-server.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-server.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-peer.key'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.pem'}
-    - {line: '{{ cert.dir }}/{{ ansible_default_ipv4.address }}/etcd-healthcheck-client.key'}
+    - "{{ cert.dir }}/etcd-ca.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.key"
   tags:
     - dis_etcd_certs
     - dis_certs

@@ -64,7 +64,13 @@ metadata:
   namespace: kube-system
 data:
   # Configure this with the location of your etcd cluster.
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
   etcd_endpoints: "{% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
+{% elif kubernetes.ipv4_stack %}
+  etcd_endpoints: "{% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
+{% else %}
+  etcd_endpoints: "{% set pk = groups['etcd'] %}{% for host in pk %}https://[{{ host }}]:2379{% if not loop.last %},{% endif %}{% endfor %}"
+{% endif %}
   # If you're using TLS enabled etcd uncomment the following.
   # You must also populate the Secret below with these files.
   etcd_ca: "/calico-secrets/etcd-ca"
@@ -98,10 +104,12 @@ data:
           "mtu": __CNI_MTU__,
           "ipam": {
               "type": "calico-ipam",
-{% if kubernetes.enable_dual_stack_networks %}
-              "assign_ipv6": "true",
+{% if kubernetes.ipv4_stack %}
+              "assign_ipv4": "true"{{ ',' if (kubernetes.ipv6_stack and kubernetes.ipv4_stack) }}
 {% endif %}
-              "assign_ipv4": "true"
+{% if kubernetes.ipv6_stack %}
+              "assign_ipv6": "true"
+{% endif %}
           },
           "policy": {
               "type": "k8s"
@@ -446,10 +454,14 @@ spec:
             # Cluster type to identify the deployment type
             - name: CLUSTER_TYPE
               value: "k8s,bgp"
-            # Auto-detect the BGP IP address.
+{% if kubernetes.ipv4_stack %}
             - name: IP
               value: "autodetect"
-{% if kubernetes.enable_dual_stack_networks %}
+{% else %}
+            - name: IP
+              value: none
+{% endif %}
+{% if kubernetes.ipv6_stack %}
             - name: IP6
               value: autodetect
 {% endif %}
@@ -490,13 +502,28 @@ spec:
             # The default IPv4 pool to create on startup if none exists. Pod IPs will be
             # chosen from this range. Changing this value after installation will have
             # no effect. This should fall within `--cluster-cidr`.
+{% if kubernetes.ipv4_stack %}
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ kubernetes.pods_subnet }}"
+{% endif %}
+{% if kubernetes.ipv6_stack %}
             - name: CALICO_IPV6POOL_CIDR
               value: "{{ kubernetes.pods_subnet_ipv6 }}"
+{% endif %}
+{% if kubernetes.ipv4_stack %}
+{% if calico.ip_autodetection_method is defined %}
             - name: IP_AUTODETECTION_METHOD
               value: "{{calico.ip_autodetection_method}}"
-{% if calico.ipv6_autodetection_method is defined and kubernetes.enable_dual_stack_networks %}
+{% else %}
+            - name: NODEIP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.hostIP
+            - name: IP_AUTODETECTION_METHOD
+              value: "can-reach=$(NODEIP)"
+{% endif %}
+{% endif %}
+{% if calico.ipv6_autodetection_method is defined and kubernetes.ipv6_stack %}
             - name: IP6_AUTODETECTION_METHOD
               value: "{{ calico.ipv6_autodetection_method }}"
 {% endif %}
@@ -508,7 +535,7 @@ spec:
               value: "ACCEPT"
             # Disable IPv6 on Kubernetes.
             - name: FELIX_IPV6SUPPORT
-              value: "{{ kubernetes.enable_dual_stack_networks | default(false) | lower }}"
+              value: "{{ kubernetes.ipv6_stack | default(false) | lower }}"
             - name: FELIX_HEALTHENABLED
               value: "true"
           securityContext:

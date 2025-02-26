@@ -12,22 +12,47 @@ vrrp_script Checkhaproxy {
 
 vrrp_instance VI_1 {
     state {{ type }}
-    interface {{ ansible_default_ipv4.interface }}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+    interface {{ ansible_default_ipv4.address }}
+{% elif kubernetes.ipv4_stack %}
+    interface {{ ansible_default_ipv4.address }}
+{% else %}
+    interface {{ ansible_default_ipv6.address }}
+{% endif %}
     virtual_router_id  100
     priority {{priority}}
     advert_int 1
     nopreempt
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
     mcast_src_ip {{ ansible_default_ipv4.address }}
+{% elif kubernetes.ipv4_stack %}
+    mcast_src_ip {{ ansible_default_ipv4.address }}
+{% else %}
+    mcast_src_ip {{ ansible_default_ipv6.address }}
+{% endif %}
     authentication {
         auth_type PASS
         auth_pass kubeop
     }
 
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
     unicast_src_ip {{ ansible_default_ipv4.address }}
+{% elif kubernetes.ipv4_stack %}
+    unicast_src_ip {{ ansible_default_ipv4.address }}
+{% else %}
+    unicast_src_ip {{ ansible_default_ipv6.address }}
+{% endif %}
     unicast_peer {
 {% for host in groups['haproxy'] %}
+  {% if kubernetes.ipv4_stack %}
   {% if hostvars[host]['ansible_default_ipv4']['address'] != ansible_default_ipv4['address'] %}
       {{ host }}
+  {% endif %}
+  {% endif %}
+  {% if not kubernetes.ipv4_stack %}
+  {% if hostvars[host]['ansible_default_ipv6']['address'] != ansible_default_ipv6['address'] %}
+      {{ host }}
+  {% endif %}
   {% endif %}
 {% endfor %}
 

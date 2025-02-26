@@ -9,14 +9,20 @@ Type=notify
 User=etcd
 
 ExecStart=/usr/bin/etcd \
-         --name={{ ansible_hostname.split('-')[-2:] | join('-') | lower  }} \
+         --name={{ ansible_hostname.split('-')[-2:] | join('-') | lower }} \
          --data-dir={{ etcd.data_dir | default("/var/lib/etcd") }} \
-         --advertise-client-urls=https://{{ ansible_default_ipv4.address }}:2379 \
-         --initial-advertise-peer-urls=https://{{ ansible_default_ipv4.address }}:2380 \
-         --listen-peer-urls=https://{{ ansible_default_ipv4.address }}:2380 \
-         --listen-client-urls=https://{{ ansible_default_ipv4.address }}:2379 \
-         --listen-metrics-urls=http://{{ ansible_default_ipv4.address }}:2381 \
+         --advertise-client-urls=https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2379 \
+         --initial-advertise-peer-urls=https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2380 \
+         --listen-peer-urls=https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2380 \
+         --listen-client-urls=https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2379 \
+         --listen-metrics-urls=http://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2381 \
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
          --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname.split('-')[-2:] | join('-') | lower }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
+{% elif kubernetes.ipv4_stack %}
+         --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname.split('-')[-2:] | join('-') | lower }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
+{% else %}
+         --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname.split('-')[-2:] | join('-') | lower }}=https://[{{ host }}]:2380{% if not loop.last %},{% endif %}{% endfor %} \
+{% endif %}
          --client-cert-auth=true \
          --peer-client-cert-auth=true \
          --cert-file=/etc/etcd/pki/etcd-server.pem \

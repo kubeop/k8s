@@ -1,17 +1,35 @@
 apiVersion: kubeproxy.config.k8s.io/v1alpha1
 kind: KubeProxyConfiguration
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
 bindAddress: 0.0.0.0
-hostnameOverride: "{{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }}"
+{% elif kubernetes.ipv4_stack %}
+bindAddress: 0.0.0.0
+{% else %}
+bindAddress: "::"
+{% endif %}
+hostnameOverride: "{{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}"
 clientConnection:
   contentType: application/vnd.kubernetes.protobuf
   kubeconfig: /etc/kubernetes/proxy.kubeconfig
-clusterCIDR: "{{ kubernetes.pods_subnet }}{{ ',' + kubernetes.pods_subnet_ipv6 if kubernetes.enable_dual_stack_networks else '' }}"
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+clusterCIDR: {{ kubernetes.pods_subnet }},{{ kubernetes.pods_subnet_ipv6 }}
+{% elif kubernetes.ipv4_stack %}
+clusterCIDR: {{ kubernetes.pods_subnet }}
+{% else %}
+clusterCIDR: {{ kubernetes.pods_subnet_ipv6 }}
+{% endif %}
 configSyncPeriod: 0s
 conntrack:
   maxPerCore: 32768
   min: 131072
 enableProfiling: false
-healthzBindAddress: {{ ansible_default_ipv4.address }}:10256
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+healthzBindAddress: "0.0.0.0:10256"
+{% elif kubernetes.ipv4_stack %}
+healthzBindAddress: "0.0.0.0:10256"
+{% else %}
+healthzBindAddress: "[::]:10256"
+{% endif %}
 mode: {{ kubernetes.kube_proxy_mode }}
 iptables:
   syncPeriod: 30s
@@ -22,6 +40,12 @@ ipvs:
   scheduler: {{ kubernetes.scheduler | default("rr") }}
   strictARP: {{ kubernetes.strict_arp }}
   syncPeriod: 30s
-metricsBindAddress: {{ ansible_default_ipv4.address }}:10249
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+metricsBindAddress: "0.0.0.0:10249"
+{% elif kubernetes.ipv4_stack %}
+metricsBindAddress: "0.0.0.0:10249"
+{% else %}
+metricsBindAddress: "[::]:10249"
+{% endif %}
 nodePortAddresses: null
 oomScoreAdj: -999

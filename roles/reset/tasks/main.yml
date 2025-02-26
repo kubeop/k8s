@@ -4,6 +4,10 @@
     name: "{{ item }}"
     state: stopped
   with_items:
+    - etcd.service
+    - kube-apiserver.service
+    - kube-controller-manager.service
+    - kube-scheduler.service
     - kubelet.service
     - kube-proxy.service
   failed_when: false
@@ -15,11 +19,17 @@
     path: "{{ item }}"
     state: absent
   with_items:
+    - /usr/lib/systemd/system/etcd.service
+    - /usr/lib/systemd/system/kube-apiserver.service
+    - /usr/lib/systemd/system/kube-controller-manager.service
+    - /usr/lib/systemd/system/kube-scheduler.service
     - /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
     - /etc/sysconfig/kubelet
-    - /etc/kubernetes
     - /usr/lib/systemd/system/kubelet.service
     - /usr/lib/systemd/system/kube-proxy.service
+    - /usr/bin/kube-apiserver
+    - /usr/bin/kube-controller-manager
+    - /usr/bin/kube-scheduler
     - /usr/bin/kubelet
     - /usr/bin/kube-proxy
   register: services_removed
@@ -30,6 +40,21 @@
   systemd:
     daemon_reload: true
   when: services_removed.changed
+
+- name: remove binary files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /usr/bin/kube-apiserver
+    - /usr/bin/kube-controller-manager
+    - /usr/bin/kube-scheduler
+    - /usr/bin/kubelet
+    - /usr/bin/kube-proxy
+    - /usr/bin/kubectl
+  register: binary_removed
+  tags:
+    - binary
 
 - name: check if crictl is present
   stat:
@@ -154,7 +179,7 @@
     - nat
     - mangle
     - raw
-  when: flush_iptables | bool
+  when: flush_iptables | bool and kubernetes.ipv4_stack
   tags:
     - iptables
 
@@ -168,7 +193,7 @@
     - nat
     - mangle
     - raw
-  when: flush_iptables | bool and kubernetes.enable_dual_stack_networks
+  when: flush_iptables | bool and kubernetes.ipv6_stack
   tags:
     - ip6tables
 
@@ -243,6 +268,9 @@
     - "{{ kubernetes.kubelet_dir }}"
     - "{{ containerd.root }}"
     - "{{ ansible_env.HOME | default('/root') }}/.kube"
+    - /var/lib/etcd
+    - /etc/kubernetes
+    - /etc/etcd
     - /var/log/kubernetes
     - /etc/cni
     - /opt/cni

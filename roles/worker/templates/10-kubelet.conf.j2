@@ -1,5 +1,5 @@
 KUBELET_ARGS="\
-    --hostname-override={{ ansible_hostname.split('-')[-2:] | join('-') | lower  }}-{{ ansible_default_ipv4.address }} \
+    --hostname-override={{ ansible_hostname.split('-')[-2:] | join('-') | lower  }} \
     --bootstrap-kubeconfig=/etc/kubernetes/bootstrap.kubeconfig \
     --kubeconfig=/etc/kubernetes/kubelet.kubeconfig  \
     --config=/etc/kubernetes/kubelet.conf \

@@ -1,5 +1,11 @@
 KUBE_SCHEDULER_ARGS="\
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
     --bind-address=0.0.0.0 \
+{% elif kubernetes.ipv4_stack %}
+    --bind-address=0.0.0.0 \
+{% else %}
+    --bind-address=:: \
+{% endif %}
     --secure-port=10259 \
     --kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
     --authorization-kubeconfig=/etc/kubernetes/scheduler.kubeconfig \

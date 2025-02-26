@@ -32,23 +32,23 @@
 
 - name: "Enabled modlue"
   modprobe:
-    name: "{{ item.line }}"
+    name: "{{ item }}"
     state: present
   with_items:
-    - {line: 'ip_vs' }
-    - {line: 'ip_vs_rr' }
-    - {line: 'ip_vs_wrr' }
-    - {line: 'ip_vs_lc' }
-    - {line: 'ip_vs_wlc' }
-    - {line: 'ip_vs_sh' }
-    - {line: 'ip_vs_dh' }
-    - {line: 'ip_vs_sed' }
-    - {line: 'ip_vs_nq' }
-    - {line: 'bridge' }
-    - {line: 'overlay' }
-    - {line: 'ip_tables' }
-    - {line: 'iptable_filter' }
-    - {line: 'br_netfilter' }
+    - "ip_vs"
+    - "ip_vs_rr"
+    - "ip_vs_wrr"
+    - "ip_vs_lc"
+    - "ip_vs_wlc"
+    - "ip_vs_sh"
+    - "ip_vs_dh"
+    - "ip_vs_sed"
+    - "ip_vs_nq"
+    - "bridge"
+    - "overlay"
+    - "ip_tables"
+    - "iptable_filter"
+    - "br_netfilter"
   tags: worker_mod
 
 - name: "Enabled conntrack modlue < 4.19.0"
@@ -118,16 +118,16 @@
 
 - name: "Distribution worker certs"
   copy:
-    src: "{{ item.line }}"
+    src: "{{ item }}"
     dest: "/etc/kubernetes/pki/"
     owner: root
     group: root
     mode: 0644
   with_items:
-    - {line: "{{ cert.dir }}/ca.pem"}
-    - {line: "{{ cert.dir }}/ca.key"}
-    - {line: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.pem"}
-    - {line: "{{ cert.dir }}/{{ ansible_default_ipv4.address }}/kube-proxy.key"}
+    - "{{ cert.dir }}/ca.pem"
+    - "{{ cert.dir }}/ca.key"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.pem"
+    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.key"
   tags:
     - dis_worker_certs
     - dis_certs
@@ -256,7 +256,7 @@
 
 - name: "Waiting kubelet starting"
   wait_for:
-    host: "{{ ansible_default_ipv4.address }}"
+    host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 10250
     delay: 5
     sleep: 2
@@ -264,7 +264,7 @@
 
 - name: "kubelet health check"
   uri:
-    url: "http://{{ ansible_default_ipv4.address }}:10248/healthz"
+    url: "http://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}:10248/healthz"
     return_content: yes
     validate_certs: no
   register: kubelet
@@ -282,7 +282,7 @@
 
 - name: "Waiting kube-proxy starting"
   wait_for:
-    host: "{{ ansible_default_ipv4.address }}"
+    host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 10256
     delay: 5
     sleep: 2
@@ -290,7 +290,7 @@
 
 - name: "kube-proxy health check"
   uri:
-    url: "http://{{ ansible_default_ipv4.address }}:10256/healthz"
+    url: "http://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}:10256/healthz"
     return_content: yes
     validate_certs: no
     status_code: 200
@@ -298,7 +298,7 @@
   tags: healthcheck
 
 - name: "Check whether the master is ready?"
-  shell: "kubectl get node | grep {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }}"
+  shell: "kubectl get node | grep {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}"
   register: master_status
   until: '"Ready" in master_status.stdout'
   retries: 5
@@ -312,7 +312,7 @@
     - create_label
 
 - name: "Create taint for control-plane"
-  shell: "kubectl taint nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
+  shell: "kubectl taint nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
@@ -323,7 +323,7 @@
     - create_label
 
 - name: "Create label for master"
-  shell: "kubectl label nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }} node-role.kubernetes.io/control-plane= --overwrite"
+  shell: "kubectl label nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
@@ -333,7 +333,7 @@
     - create_label
 
 - name: "Check whether the worker is ready?"
-  shell: "kubectl get node | grep {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }}"
+  shell: "kubectl get node | grep {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}"
   register: worker_status
   until: '"Ready" in worker_status.stdout'
   retries: 5
@@ -346,7 +346,7 @@
     - create_label
 
 - name: "Create label for worker"
-  shell: "kubectl label nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}-{{ item }} node-role.kubernetes.io/worker= --overwrite"
+  shell: "kubectl label nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/worker= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   with_items:
@@ -357,7 +357,7 @@
 
 - name: "Create taint for gpu worker"
   when: gpu is defined and gpu == 'true'
-  shell: "kubectl taint nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower }}-{{ ansible_default_ipv4.address }} nvidia.com/gpu=:NoSchedule --overwrite"
+  shell: "kubectl taint nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: false
   tags:
@@ -366,7 +366,7 @@
 
 - name: "Create label for gpu worker"
   when: gpu is defined and gpu == 'true'
-  shell: "kubectl label nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower }}-{{ ansible_default_ipv4.address }} nvidia.com/gpu=true --overwrite"
+  shell: "kubectl label nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=true --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: false
   tags:

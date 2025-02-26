@@ -1,18 +1,36 @@
 KUBE_CONTROLLER_MANAGER_ARGS="\
     --allocate-node-cidrs=true \
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
     --bind-address=0.0.0.0 \
+{% elif kubernetes.ipv4_stack %}
+    --bind-address=0.0.0.0 \
+{% else %}
+    --bind-address=:: \
+{% endif %}
     --secure-port=10257 \
     --authentication-kubeconfig=/etc/kubernetes/controller-manager.kubeconfig \
     --authorization-kubeconfig=/etc/kubernetes/controller-manager.kubeconfig \
     --client-ca-file=/etc/kubernetes/pki/ca.pem \
-    --cluster-cidr={{ kubernetes.pods_subnet }}{{ ',' + kubernetes.pods_subnet_ipv6 if kubernetes.enable_dual_stack_networks else '' }} \
-{% if kubernetes.enable_dual_stack_networks %}
-    --node-cidr-mask-size-ipv4={{ kubernetes.node_prefix }} \
-    --node-cidr-mask-size-ipv6={{ kubernetes.node_prefix_ipv6 }} \
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+    --cluster-cidr={{ kubernetes.pods_subnet }},{{ kubernetes.pods_subnet_ipv6 }} \
+{% elif kubernetes.ipv4_stack %}
+    --cluster-cidr={{ kubernetes.pods_subnet }} \
 {% else %}
-    --node-cidr-mask-size={{ kubernetes.node_prefix }} \
+    --cluster-cidr={{ kubernetes.pods_subnet_ipv6 }} \
 {% endif %}
-    --service-cluster-ip-range={{ kubernetes.service_addresses }}{{ ',' + kubernetes.service_addresses_ipv6 if kubernetes.enable_dual_stack_networks else '' }} \
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+    --service-cluster-ip-range={{ kubernetes.service_addresses }},{{ kubernetes.service_addresses_ipv6 }} \
+{% elif kubernetes.ipv4_stack %}
+    --service-cluster-ip-range={{ kubernetes.service_addresses }} \
+{% else %}
+    --service-cluster-ip-range={{ kubernetes.service_addresses_ipv6 }} \
+{% endif %}
+{% if kubernetes.ipv4_stack %}
+    --node-cidr-mask-size-ipv4={{ kubernetes.node_prefix }} \
+{% endif %}
+{% if kubernetes.ipv6_stack %}
+    --node-cidr-mask-size-ipv6={{ kubernetes.node_prefix_ipv6 }} \
+{% endif %}
     --cluster-name=kubernetes \
     --cluster-signing-cert-file=/etc/kubernetes/pki/ca.pem \
     --cluster-signing-key-file=/etc/kubernetes/pki/ca.key \

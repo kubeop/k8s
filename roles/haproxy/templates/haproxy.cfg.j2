@@ -26,8 +26,10 @@ defaults
   maxconn                 3000
 
 frontend http_stats
+  {% if kubernetes.ipv4_stack -%}
   bind *:58080
-  {% if kubernetes.enable_dual_stack_networks -%}
+  {% endif -%}
+  {% if kubernetes.ipv6_stack -%}
   bind :::58080
   {% endif -%}
   mode http
@@ -35,8 +37,10 @@ frontend http_stats
   stats uri /haproxy?stats
 
 frontend control-plane
+  {% if kubernetes.ipv4_stack -%}
   bind *:{{loadbalance.port}}
-  {% if kubernetes.enable_dual_stack_networks -%}
+  {% endif -%}
+  {% if kubernetes.ipv6_stack -%}
   bind :::{{loadbalance.port}}
   {% endif -%}
   mode tcp

@@ -47,22 +47,51 @@ data:
         }
         reload
         loop
-        bind {{nodelocaldns.ip}}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+        bind {{ nodelocaldns.ip }}
         forward . {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }} {
                 force_tcp
         }
         prometheus :9253
-        health {{nodelocaldns.ip}}:8080
+        health {{ nodelocaldns.ip }}:8080
+{% elif kubernetes.ipv4_stack %}
+        bind {{ nodelocaldns.ip }}
+        forward . {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }} {
+                force_tcp
         }
+        prometheus :9253
+        health {{ nodelocaldns.ip }}:8080
+{% else %}
+        bind {{ nodelocaldns.ip6 }}
+        forward . {{ kubernetes.service_addresses_ipv6 | ansible.utils.next_nth_usable(10) }} {
+                force_tcp
+        }
+        prometheus :9253
+        health [{{ nodelocaldns.ip6 }}]:8080
+{% endif %}
+        }
+
     in-addr.arpa:53 {
         errors
         cache 30
         reload
         loop
-        bind {{nodelocaldns.ip}}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+        bind {{ nodelocaldns.ip }}
         forward . {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }} {
                 force_tcp
         }
+{% elif kubernetes.ipv4_stack %}
+        bind {{ nodelocaldns.ip }}
+        forward . {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }} {
+                force_tcp
+        }
+{% else %}
+        bind {{ nodelocaldns.ip6 }}
+        forward . {{ kubernetes.service_addresses_ipv6 | ansible.utils.next_nth_usable(10) }} {
+                force_tcp
+        }
+{% endif %}
         prometheus :9253
         }
     ip6.arpa:53 {
@@ -70,10 +99,22 @@ data:
         cache 30
         reload
         loop
-        bind {{nodelocaldns.ip}}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+        bind {{ nodelocaldns.ip }}
         forward . {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }} {
                 force_tcp
         }
+{% elif kubernetes.ipv4_stack %}
+        bind {{ nodelocaldns.ip }}
+        forward . {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }} {
+                force_tcp
+        }
+{% else %}
+        bind {{ nodelocaldns.ip6 }}
+        forward . {{ kubernetes.service_addresses_ipv6 | ansible.utils.next_nth_usable(10) }} {
+                force_tcp
+        }
+{% endif %}
         prometheus :9253
         }
     .:53 {
@@ -81,10 +122,22 @@ data:
         cache 30
         reload
         loop
-        bind {{nodelocaldns.ip}}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+        bind {{ nodelocaldns.ip }}
         forward . {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }} {
                 force_tcp
         }
+{% elif kubernetes.ipv4_stack %}
+        bind {{ nodelocaldns.ip }}
+        forward . {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }} {
+                force_tcp
+        }
+{% else %}
+        bind {{ nodelocaldns.ip6 }}
+        forward . {{ kubernetes.service_addresses_ipv6 | ansible.utils.next_nth_usable(10) }} {
+                force_tcp
+        }
+{% endif %}
         prometheus :9253
         }
 ---
@@ -130,7 +183,13 @@ spec:
           requests:
             cpu: 25m
             memory: 5Mi
-        args: [ "-localip", "{{nodelocaldns.ip}}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+        args: [ "-localip", "{{ nodelocaldns.ip }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+{% elif kubernetes.ipv4_stack %}
+        args: [ "-localip", "{{ nodelocaldns.ip }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+{% else %}
+        args: [ "-localip", "{{ nodelocaldns.ip6 }}", "-conf", "/etc/Corefile", "-upstreamsvc", "kube-dns-upstream" ]
+{% endif %}
         securityContext:
           capabilities:
             add:
@@ -147,7 +206,13 @@ spec:
           protocol: TCP
         livenessProbe:
           httpGet:
-            host: {{nodelocaldns.ip}}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+            host: {{ nodelocaldns.ip }}
+{% elif kubernetes.ipv4_stack %}
+            host: {{ nodelocaldns.ip }}
+{% else %}
+            host: "{{ nodelocaldns.ip6 }}"
+{% endif %}
             path: /health
             port: 8080
           initialDelaySeconds: 60

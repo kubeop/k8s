@@ -209,7 +209,13 @@ metadata:
 spec:
   selector:
     k8s-app: kube-dns
-  clusterIP: {{kubernetes.service_addresses | ansible.utils.next_nth_usable(10)}}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+  clusterIP: {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }}
+{% elif kubernetes.ipv4_stack %}
+  clusterIP: {{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }}
+{% else %}
+  clusterIP: {{ kubernetes.service_addresses_ipv6 | ansible.utils.next_nth_usable(10) }}
+{% endif %}
   ports:
   - name: dns
     port: 53

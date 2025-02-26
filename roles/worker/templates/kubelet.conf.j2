@@ -1,6 +1,12 @@
 kind: KubeletConfiguration
 apiVersion: kubelet.config.k8s.io/v1beta1
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
 address: 0.0.0.0
+{% elif kubernetes.ipv4_stack %}
+address: 0.0.0.0
+{% else %}
+address: "::"
+{% endif %}
 cgroupDriver: systemd
 authentication:
   anonymous:
@@ -18,9 +24,21 @@ authorization:
 clusterDomain: "cluster.local"
 clusterDNS:
 {% if nodelocaldns.enabled %}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+  - "{{ nodelocaldns.ip }}"
+{% elif kubernetes.ipv4_stack %}
   - "{{ nodelocaldns.ip }}"
 {% else %}
+  - "{{ nodelocaldns.ip6 }}"
+{% endif %}
+{% else %}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
   - "{{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }}"
+{% elif kubernetes.ipv4_stack %}
+  - "{{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }}"
+{% else %}
+  - "{{ kubernetes.service_addresses_ipv6 | ansible.utils.next_nth_usable(10) }}"
+{% endif %}
 {% endif %}
 cpuManagerReconcilePeriod: 10s
 containerLogMaxSize: 200Mi
@@ -34,7 +52,13 @@ evictionHard:
 evictionPressureTransitionPeriod: 5m0s
 fileCheckFrequency: 20s
 httpCheckFrequency: 20s
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
 healthzBindAddress: 0.0.0.0
+{% elif kubernetes.ipv4_stack %}
+healthzBindAddress: 0.0.0.0
+{% else %}
+healthzBindAddress: "::"
+{% endif %}
 healthzPort: 10248
 imageMinimumGCAge: 2m
 imageGCHighThresholdPercent: 85
