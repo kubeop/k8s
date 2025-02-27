@@ -298,66 +298,61 @@
   tags: healthcheck
 
 - name: "Check whether the master is ready?"
-  shell: "kubectl get node | grep {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}"
+  shell: "kubectl get node | grep {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }}"
   register: master_status
   until: '"Ready" in master_status.stdout'
   retries: 5
   delay: 3
   delegate_to: "{{ groups['master'][0] }}"
-  with_items:
-    - "{{ groups['master'] }}"
+  when: inventory_hostname in groups['master']
   tags:
     - create_master_label
     - create_master_taint
     - create_label
 
 - name: "Create taint for control-plane"
-  shell: "kubectl taint nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
+  shell: "kubectl taint nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
-  with_items:
-    - "{{ groups['master'] }}"
+  when: inventory_hostname in groups['master']
   tags:
     - create_master_label
     - create_master_taint
     - create_label
 
 - name: "Create label for master"
-  shell: "kubectl label nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane= --overwrite"
+  shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
-  with_items:
-    - "{{ groups['master'] }}"
+  when: inventory_hostname in groups['master']
   tags:
     - create_master_label
     - create_label
 
 - name: "Check whether the worker is ready?"
-  shell: "kubectl get node | grep {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}"
+  shell: "kubectl get node | grep {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }}"
   register: worker_status
   until: '"Ready" in worker_status.stdout'
   retries: 5
   delay: 3
   delegate_to: "{{ groups['master'][0] }}"
-  with_items:
-    - "{{ groups['worker'] }}"
+  when: inventory_hostname in groups['worker']
   tags:
     - create_worker_label
     - create_label
 
 - name: "Create label for worker"
-  shell: "kubectl label nodes {{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/worker= --overwrite"
+  shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/worker= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
-  with_items:
-    - "{{ groups['worker'] }}"
+  when: inventory_hostname in groups['worker']
   tags:
     - create_worker_label
     - create_label
 
 - name: "Create taint for gpu worker"
   when: gpu is defined and gpu == 'true'
-  shell: "kubectl taint nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=:NoSchedule --overwrite"
+  shell: "kubectl taint nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: false
   tags:
@@ -366,7 +361,7 @@
 
 - name: "Create label for gpu worker"
   when: gpu is defined and gpu == 'true'
-  shell: "kubectl label nodes {{ ansible_hostname.split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=true --overwrite"
+  shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=true --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: false
   tags:

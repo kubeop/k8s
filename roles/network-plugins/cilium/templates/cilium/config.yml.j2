@@ -1,0 +1,78 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cilium-config
+  namespace: kube-system
+data:
+  identity-allocation-mode: crd
+  prometheus-serve-addr: ":9962"
+  operator-prometheus-serve-addr: ":9963"
+  enable-metrics: "true"
+  debug: "false"
+  enable-ipv4: "{{ kubernetes.ipv4_stack | lower }}"
+  enable-ipv6: "{{ kubernetes.ipv6_stack | lower }}"
+  clean-cilium-state: "false"
+  clean-cilium-bpf-state: "false"
+  custom-cni-conf: "false"
+{% if cilium.version | regex_replace('v') is version('1.14.0', '>=') %}
+  write-cni-conf-when-ready: /host/etc/cni/net.d/05-cilium.conflist
+  cni-exclusive: "true"
+  cni-log-file: "/var/log/cilium/cilium-cni.log"
+{% endif %}
+  monitor-aggregation: "medium"
+  bpf-ct-global-tcp-max: "524288"
+  bpf-ct-global-any-max: "262144"
+  preallocate-bpf-maps: "false"
+  sidecar-istio-proxy-image: "cilium/istio_proxy"
+  # Encapsulation mode for communication between nodes
+  # Possible values:
+  #   - disabled
+  #   - vxlan (default)
+  #   - geneve
+{% if cilium.version | regex_replace('v') is version('1.14.0', '<') %}
+  tunnel: "{{ cilium.network_mode }}"
+{% elif cilium.version | regex_replace('v') is version('1.14.0', '>=') and cilium.network_mode == 'disabled' %}
+  routing-mode: 'native'
+{% elif cilium.version | regex_replace('v') is version('1.14.0', '>=') and cilium.network_mode != 'disabled' %}
+  routing-mode: 'tunnel'
+  tunnel-protocol: "{{ cilium.network_mode }}"
+{% endif %}
+
+  # Name of the cluster. Only relevant when building a mesh of clusters.
+  cluster-name: "default"
+
+  # Unique ID of the cluster. Must be unique across all conneted clusters and
+  # in the range of 1 and 255. Only relevant when building a mesh of clusters.
+  #cluster-id: 1
+{% if cilium.cluster_id is defined %}
+  cluster-id: "{{ cilium.cluster_id }}"
+{% else %}
+  cluster-id: "0"
+{% endif %}
+  auto-direct-node-routes: "false"
+  operator-api-serve-addr: "127.0.0.1:9234"
+  # IPAM settings
+  ipam: "cluster-pool"
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+  cluster-pool-ipv4-cidr: "{{ kubernetes.pods_subnet }}"
+  cluster-pool-ipv4-mask-size: "{{ kubernetes.node_prefix }}"
+  cluster-pool-ipv6-cidr: "{{ kubernetes.pods_subnet_ipv6 }}"
+  cluster-pool-ipv6-mask-size: "{{ kubernetes.node_prefix_ipv6 }}"
+{% elif kubernetes.ipv4_stack %}
+  cluster-pool-ipv4-cidr: "{{ kubernetes.pods_subnet }}"
+  cluster-pool-ipv4-mask-size: "{{ kubernetes.node_prefix }}"
+{% else %}
+  cluster-pool-ipv6-cidr: "{{ kubernetes.pods_subnet_ipv6 }}"
+  cluster-pool-ipv6-mask-size: "{{ kubernetes.node_prefix_ipv6 }}"
+{% endif %}
+  cgroup-root: "/run/cilium/cgroupv2"
+  bpf-map-dynamic-size-ratio: "0.0025"
+  enable-ipv4-masquerade: "true"
+  enable-ipv6-masquerade: "true"
+  enable-well-known-identities: "false"
+  monitor-aggregation-flags: all
+  enable-bpf-clock-probe: "false"
+{% for key, value in cilium.config_extra_vars.items() %}
+  {{ key }}: "{{ value }}"
+{% endfor %}

@@ -174,11 +174,17 @@ network_plugin: calico
 cilium:
   # https://github.com/cilium/cilium
   version: v1.17.1
-  # {{cilium.registry}}/operator-generic:{{cilium.version}}
+  # {{cilium.registry}}/operator:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # "disabled" or "vxlan" or "geneve"
   network_mode: vxlan
+  # Enable if you want to make use of hostPort mappings
+  enable_portmap: false
+  # Set mtu
+  mtu: ""
+  # Set extra vars
+  config_extra_vars: {}
 
 flannel:
   # https://github.com/flannel-io/flannel

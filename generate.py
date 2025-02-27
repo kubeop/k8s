@@ -10,6 +10,7 @@ acr_namespace = 'kubeop'
 
 images = {
     "quay.io/cilium/cilium": data['cilium']['version'],
+    "quay.io/cilium/operator": data['cilium']['version'],
     "docker.io/flannel/flannel": data['flannel']['version'],
     "docker.io/flannel/flannel-cni-plugin": data['flannel']['plugin_version'],
     "docker.io/calico/kube-controllers": data['calico']['version'],

@@ -1,20 +1,48 @@
 ---
-- name: cilium | Create manifest
+- name: Cilium | Ensure BPFFS mounted
+  ansible.posix.mount:
+    fstype: bpf
+    path: /sys/fs/bpf
+    src: bpffs
+    state: mounted
+  tags:
+    - cilium
+
+- name: Cilium | Create Cilium node manifests
   template:
-    src: "{{item.src}}"
-    dest: "{{item.dest}}"
-  with_items:
-    - {src: "cilium.yaml.j2", dest: "/tmp/cilium.yaml"}
+    src: "{{ item.name }}/{{ item.file }}.j2"
+    dest: "/tmp/{{ item.name }}-{{ item.file }}"
+    mode: "0644"
+  loop:
+    - {name: cilium, file: config.yml, type: cm}
+    - {name: cilium-operator, file: crb.yml, type: clusterrolebinding}
+    - {name: cilium-operator, file: cr.yml, type: clusterrole}
+    - {name: cilium, file: crb.yml, type: clusterrolebinding}
+    - {name: cilium, file: cr.yml, type: clusterrole}
+    - {name: cilium, file: ds.yml, type: ds}
+    - {name: cilium-operator, file: deploy.yml, type: deploy}
+    - {name: cilium-operator, file: sa.yml, type: sa}
+    - {name: cilium, file: sa.yml, type: sa}
+  register: cilium_node_manifests
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags:
     - cilium
     - cilium_yaml
 
-- name: cilium | Apply manifest
-  shell: "kubectl apply -f /tmp/cilium.yaml"
+- name: Cilium | Enable portmap addon
+  template:
+    src: 000-cilium-portmap.conflist.j2
+    dest: /etc/cni/net.d/000-cilium-portmap.conflist
+    mode: "0644"
+  when: cilium.enable_portmap
+  tags:
+    - cilium
+
+- name: cilium | Apply cilium manifest
+  shell: "kubectl apply -f /tmp/{{ item.item.name }}-{{ item.item.file }}"
   delegate_to: "{{ groups['master'][0] }}"
-  run_once: true
+  loop: "{{ cilium_node_manifests.results }}"
   tags:
     - cilium
     - cilium_install
