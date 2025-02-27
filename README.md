@@ -1,3 +1,7 @@
+![](https://img.shields.io/github/forks/kubeop/k8s?style=social)
+![](https://img.shields.io/github/watchers/kubeop/k8s?style=social )
+![](https://img.shields.io/github/stars/kubeop/k8s?color=green&style=social)
+
 ## 支持的发行版
 
 - AlmaLinux 8，9
