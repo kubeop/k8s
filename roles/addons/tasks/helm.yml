@@ -1,0 +1,13 @@
+---
+- name: "Install Helm"
+  unarchive:
+    src: "{{ download.dest }}/helm/{{ helm.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/helm-{{helm.version}}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
+    dest: /usr/local/bin/
+    mode: 0750
+    remote_src: no
+    extra_opts:
+    - --strip-components=1
+    exclude:
+    - "LICENSE"
+    - "README.md"
+  tags: helm

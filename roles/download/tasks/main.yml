@@ -11,6 +11,7 @@
     - critools/{{ critools.version }}
     - containerd/v{{ containerd.version }}
     - calico/{{ calico.version }}
+    - helm/{{ helm.version }}
   tags: download_dir
 
 - name: "Download etcd"
@@ -110,3 +111,16 @@
   retries: "{{ download.retries }}"
   delay: "{{ download.retry_stagger | default(5) }}"
   tags: download_calicoctl
+
+- name: "Download helm"
+  get_url:
+    url: "{{ helm.download_url }}/{{ helm.version }}/helm-{{ helm.version }}-linux-{{ download.arch }}.tar.gz"
+    dest: "{{ download.dest }}/helm/{{ helm.version }}/{{ download.arch }}"
+    timeout: "{{ download.timeout }}"
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_helm

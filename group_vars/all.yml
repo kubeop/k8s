@@ -89,6 +89,14 @@ kubernetes:
   # 使用 MetalLB、kube-vip 必须设置为 true 才能正常工作
   strict_arp: false
 
+# https://github.com/helm/helm
+helm:
+  enabled: false
+  # helm 安装包下载地址
+  download_url: https://mirrors.huaweicloud.com/helm
+  # helm 版本
+  version: v3.17.1
+
 # https://github.com/containernetworking/plugins
 cniplugins:
   # cni-plugins 安装包下载地址
