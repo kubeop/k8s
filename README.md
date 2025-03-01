@@ -40,6 +40,7 @@
   - [node-local-dns](https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/dns/nodelocaldns)
   - [metrics-server](https://github.com/kubernetes-sigs/metrics-server)
   - [nvidia_device_plugin](https://github.com/NVIDIA/k8s-device-plugin)
+  - [helm](https://github.com/helm/helm)
 
 
 
@@ -92,7 +93,7 @@ pip3 install "netaddr>=0.10.1" -i https://mirrors.ustc.edu.cn/pypi/web/simple
 
 ### 配置 group_vars
 
-编辑group_vars/all.yml文件，根据自己的实际环境进行配置。
+编辑 group_vars/all.yml 文件，根据自己的实际环境进行配置。
 
 请注意：
 
@@ -158,7 +159,7 @@ ansible-playbook fdisk.yml -i inventory -l master,worker -e "disk=sdb dir=/data"
 ### 下载离线包
 
 ```shell
-# 如从自建文件服务器下载，请修改group_vars/all.yml文件中的默认下载地址
+# 如从自建文件服务器下载，请修改 group_vars/all.yml 文件中的默认下载地址
 ansible-playbook download.yml
 ```
 
@@ -170,8 +171,8 @@ ansible-playbook download.yml
 ### 同步镜像
 
 ```shell
-# 建议将group_vars/all.yml中定义的镜像自行同步至私有镜像仓库中，并将地址修改为私有镜像仓库地址
-# 目前创建对应版本分支后，会自动同步镜像到阿里云镜像仓库，可能不稳定或失效。
+# 建议将 group_vars/all.yml 中定义的镜像自行同步至私有镜像仓库中，并将地址修改为私有镜像仓库地址
+# 目前会自动将 group_vars/all.yml 中定义的镜像同步到阿里云镜像仓库，可能不稳定或失效。
 ```
 
 
@@ -180,7 +181,7 @@ ansible-playbook download.yml
 
 ```shell
 # 执行之前，请确认已经进行过磁盘分区
-# 执行之前，请确认已经执行ansible-playbook download.yml完成安装包下载
+# 执行之前，请确认已经执行 ansible-playbook download.yml 完成安装包下载
 ansible-playbook cluster.yml -i inventory
 ```
 
