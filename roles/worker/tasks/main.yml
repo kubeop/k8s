@@ -313,7 +313,6 @@
 - name: "Create taint for control-plane"
   shell: "kubectl taint nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
-  run_once: true
   when: inventory_hostname in groups['master']
   tags:
     - create_master_label
@@ -323,7 +322,6 @@
 - name: "Create label for master"
   shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
-  run_once: true
   when: inventory_hostname in groups['master']
   tags:
     - create_master_label
@@ -344,7 +342,6 @@
 - name: "Create label for worker"
   shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/worker= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
-  run_once: true
   when: inventory_hostname in groups['worker']
   tags:
     - create_worker_label
@@ -354,7 +351,6 @@
   when: gpu is defined and gpu == 'true'
   shell: "kubectl taint nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
-  run_once: false
   tags:
     - create_gpu_taint
     - create_gpu
@@ -363,7 +359,6 @@
   when: gpu is defined and gpu == 'true'
   shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=true --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
-  run_once: false
   tags:
     - create_gpu_label
     - create_gpu
