@@ -13,11 +13,11 @@ vrrp_script Checkhaproxy {
 vrrp_instance VI_1 {
     state {{ type }}
 {% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
-    interface {{ ansible_default_ipv4.address }}
+    interface {{ ansible_default_ipv4.interface }}
 {% elif kubernetes.ipv4_stack %}
-    interface {{ ansible_default_ipv4.address }}
+    interface {{ ansible_default_ipv4.interface }}
 {% else %}
-    interface {{ ansible_default_ipv6.address }}
+    interface {{ ansible_default_ipv6.interface }}
 {% endif %}
     virtual_router_id  100
     priority {{priority}}

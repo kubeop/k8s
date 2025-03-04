@@ -16,7 +16,7 @@
 
 - name: wait for etcd up
   uri:
-    url: "https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}:2379/health"
+    url: "https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2379/health"
     validate_certs: no
     client_cert: "/etc/etcd/pki/etcd-healthcheck-client.pem"
     client_key: "/etc/etcd/pki/etcd-healthcheck-client.key"
