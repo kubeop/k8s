@@ -91,7 +91,7 @@ kubernetes:
 
 # https://github.com/helm/helm
 helm:
-  enabled: false
+  enabled: true
   # helm 安装包下载地址
   download_url: https://mirrors.huaweicloud.com/helm
   # helm 版本

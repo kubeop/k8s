@@ -3,7 +3,7 @@
   group:
     name: etcd
     gid: 201
-    system: yes
+    system: true
   tags:
     - create_etcd_group
     - install_etcd
@@ -14,27 +14,38 @@
     uid: 201
     group: etcd
     comment: "Etcd User"
-    createhome: no
+    create_home: false
     home: "{{ etcd.data_dir }}"
     shell: /sbin/nologin
-    system: yes
+    system: true
   tags:
     - create_etcd_user
     - install_etcd
 
-- name: "Install etcd"
+- name: "Sync etcd"
   unarchive:
     src: "{{ download.dest }}/etcd/{{ etcd.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/etcd-{{ etcd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
-    dest: "/usr/bin/"
-    owner: etcd
-    group: etcd
-    mode: 0750
+    dest: /tmp/
     remote_src: no
     extra_opts:
     - --strip-components=1
     exclude:
     - "README*"
     - "Documentation"
+  tags: install_etcd
+
+- name: "Install etcd"
+  copy:
+    src: "{{ item.src }}"
+    dest: "/usr/bin/"
+    owner: etcd
+    group: etcd
+    mode: 0750
+    remote_src: yes
+  with_items:
+    - {src: "/tmp/etcd"}
+    - {src: "/tmp/etcdctl"}
+    - {src: "/tmp/etcdutl"}
   tags: install_etcd
   notify:
     - restart etcd
