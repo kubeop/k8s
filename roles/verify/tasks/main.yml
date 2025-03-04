@@ -145,12 +145,10 @@
   assert:
     that: ( ansible_default_ipv4 is defined ) and ( ansible_default_ipv4.address is defined )
     msg: "IPv4: '{{ ansible_default_ipv4 }}' do not contain host ip"
-  run_once: true
   when: kubernetes.ipv4_stack | bool
 
 - name: "Stop if ipv6 does not match local ips"
   assert:
     that: ( ansible_default_ipv6 is defined ) and ( ansible_default_ipv6.address is defined )
     msg: "IPv6: '{{ ansible_default_ipv6 }}' do not contain host ip"
-  run_once: true
   when: kubernetes.ipv6_stack | bool

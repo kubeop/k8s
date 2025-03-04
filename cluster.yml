@@ -4,6 +4,7 @@
 
 - name: "Check Configs"
   hosts: haproxy etcd master worker
+  any_errors_fatal: true
   roles:
     - role: verify
       tags: verify
