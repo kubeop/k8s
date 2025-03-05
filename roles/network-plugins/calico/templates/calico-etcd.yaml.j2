@@ -104,10 +104,14 @@ data:
           "mtu": __CNI_MTU__,
           "ipam": {
               "type": "calico-ipam",
-{% if kubernetes.ipv4_stack %}
-              "assign_ipv4": "true"{{ ',' if (kubernetes.ipv6_stack and kubernetes.ipv4_stack) }}
-{% endif %}
-{% if kubernetes.ipv6_stack %}
+{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
+              "assign_ipv4": "true",
+              "assign_ipv6": "true"
+{% elif kubernetes.ipv4_stack %}
+              "assign_ipv4": "true",
+              "assign_ipv6": "false"
+{% else %}
+              "assign_ipv4": "false",
               "assign_ipv6": "true"
 {% endif %}
           },
@@ -460,6 +464,8 @@ spec:
 {% else %}
             - name: IP
               value: none
+            - name: CALICO_ROUTER_ID
+              value: "hash"
 {% endif %}
 {% if kubernetes.ipv6_stack %}
             - name: IP6
