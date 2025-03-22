@@ -350,6 +350,7 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t dis_master_config,dis_work
 ```
 
 - `-l`参数更换为具体节点IP。
+- 使用v7.x之前版本部署的集群，因v7.x之后调整节点名称，不建议执行
 
 清空节点
 
