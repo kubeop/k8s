@@ -41,7 +41,7 @@ etcd:
   # etcd 安装包下载地址
   download_url: https://mirrors.chenby.cn/https://github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.5.18
+  version: v3.5.21
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -95,7 +95,7 @@ helm:
   # helm 安装包下载地址
   download_url: https://mirrors.huaweicloud.com/helm
   # helm 版本
-  version: v3.17.2
+  version: v3.17.3
 
 # https://github.com/containernetworking/plugins
 cniplugins:
@@ -181,7 +181,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.17.1
+  version: v1.17.3
   # {{cilium.registry}}/operator:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -196,7 +196,7 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.26.4
+  version: v0.26.7
   plugin_version: v1.6.2-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
