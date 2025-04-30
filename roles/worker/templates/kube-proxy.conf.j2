@@ -35,10 +35,16 @@ iptables:
   syncPeriod: 30s
   masqueradeAll: false
   masqueradeBit: 14
+  minSyncPeriod: 0s
 ipvs:
   minSyncPeriod: 2s
   scheduler: {{ kubernetes.scheduler | default("rr") }}
   strictARP: {{ kubernetes.strict_arp }}
+  syncPeriod: 30s
+nftables:
+  masqueradeAll: false
+  masqueradeBit: null
+  minSyncPeriod: 0s
   syncPeriod: 30s
 {% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
 metricsBindAddress: "0.0.0.0:10249"

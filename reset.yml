@@ -1,6 +1,6 @@
 ---
-- name: "Reset Worker"
-  hosts: worker
+- name: "Reset Cluster"
+  hosts: master worker
   pre_tasks:
     - name: Reset Confirmation
       pause:

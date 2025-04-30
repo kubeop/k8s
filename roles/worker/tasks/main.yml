@@ -67,10 +67,21 @@
         ansible_kernel.split('-')[0] is version('4.19.0', '>=')
   tags: worker_mod
 
-- name: "Modify sysctl"
-  sysctl:
+- name: "Modprobe Kernel Module for nftables"
+  modprobe:
+    name: "nf_tables"
+    state: present
+    persistent: present
+  when: kubernetes.kube_proxy_mode == 'nftables'
+  tags:
+    - kube-proxy
+
+- name: "Set sysctl k8s parameters"
+  ansible.posix.sysctl:
+    sysctl_file: "/etc/sysctl.d/99-k8s.conf"
     name: "{{ item.name }}"
     value: "{{ item.value }}"
+    sysctl_set: true
     state: present
     reload: yes
   with_items:
@@ -78,7 +89,28 @@
     - {name: 'net.bridge.bridge-nf-call-iptables',value: '1' }
     - {name: 'net.bridge.bridge-nf-call-ip6tables',value: '1' }
     - {name: 'net.bridge.bridge-nf-call-arptables',value: '1' }
-  tags: worker_sysctl
+    - {name: 'net.core.somaxconn',value: '32768' }
+    - {name: 'net.core.wmem_max',value: '16777216' }
+    - {name: 'net.core.rmem_max',value: '16777216' }
+    - {name: 'net.core.netdev_max_backlog',value: '16384' }
+    - {name: 'vm.max_map_count',value: '262144' }
+    - {name: 'kernel.softlockup_panic',value: '1' }
+    - {name: 'kernel.pid_max',value: '4194303' }
+    - {name: 'kernel.softlockup_all_cpu_backtrace',value: '1' }
+    - {name: 'net.ipv4.neigh.default.gc_thresh2',value: '1024' }
+    - {name: 'net.ipv4.neigh.default.gc_thresh3',value: '8192' }
+    - {name: 'net.ipv4.tcp_max_syn_backlog',value: '8096' }
+    - {name: 'net.ipv4.tcp_wmem',value: '4096 12582912 16777216' }
+    - {name: 'net.ipv4.tcp_rmem',value: '4096 12582912 16777216' }
+    - {name: 'fs.file-max',value: '2097152' }
+    - {name: 'fs.inotify.max_user_watches',value: '524288' }
+    - {name: 'fs.inotify.max_queued_events',value: '16384' }
+    - {name: 'fs.inotify.max_user_instances',value: '16384' }
+    - {name: 'user.max_user_namespaces',value: '0' }
+  tags:
+    - sysctl
+    - k8s_sysctl
+    - worker_sysctl
 
 - name: "Create kubernetes directory"
   file:

@@ -75,7 +75,5 @@ oom_score = {{ containerd.oom_score | default(0) }}
   [plugins."io.containerd.cri.v1.images".registry]
     config_path = "{{ containerd.cfg_dir }}/certs.d"
 
-{% if containerd.nri.enabled and containerd.version is version('1.7.0', '>=') %}
   [plugins."io.containerd.nri.v1.nri"]
-    disable = false
-{% endif %}
+    disable = {{ 'false' if containerd.nri.enabled else 'true' }}

@@ -1,15 +1,15 @@
 ---
-- name: Fail if not supported OS
+- name: Stop if not supported OS
   assert:
     that: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS', 'Debian']
     msg: "{{ ansible_os_family }} is not a supported OS"
 
-- name: Fail when hostname is not specified
+- name: Stop when hostname is not specified
   assert:
     that: hostname is defined
     msg: "inventory hostname not specified"
 
-- name: Fail if bad hostname
+- name: Stop if bad hostname
   assert:
     that: hostname is match("^[A-Za-z0-9-]*$")
     msg: "Hostname must consist of lower case alphanumeric characters '-', and must start and end with an alphanumeric character"
@@ -32,7 +32,7 @@
     that: configured_nameservers | length>0
     fail_msg: "nameserver should not empty in /etc/resolv.conf"
 
-- name: Fail if etcd or master or worker group is empty
+- name: Stop if etcd or master or worker group is empty
   assert:
     that: "groups.get( item )"
     fail_msg: "Group 'etcd' or 'master' or 'worker' cannot be empty"
@@ -42,37 +42,44 @@
     - worker
   run_once: true
 
-- name: Fail if non systemd OS type
+- name: Stop if non systemd OS type
   assert:
     that: ansible_service_mgr == "systemd"
 
-- name: Fail if loadbalance domain name is None
+- name: Stop if loadbalance domain name is None
   assert:
     that: loadbalance.domain_name != None
     msg: "loadbalance domain name can not null"
   when: loadbalance.domain_name is defined
 
-- name: Fail if even number of etcd hosts
+- name: Stop if even number of etcd hosts
   assert:
     that: groups.etcd|length is not divisibleby 2
   when:
     - inventory_hostname in groups.get('etcd',[])
 
-- name: Fail if unknown network plugin
+- name: Stop if unsupported options selected
   assert:
-    that: network_plugin in ['calico', 'flannel', 'cilium', 'kuberouter', 'macvlan']
-    msg: "{{ network_plugin }} is not supported"
-  when:
-    - network_plugin is defined
+    that:
+      - network_plugin in ['calico', 'flannel', 'cilium', 'kuberouter', 'macvlan', 'custom_cni', 'none']
+      - kubernetes.kube_proxy_mode in ['iptables', 'ipvs', 'nftables']
+    msg: The selected choice is not supported
+  run_once: true
 
-- name: Fail if flannel incompatible network plugin
+- name: Stop if kernel version is too low for nftables
+  assert:
+    that: ansible_kernel.split('-')[0] is version('5.13', '>=')
+  when:
+    - kubernetes.kube_proxy_mode == 'nftables'
+
+- name: Stop if flannel incompatible network plugin
   assert:
     that: flannel.network_mode in ['vxlan', 'host-gw']
     msg: "When using network_plugin flannel network_mode must be 'vxlan' or 'host-gw'"
   when:
     - network_plugin == 'flannel'
 
-- name: Fail if calico incompatible network plugin
+- name: Stop if calico incompatible network plugin
   assert:
     that: calico.network_mode in ['ipip', 'bgp','mix']
     msg: "When using network_plugin calico network_mode must be 'ipip' or 'bgp' or 'mix'"
