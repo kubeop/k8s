@@ -61,7 +61,7 @@
 - name: Stop if unsupported options selected
   assert:
     that:
-      - network_plugin in ['calico', 'flannel', 'cilium', 'kuberouter', 'macvlan', 'custom_cni', 'none']
+      - network_plugin in ['calico', 'flannel', 'cilium', 'kuberouter', 'macvlan']
       - kubernetes.kube_proxy_mode in ['iptables', 'ipvs', 'nftables']
     msg: The selected choice is not supported
   run_once: true
@@ -159,3 +159,8 @@
     that: ( ansible_default_ipv6 is defined ) and ( ansible_default_ipv6.address is defined )
     msg: "IPv6: '{{ ansible_default_ipv6 }}' do not contain host ip"
   when: kubernetes.ipv6_stack | bool
+
+- name: Stop when nodeport range is not specified
+  assert:
+    that: kubernetes.service_node_port_range is defined
+    msg: "service_node_port_range not specified"

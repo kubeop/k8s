@@ -137,6 +137,7 @@
     - {name: 'net.ipv4.tcp_syncookies',value: ' 1' }
     - {name: 'net.ipv4.tcp_synack_retries',value: '2' }
     - {name: 'net.ipv4.tcp_slow_start_after_idle',value: '0'}
+    - {name: 'net.ipv4.ip_local_port_range',value: '20000 60999' }
   tags:
     - sysctl
     - system_sysctl

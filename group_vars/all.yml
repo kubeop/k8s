@@ -75,6 +75,8 @@ kubernetes:
   # 集群Service网段
   service_addresses: 192.168.0.0/16
   service_addresses_ipv6: fd85:ee78:d8a6:8607:2::/112
+  # 服务nodeport端口范围
+  service_node_port_range: "30000-50000"
   # 节点Pod网段掩码大小
   node_prefix: 25
   node_prefix_ipv6: 120
