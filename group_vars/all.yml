@@ -23,7 +23,9 @@ ntp:
 
 # Repository 软件源
 repo:
-  # 建议使用nexus配置代理使用
+  # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
+  # https://mirrors.ustc.edu.cn/libnvidia-container
+  # 可使用国内源加速安装
   nvidia_container_toolkit_centos: "https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch"
   nvidia_container_toolkit_ubuntu: "deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
 
