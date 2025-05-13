@@ -113,7 +113,7 @@ critools:
   # cri-tools 安装包下载地址
   download_url: https://mirrors.chenby.cn/https://github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.32.0
+  version: v1.33.0
 
 # https://github.com/opencontainers/runc
 runc:
@@ -251,12 +251,12 @@ kuberouter:
 
 # Addons
 coredns:
-  version: 1.11.3
+  version: 1.12.1
   # {{coredns.registry}}/coredns:{{coredns.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nodelocaldns:
   enabled: true
-  version: 1.23.1
+  version: 1.25.0
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   ip: "169.254.20.10"
@@ -273,6 +273,6 @@ npd:
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nvidia_device_plugin:
   enabled: false
-  version: v0.17.1
+  version: v0.17.2
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
