@@ -59,6 +59,16 @@
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: selinux
 
+- name: "Disable apparmor"
+  systemd:
+    name: apparmor
+    enabled: no
+    masked: false
+    state: stopped
+  when:
+    - ansible_os_family in ["Debian"]
+  tags: apparmor
+
 - name: "Get firewalld is installed"
   command: whereis firewalld
   register: firewalld_state
