@@ -1,6 +1,6 @@
 - name: restart sshd
   systemd:
-    name: sshd
+    name: "{{ 'sshd' if ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] else 'ssh' }}"
     state: restarted
     enabled: yes
     masked: false

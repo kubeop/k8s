@@ -66,7 +66,7 @@ kubernetes:
   # 因官方下载源调整，调整后下载较慢，默认使用DaoCloud二进制加速下载
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
-  version: v1.32.3
+  version: v1.32.5
   # Configure IPv4 Stack networking
   ipv4_stack: true
   # Configure IPv6 Stack networking
