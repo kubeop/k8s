@@ -384,3 +384,14 @@ kubectl uncordon <节点名称>
 ansible-playbook reset.yml -i inventory -l ${IP} -e "flush_iptables=true"
 ```
 
+
+
+## 项目支持
+- 如果你觉得本项目还不错，可以通过 Star 来表示你的喜欢
+- 在公司或个人项目中使用，并帮忙推广给伙伴使用
+
+
+
+## 交流渠道
+
+<img src="assets/wechat.png" alt="WeChat" style="zoom:40%;" /> 
