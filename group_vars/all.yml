@@ -99,7 +99,7 @@ helm:
   # helm 安装包下载地址
   download_url: https://mirrors.huaweicloud.com/helm
   # helm 版本
-  version: v3.17.3
+  version: v3.18.2
 
 # https://github.com/containernetworking/plugins
 cniplugins:
@@ -185,7 +185,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.17.3
+  version: v1.17.4
   # {{cilium.registry}}/operator:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
