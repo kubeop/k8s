@@ -681,12 +681,12 @@
 
 - name: "Generate bootstrap-token"
   when: not token.stat.exists
-  shell: echo $(openssl rand -hex 3).$(openssl rand -hex 8)
-  register: bootstrap_token
+  set_fact:
+    bootstrap_token: "{{ lookup('password', '/dev/null length=6 chars=ascii_lowercase,digits') }}.{{ lookup('password', '/dev/null length=16 chars=ascii_lowercase,digits') }}"
 
 - name: "Generate bootstrap-token file"
   when: not token.stat.exists
   blockinfile:
     path: "{{ cert.dir }}/token"
-    block: "{{ bootstrap_token.stdout }}"
+    block: "{{ bootstrap_token }}"
     create: true

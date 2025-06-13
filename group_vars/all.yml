@@ -41,7 +41,7 @@ cert:
 # https://github.com/etcd-io/etcd
 etcd:
   # etcd 安装包下载地址
-  download_url: https://mirrors.chenby.cn/https://github.com/etcd-io/etcd/releases/download
+  download_url: https://gh-proxy.com/github.com/etcd-io/etcd/releases/download
   # etcd 版本
   version: v3.5.21
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
@@ -86,7 +86,7 @@ kubernetes:
   kubelet_max_pods: 110
   # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   kubelet_dir: "/var/lib/kubelet"
-  # kube-proxy模式, 支持 iptables, ipvs, nftables
+  # kube-proxy模式, 支持 iptables, ipvs, nftables. RHEL10及衍生发行版建议使用nftables
   kube_proxy_mode: ipvs
   # 配置kube-proxy的ipvs调度策略，支持rr(轮询),wrr(加权轮训),lc(最少连接数),wlc(加权最少连接数),sh(源地址哈希),dh(目标地址哈希),sed(最短预期延迟),nq(最少队列)
   scheduler: rr
@@ -104,21 +104,21 @@ helm:
 # https://github.com/containernetworking/plugins
 cniplugins:
   # cni-plugins 安装包下载地址
-  download_url: https://mirrors.chenby.cn/https://github.com/containernetworking/plugins/releases/download
+  download_url: https://gh-proxy.com/github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
   version: v1.6.2
 
 # https://github.com/kubernetes-sigs/cri-tools
 critools:
   # cri-tools 安装包下载地址
-  download_url: https://mirrors.chenby.cn/https://github.com/kubernetes-sigs/cri-tools/releases/download
+  download_url: https://gh-proxy.com/github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
   version: v1.33.0
 
 # https://github.com/opencontainers/runc
 runc:
   # runc 安装包下载地址
-  download_url: https://mirrors.chenby.cn/https://github.com/opencontainers/runc/releases/download
+  download_url: https://gh-proxy.com/github.com/opencontainers/runc/releases/download
   # runc 版本，建议根据containerd版本对应
   # https://github.com/containerd/containerd/blob/v1.7.24/script/setup/runc-version
   version: v1.2.5
@@ -126,7 +126,7 @@ runc:
 # https://github.com/containerd/containerd
 containerd:
   # containerd 安装包下载地址
-  download_url: https://mirrors.chenby.cn/https://github.com/containerd/containerd/releases/download
+  download_url: https://gh-proxy.com/github.com/containerd/containerd/releases/download
   # containerd 版本
   version: 1.7.27
   # containerd 配置文件目录
@@ -218,7 +218,7 @@ flannel:
 
 calico:
   # calicoctl 安装包下载地址
-  download_url: https://mirrors.chenby.cn/https://github.com/projectcalico/calico/releases/download
+  download_url: https://gh-proxy.com/github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
   version: v3.28.3
   # {{calico.registry}}/kube-controllers:{{calico.version}}

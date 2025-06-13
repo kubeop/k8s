@@ -4,8 +4,8 @@
 
 ## 支持的发行版
 
-- AlmaLinux 8，9
-- RockyLinux 8，9
+- AlmaLinux 8，9，10
+- RockyLinux 8，9，10
 - Ubuntu Server 20.04，22.04，24.04
 - Debian 12
 - TencentOS Server 3

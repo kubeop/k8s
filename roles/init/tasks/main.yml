@@ -115,16 +115,6 @@
     - { limit_domain: '*',limit_type: 'hard',limit_item: 'nofile', value: '655360' }
   tags: limits
 
-- name: "Set systemd limits"
-  lineinfile:
-    dest: "/etc/systemd/system.conf"
-    line: "{{ item.line }}"
-    state: present
-  with_items:
-    - {line: 'DefaultLimitNOFILE=65535' }
-    - {line: 'DefaultLimitNPROC=65535' }
-  tags: limits
-
 - name: "Set sysctl parameters"
   ansible.posix.sysctl:
     sysctl_file: "/etc/sysctl.d/99-sysctl.conf"
