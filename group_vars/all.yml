@@ -66,7 +66,7 @@ kubernetes:
   # 因官方下载源调整，调整后下载较慢，默认使用DaoCloud二进制加速下载
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
-  version: v1.32.5
+  version: v1.32.6
   # Configure IPv4 Stack networking
   ipv4_stack: true
   # Configure IPv6 Stack networking
@@ -99,7 +99,7 @@ helm:
   # helm 安装包下载地址
   download_url: https://mirrors.huaweicloud.com/helm
   # helm 版本
-  version: v3.18.2
+  version: v3.18.3
 
 # https://github.com/containernetworking/plugins
 cniplugins:
@@ -121,7 +121,7 @@ runc:
   download_url: https://gh-proxy.com/github.com/opencontainers/runc/releases/download
   # runc 版本，建议根据containerd版本对应
   # https://github.com/containerd/containerd/blob/v1.7.24/script/setup/runc-version
-  version: v1.2.5
+  version: v1.2.6
 
 # https://github.com/containerd/containerd
 containerd:
@@ -185,7 +185,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.17.4
+  version: v1.17.5
   # {{cilium.registry}}/operator:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -200,8 +200,8 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.26.7
-  plugin_version: v1.6.2-flannel1
+  version: v0.27.0
+  plugin_version: v1.7.1-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -220,7 +220,7 @@ calico:
   # calicoctl 安装包下载地址
   download_url: https://gh-proxy.com/github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
-  version: v3.28.3
+  version: v3.30.2
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
@@ -235,7 +235,7 @@ calico:
 
 kuberouter:
   # https://github.com/cloudnativelabs/kube-router
-  version: v2.4.1
+  version: v2.5.0
   # {{kube-router.registry}}/kube-router
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # Setups node CNI to allow hairpin mode, requires node reboots, see
@@ -256,7 +256,7 @@ coredns:
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nodelocaldns:
   enabled: true
-  version: 1.25.0
+  version: 1.26.4
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   ip: "169.254.20.10"
@@ -268,7 +268,7 @@ metrics_server:
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 npd:
   enabled: false
-  version: v0.8.20
+  version: v0.8.21
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nvidia_device_plugin:
