@@ -45,8 +45,8 @@
   copy:
     src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/kubectl"
     dest: "/usr/bin/"
-    owner: kube
-    group: kube
+    owner: root
+    group: root
     mode: 0755
   tags: install_kubectl
 
@@ -54,9 +54,9 @@
   copy:
     src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/{{ item }}"
     dest: "/usr/bin/"
-    owner: kube
-    group: kube
-    mode: 0750
+    owner: root
+    group: root
+    mode: 0755
   with_items:
     - kube-apiserver
     - kube-controller-manager
@@ -67,8 +67,8 @@
   copy:
     src: "{{ item }}"
     dest: "/etc/kubernetes/pki/"
-    owner: kube
-    group: kube
+    owner: root
+    group: root
     mode: 0644
   with_items:
     - "{{ cert.dir }}/ca.key"
@@ -107,8 +107,6 @@
 - name: "Distribution kubectl kubeconfig"
   template:
     src: "admin.kubeconfig.j2"
-    owner: kube
-    group: kube
     mode: 0600
     dest: "~/.kube/config"
   tags:
@@ -118,9 +116,9 @@
 - name: "Distribution master kubeconfig"
   template:
     src: "{{ item.src }}"
-    owner: kube
-    group: kube
-    mode: 0640
+    owner: root
+    group: root
+    mode: 0644
     dest: "{{ item.dest }}"
   with_items:
     - {src: "controller-manager.kubeconfig.j2",dest: "/etc/kubernetes/controller-manager.kubeconfig" }
@@ -130,9 +128,9 @@
 - name: "Distribution master config"
   template:
     src: "{{ item.src }}"
-    owner: kube
-    group: kube
-    mode: 0640
+    owner: root
+    group: root
+    mode: 0644
     dest: "{{ item.dest }}"
   with_items:
     - {src: "kube-apiserver.conf.j2",dest: "/etc/kubernetes/kube-apiserver.conf" }

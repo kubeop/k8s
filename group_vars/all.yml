@@ -41,7 +41,7 @@ cert:
 # https://github.com/etcd-io/etcd
 etcd:
   # etcd 安装包下载地址
-  download_url: https://gh-proxy.com/github.com/etcd-io/etcd/releases/download
+  download_url: https://files.m.daocloud.io/github.com/etcd-io/etcd/releases/download
   # etcd 版本
   version: v3.5.21
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
@@ -66,7 +66,7 @@ kubernetes:
   # 因官方下载源调整，调整后下载较慢，默认使用DaoCloud二进制加速下载
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
-  version: v1.32.6
+  version: v1.32.7
   # Configure IPv4 Stack networking
   ipv4_stack: true
   # Configure IPv6 Stack networking
@@ -99,26 +99,26 @@ helm:
   # helm 安装包下载地址
   download_url: https://mirrors.huaweicloud.com/helm
   # helm 版本
-  version: v3.18.3
+  version: v3.18.4
 
 # https://github.com/containernetworking/plugins
 cniplugins:
   # cni-plugins 安装包下载地址
-  download_url: https://gh-proxy.com/github.com/containernetworking/plugins/releases/download
+  download_url: https://files.m.daocloud.io/github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
   version: v1.6.2
 
 # https://github.com/kubernetes-sigs/cri-tools
 critools:
   # cri-tools 安装包下载地址
-  download_url: https://gh-proxy.com/github.com/kubernetes-sigs/cri-tools/releases/download
+  download_url: https://files.m.daocloud.io/github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
   version: v1.33.0
 
 # https://github.com/opencontainers/runc
 runc:
   # runc 安装包下载地址
-  download_url: https://gh-proxy.com/github.com/opencontainers/runc/releases/download
+  download_url: https://files.m.daocloud.io/github.com/opencontainers/runc/releases/download
   # runc 版本，建议根据containerd版本对应
   # https://github.com/containerd/containerd/blob/v1.7.24/script/setup/runc-version
   version: v1.2.6
@@ -126,7 +126,7 @@ runc:
 # https://github.com/containerd/containerd
 containerd:
   # containerd 安装包下载地址
-  download_url: https://gh-proxy.com/github.com/containerd/containerd/releases/download
+  download_url: https://files.m.daocloud.io/github.com/containerd/containerd/releases/download
   # containerd 版本
   version: 1.7.27
   # containerd 配置文件目录
@@ -185,7 +185,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.17.5
+  version: v1.17.6
   # {{cilium.registry}}/operator:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -218,7 +218,7 @@ flannel:
 
 calico:
   # calicoctl 安装包下载地址
-  download_url: https://gh-proxy.com/github.com/projectcalico/calico/releases/download
+  download_url: https://files.m.daocloud.io/github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
   version: v3.30.2
   # {{calico.registry}}/kube-controllers:{{calico.version}}
@@ -227,6 +227,9 @@ calico:
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
+  # Calico NFTable Mode Support (tech preview 3.29)
+  # Valid option: Disabled (default), Enabled
+  nftable_mode: Disabled
   # mtu 默认为0，表示自动自动检测
   mtu: 0
   # 可指定网卡interface=eth.*或使用can-reach=网关
