@@ -32,6 +32,10 @@ ExecStart=/usr/bin/etcd \
          --trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
          --initial-cluster-state=new \
          --initial-cluster-token=etcd-cluster \
+{% if etcd.version | regex_replace('v') is version("3.6.0","ge") %}
+         --feature-gates=InitialCorruptCheck=true \
+         --watch-progress-notify-interval=5s \
+{% endif %}
          --election-timeout=3000 \
          --heartbeat-interval=500 \
          --snapshot-count=50000 \

@@ -106,7 +106,7 @@ cniplugins:
   # cni-plugins 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
-  version: v1.8.0
+  version: v1.7.1
 
 # https://github.com/kubernetes-sigs/cri-tools
 critools:
@@ -152,7 +152,7 @@ containerd:
   cri:
     sandbox_image: 
       repo: "registry.aliyuncs.com/google_containers/pause"
-      tag: "3.10"
+      tag: "3.10.1"
     max_container_log_line_size: 16384
     enable_unprivileged_ports: false
     enable_unprivileged_icmp: false
