@@ -66,7 +66,7 @@ kubernetes:
   # 因官方下载源调整，调整后下载较慢，默认使用DaoCloud二进制加速下载
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
-  version: v1.33.4
+  version: v1.34.1
   # Configure IPv4 Stack networking
   ipv4_stack: true
   # Configure IPv6 Stack networking
@@ -97,23 +97,23 @@ kubernetes:
 helm:
   enabled: true
   # helm 安装包下载地址
-  download_url: https://mirrors.huaweicloud.com/helm
+  download_url: https://files.m.daocloud.io/get.helm.sh
   # helm 版本
-  version: v3.18.5
+  version: v3.19.0
 
 # https://github.com/containernetworking/plugins
 cniplugins:
   # cni-plugins 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/containernetworking/plugins/releases/download
   # cni-plugins 版本
-  version: v1.7.1
+  version: v1.8.0
 
 # https://github.com/kubernetes-sigs/cri-tools
 critools:
   # cri-tools 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.33.0
+  version: v1.34.0
 
 # https://github.com/opencontainers/runc
 runc:
@@ -121,7 +121,7 @@ runc:
   download_url: https://files.m.daocloud.io/github.com/opencontainers/runc/releases/download
   # runc 版本，建议根据containerd版本对应
   # https://github.com/containerd/containerd/blob/v1.7.24/script/setup/runc-version
-  version: v1.3.0
+  version: v1.3.1
 
 # https://github.com/containerd/containerd
 containerd:
@@ -200,7 +200,7 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.27.2
+  version: v0.27.3
   plugin_version: v1.7.1-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
@@ -220,7 +220,7 @@ calico:
   # calicoctl 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
-  version: v3.30.2
+  version: v3.30.3
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
@@ -276,6 +276,6 @@ npd:
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nvidia_device_plugin:
   enabled: false
-  version: v0.17.3
+  version: v0.17.4
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop

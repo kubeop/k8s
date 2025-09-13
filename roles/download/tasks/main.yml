@@ -114,7 +114,7 @@
 
 - name: "Download helm"
   get_url:
-    url: "{{ helm.download_url }}/{{ helm.version }}/helm-{{ helm.version }}-linux-{{ download.arch }}.tar.gz"
+    url: "{{ helm.download_url }}/helm-{{ helm.version }}-linux-{{ download.arch }}.tar.gz"
     dest: "{{ download.dest }}/helm/{{ helm.version }}/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
