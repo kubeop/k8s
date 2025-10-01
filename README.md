@@ -9,6 +9,7 @@
 - Ubuntu Server 20.04，22.04，24.04
 - Debian 12
 - TencentOS Server 3
+- Kylin Server v11
 
 
 

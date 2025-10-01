@@ -16,6 +16,9 @@ ExecStartPre=-/usr/sbin/modprobe ip_vs_nq
 ExecStartPre=-/usr/sbin/modprobe ip_tables
 ExecStartPre=-/usr/sbin/modprobe br_netfilter
 ExecStartPre=-/usr/sbin/modprobe iptable_filter
+{% if kubernetes.kube_proxy_mode == 'nftables' %}
+ExecStartPre=-/usr/sbin/modprobe nf_tables
+{% endif %}
 {% if ansible_kernel.split('-')[0] is version('4.19.0', '>=') or (ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version | int == 8) %}
 ExecStartPre=-/usr/sbin/modprobe nf_conntrack
 {% else %}

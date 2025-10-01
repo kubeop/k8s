@@ -51,4 +51,7 @@ KUBE_API_ARGS="\
     --tls-cert-file=/etc/kubernetes/pki/apiserver.pem \
     --tls-private-key-file=/etc/kubernetes/pki/apiserver.key \
     --service-node-port-range={{ kubernetes.service_node_port_range }} \
+    --anonymous-auth=false \
+    --default-not-ready-toleration-seconds=300 \
+    --default-unreachable-toleration-seconds=300 \
     --v=2"

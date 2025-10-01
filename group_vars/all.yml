@@ -37,13 +37,15 @@ cert:
   size: 2048
   # 签发证书的时间
   day: 3650d
+  # 证书加密算法 RSA or ECC
+  type: RSA
 
 # https://github.com/etcd-io/etcd
 etcd:
   # etcd 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.6.4
+  version: v3.6.5
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -238,7 +240,7 @@ calico:
 
 kuberouter:
   # https://github.com/cloudnativelabs/kube-router
-  version: v2.5.0
+  version: v2.6.0
   # {{kube-router.registry}}/kube-router
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # Setups node CNI to allow hairpin mode, requires node reboots, see

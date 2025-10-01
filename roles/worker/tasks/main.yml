@@ -157,7 +157,6 @@
     mode: 0644
   with_items:
     - "{{ cert.dir }}/ca.pem"
-    - "{{ cert.dir }}/ca.key"
     - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.pem"
     - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.key"
   tags:
@@ -227,7 +226,7 @@
 
 - name: "Create bootstrap-token secret"
   when: bootstrap_token_ready.rc != 0
-  shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true
+  shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true --from-literal auth-extra-groups="system:bootstrappers:default-node-token,system:bootstrappers:worker,system:bootstrappers:ingress"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
@@ -242,7 +241,7 @@
 
 - name: "Create clusterrolebinding kubelet-bootstrap"
   when: kubelet_bootstrap_ready.rc != 0
-  shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers
+  shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers:default-node-token
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
@@ -257,7 +256,7 @@
 
 - name: "Create clusterrolebinding node-autoapprove-bootstrap"
   when: node_autoapprove_bootstrap_ready.rc != 0
-  shell: kubectl create clusterrolebinding node-autoapprove-bootstrap --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers
+  shell: kubectl create clusterrolebinding node-autoapprove-bootstrap --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers:default-node-token
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap

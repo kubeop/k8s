@@ -17,8 +17,9 @@
   when: not etcd_ca_key.stat.exists
   openssl_privatekey:
     path: "{{ cert.dir }}/etcd-ca.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
 
 - stat:
     path: "{{ cert.dir }}/etcd-ca.csr"
@@ -60,8 +61,9 @@
 - name: "Generate etcd-server private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['etcd'] }}"
 
@@ -107,8 +109,9 @@
 - name: "Generate etcd-peer private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['etcd'] }}"
 
@@ -154,8 +157,9 @@
 - name: "Generate apiserver-etcd-client private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['master'] }}"
 
@@ -195,8 +199,9 @@
 - name: "Generate etcd-healthcheck-client private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['etcd'] }}"
 
@@ -241,8 +246,9 @@
   when: not ca_key.stat.exists
   openssl_privatekey:
     path: "{{ cert.dir }}/ca.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
 
 - stat:
     path: "{{ cert.dir }}/ca.csr"
@@ -284,8 +290,9 @@
 - name: "Generate apiserver private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['master'] }}"
 
@@ -356,8 +363,9 @@
 - name: "Generate apiserver-kubelet-client private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['master'] }}"
 
@@ -398,8 +406,9 @@
 - name: "Generate admin private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/admin.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['master'] }}"
 
@@ -440,8 +449,9 @@
 - name: "Generate controller-manager private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['master'] }}"
 
@@ -481,8 +491,9 @@
 - name: "Generate scheduler private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/scheduler.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['master'] }}"
 
@@ -522,8 +533,9 @@
 - name: "Generate kube-proxy private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['master'] }}"
     - "{{ groups['worker'] }}"
@@ -572,8 +584,9 @@
   when: not front_proxy_ca_key.stat.exists
   openssl_privatekey:
     path: "{{ cert.dir }}/front-proxy-ca.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
 
 - stat:
     path: "{{ cert.dir }}/front-proxy-ca.csr"
@@ -615,8 +628,9 @@
 - name: "Generate front-proxy-client private key"
   openssl_privatekey:
     path: "{{ cert.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
   with_items:
     - "{{ groups['master'] }}"
 
@@ -661,8 +675,9 @@
   when: not sa_key.stat.exists
   openssl_privatekey:
     path: "{{ cert.dir }}/sa.key"
-    type: RSA
+    type: "{{ cert.type }}"
     size: "{{ cert.size }}"
+    curve: "{{ 'secp256r1' if cert.type == 'ECC' else omit }}"
 
 - stat:
     path: "{{ cert.dir }}/sa.pub"

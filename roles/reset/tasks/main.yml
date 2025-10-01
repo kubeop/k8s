@@ -27,11 +27,6 @@
     - /etc/sysconfig/kubelet
     - /usr/lib/systemd/system/kubelet.service
     - /usr/lib/systemd/system/kube-proxy.service
-    - /usr/bin/kube-apiserver
-    - /usr/bin/kube-controller-manager
-    - /usr/bin/kube-scheduler
-    - /usr/bin/kubelet
-    - /usr/bin/kube-proxy
   register: services_removed
   tags:
     - services
@@ -40,21 +35,6 @@
   systemd:
     daemon_reload: true
   when: services_removed.changed
-
-- name: remove binary files
-  file:
-    path: "{{ item }}"
-    state: absent
-  with_items:
-    - /usr/bin/kube-apiserver
-    - /usr/bin/kube-controller-manager
-    - /usr/bin/kube-scheduler
-    - /usr/bin/kubelet
-    - /usr/bin/kube-proxy
-    - /usr/bin/kubectl
-  register: binary_removed
-  tags:
-    - binary
 
 - name: check if crictl is present
   stat:
@@ -148,6 +128,11 @@
   tags:
     - remove_containerd
 
+- name: Reset | systemctl daemon-reload  # noqa no-handler
+  systemd_service:
+    daemon_reload: true
+  when: containerd_removed.changed
+
 - name: gather mounted kubelet dirs
   shell: set -o pipefail && mount | grep /var/lib/kubelet/ | awk '{print $3}' | tac
   args:
@@ -170,10 +155,22 @@
   tags:
     - mounts
 
+- name: Set IPv4 iptables default policies to ACCEPT
+  iptables:
+    chain: "{{ item }}"
+    policy: ACCEPT
+  with_items:
+    - INPUT
+    - FORWARD
+    - OUTPUT
+  when: flush_iptables | bool and kubernetes.ipv4_stack
+  tags:
+    - iptables
+
 - name: Flush iptables
   iptables:
     table: "{{ item }}"
-    flush: yes
+    flush: true
   with_items:
     - filter
     - nat
@@ -183,10 +180,29 @@
   tags:
     - iptables
 
+- name: Delete IPv4 user-defined chains # noqa command-instead-of-module
+  command: iptables -X
+  when: flush_iptables | bool and kubernetes.ipv4_stack
+  tags:
+    - iptables
+
+- name: Set IPv6 ip6tables default policies to ACCEPT
+  iptables:
+    chain: "{{ item }}"
+    policy: ACCEPT
+    ip_version: ipv6
+  with_items:
+    - INPUT
+    - FORWARD
+    - OUTPUT
+  when: flush_iptables | bool and kubernetes.ipv6_stack
+  tags:
+    - ip6tables
+
 - name: Flush ip6tables
   iptables:
     table: "{{ item }}"
-    flush: yes
+    flush: true
     ip_version: ipv6
   with_items:
     - filter
@@ -197,31 +213,38 @@
   tags:
     - ip6tables
 
+- name: Delete IPv6 user-defined chains # noqa command-instead-of-module
+  command: ip6tables -X
+  when: flush_iptables | bool and kubernetes.ipv6_stack
+  tags:
+    - ip6tables
+
 - name: Clear IPVS virtual server table
   command: "ipvsadm -C"
   ignore_errors: true  # noqa ignore-errors
   when:
-    - inventory_hostname in groups['worker']
+    - kubernetes.kube_proxy_mode == 'ipvs'
 
 - name: check kube-ipvs0 network device
   stat:
     path: /sys/class/net/kube-ipvs0
-    get_attributes: no
-    get_checksum: no
-    get_mime: no
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
   register: kube_ipvs0
 
 - name: Remove kube-ipvs0
   command: "ip link del kube-ipvs0"
   when:
+    - kubernetes.kube_proxy_mode == 'ipvs'
     - kube_ipvs0.stat.exists
 
 - name: check nodelocaldns network device
   stat:
     path: /sys/class/net/nodelocaldns
-    get_attributes: no
-    get_checksum: no
-    get_mime: no
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
   register: nodelocaldns_device
 
 - name: Remove nodelocaldns
@@ -233,9 +256,9 @@
 - name: Check whether /var/lib/kubelet directory exists
   stat:
     path: /var/lib/kubelet
-    get_attributes: no
-    get_checksum: no
-    get_mime: no
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
   register: var_lib_kubelet_directory
 
 - name: Find files/dirs with immutable flag in /var/lib/kubelet
@@ -268,6 +291,7 @@
     - "{{ kubernetes.kubelet_dir }}"
     - "{{ containerd.root }}"
     - "{{ ansible_env.HOME | default('/root') }}/.kube"
+    - "{{ ansible_env.HOME | default('/root') }}/.helm"
     - /var/lib/etcd
     - /etc/kubernetes
     - /etc/etcd
@@ -285,6 +309,15 @@
     - /etc/bash_completion.d/kubectl.sh
     - /etc/bash_completion.d/crictl
     - /usr/libexec/kubernetes
+    - /usr/bin/etcd
+    - /usr/bin/etcdctl
+    - /usr/bin/etcdutl
+    - /usr/bin/kube-apiserver
+    - /usr/bin/kube-controller-manager
+    - /usr/bin/kube-scheduler
+    - /usr/bin/kubelet
+    - /usr/bin/kube-proxy
+    - /usr/bin/kubectl
   ignore_errors: true  # noqa ignore-errors
   tags:
     - files

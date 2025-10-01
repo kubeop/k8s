@@ -33,6 +33,8 @@ ExecStart=/usr/bin/etcd \
          --initial-cluster-state=new \
          --initial-cluster-token=etcd-cluster \
 {% if etcd.version | regex_replace('v') is version("3.6.0","ge") %}
+         # ETCD 3.5.x issue
+         # https://groups.google.com/a/kubernetes.io/g/dev/c/B7gJs88XtQc/m/rSgNOzV2BwAJ?utm_medium=email&utm_source=footer
          --feature-gates=InitialCorruptCheck=true \
          --watch-progress-notify-interval=5s \
 {% endif %}
