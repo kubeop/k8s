@@ -54,7 +54,8 @@
 
 - name: "Disable selinux"
   selinux:
-    state: disabled
+    policy: "{{ 'targeted' if security.selinux == true else omit }}"
+    state: "{{ 'enforcing' if security.selinux == true else 'disabled' }}"
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: selinux
@@ -197,6 +198,7 @@
       - yum-utils
       - nfs-utils
       - iproute
+      - policycoreutils-python-utils
     state: present
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']

@@ -5,6 +5,15 @@
     state: present
   tags: install_haproxy
 
+- name: "Set selinux for loadbalance port"
+  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and security.selinux == true
+  community.general.seport:
+    ports: "{{ loadbalance.port }}"
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: set_haproxy_selinux
+
 - name: "Generate haproxy.cfg"
   template:
     src: "haproxy.cfg.j2"

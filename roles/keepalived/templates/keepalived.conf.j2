@@ -3,7 +3,7 @@ global_defs {
 }
 
 vrrp_script Checkhaproxy {
-    script "/etc/keepalived/check_haproxy.sh"
+    script "/usr/libexec/keepalived/check_haproxy.sh"
     interval 3
     timeout 9
     fall 2

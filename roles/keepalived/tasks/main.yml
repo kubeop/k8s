@@ -5,19 +5,32 @@
     state: present
   tags: install_keepalived
 
+- name: "Set SELinux context for keepalived"
+  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and security.selinux == true
+  community.general.sefcontext:
+    target: "/usr/libexec/keepalived(/.*)?"
+    setype: keepalived_unconfined_script_exec_t
+    state: present
+  tags: set_keepalived_selinux
+
+- name: "Generate check_haproxy.sh"
+  template:
+    src: "check_haproxy.sh.j2"
+    dest: "/usr/libexec/keepalived/check_haproxy.sh"
+    mode: 0777
+  tags: generate_check_haproxy_sh
+  notify:
+    - restart keepalived
+
+- name: "Set selinux for keepalived"
+  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and security.selinux == true
+  command: restorecon -irv /usr/libexec/keepalived
+  tags: set_keepalived_selinux
+
 - name: "Generate keepalived.conf"
   template:
     src: "keepalived.conf.j2"
     dest: "/etc/keepalived/keepalived.conf"
   tags: generate_keepalived_conf
-  notify:
-    - restart keepalived
-
-- name: "Generate check_haproxy.sh"
-  template:
-    src: "check_haproxy.sh.j2"
-    dest: "/etc/keepalived/check_haproxy.sh"
-    mode: 0777
-  tags: generate_check_haproxy_sh
   notify:
     - restart keepalived

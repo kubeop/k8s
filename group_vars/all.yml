@@ -29,6 +29,10 @@ repo:
   nvidia_container_toolkit_centos: "https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch"
   nvidia_container_toolkit_ubuntu: "deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
 
+security:
+  # 关闭或开启selinux, true为开启, false为关闭
+  selinux: false
+
 # Kubernetes Cert
 cert:
   # 签发集群整数保存目录，默认签发10年有限期证书
