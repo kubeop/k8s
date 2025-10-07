@@ -398,7 +398,3 @@ ansible-playbook reset.yml -i inventory -l ${IP} -e "flush_iptables=true"
 - 在公司或个人项目中使用，并帮忙推广给伙伴使用
 
 
-
-## 交流渠道
-
-<img src="assets/wechat.png" alt="WeChat" style="zoom:40%;" /> 
