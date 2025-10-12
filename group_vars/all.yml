@@ -185,6 +185,13 @@ containerd:
     #- registry: 10.0.0.2:5000
     #  username: user
     #  password: pass
+  tracing:
+    enabled: false
+    endpoint: "http://<victoria-traces>/insert/opentelemetry"
+    # 协议，支持grpc和http/protobuf
+    protocol: "http/protobuf"
+    sampling_ratio: 1.0
+    service_name: "containerd"
 
 # Network Plugin
 network_plugin: calico

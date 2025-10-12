@@ -77,3 +77,15 @@ oom_score = {{ containerd.oom_score | default(0) }}
 
   [plugins."io.containerd.nri.v1.nri"]
     disable = {{ 'false' if containerd.nri.enabled else 'true' }}
+
+{% if containerd.tracing.enabled %}
+  [plugins."io.containerd.tracing.processor.v1.otlp"]
+    endpoint = "{{ containerd.tracing.endpoint }}"
+    protocol = "{{ containerd.tracing.protocol }}"
+{% if containerd.tracing.protocol == "grpc" %}
+    insecure = false
+{% endif %}
+  [plugins."io.containerd.internal.v1.tracing"]
+    sampling_ratio = {{ containerd.tracing.sampling_ratio }}
+    service_name = "{{ containerd.tracing.service_name }}"
+{% endif %}
