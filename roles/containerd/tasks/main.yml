@@ -5,6 +5,7 @@
       - util-linux
       - libseccomp
       - libseccomp-devel
+      - "{{ 'container-selinux' if security.selinux == true else omit }}"
     state: present
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']

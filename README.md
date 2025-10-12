@@ -7,7 +7,7 @@
 - AlmaLinux 8，9，10
 - RockyLinux 8，9，10
 - Ubuntu Server 20.04，22.04，24.04
-- Debian 12
+- Debian 12，13
 - TencentOS Server 3
 - Kylin Server v11
 
@@ -396,5 +396,4 @@ ansible-playbook reset.yml -i inventory -l ${IP} -e "flush_iptables=true"
 ## 项目支持
 - 如果你觉得本项目还不错，可以通过 Star 来表示你的喜欢
 - 在公司或个人项目中使用，并帮忙推广给伙伴使用
-
 

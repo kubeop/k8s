@@ -35,7 +35,7 @@ security:
 
 # Kubernetes Cert
 cert:
-  # 签发集群整数保存目录，默认签发10年有限期证书
+  # 签发集群证书保存目录，默认签发10年有限期证书
   dir: /opt/certs
   # 签发证书大小
   size: 2048

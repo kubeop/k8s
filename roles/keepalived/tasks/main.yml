@@ -13,11 +13,19 @@
     state: present
   tags: set_keepalived_selinux
 
+- name: "Create keepalived directory"
+  when: ansible_os_family in ["Debian"]
+  file:
+    path: "/usr/libexec/keepalived"
+    state: directory
+    mode: 0755
+  tags: create_keepalived_script_dir
+
 - name: "Generate check_haproxy.sh"
   template:
     src: "check_haproxy.sh.j2"
     dest: "/usr/libexec/keepalived/check_haproxy.sh"
-    mode: 0777
+    mode: 0755
   tags: generate_check_haproxy_sh
   notify:
     - restart keepalived
