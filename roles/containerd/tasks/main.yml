@@ -5,7 +5,6 @@
       - util-linux
       - libseccomp
       - libseccomp-devel
-      - "{{ 'container-selinux' if security.selinux == true else omit }}"
     state: present
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
@@ -21,13 +20,23 @@
     - ansible_os_family in ["Debian"]
   tags: containerd_app
 
-- name: "Add nvidia-container-toolkit repository"
+- name: "Install container-selinux"
+  package:
+    name: container-selinux
+    state: present
+  when:
+    - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
+    - security.selinux == true
+  tags: containerd_app
+
+- name: "Add nvidia-container-toolkit rpm repository"
   yum_repository:
     name: "{{ item.name }}"
     description: "{{ item.description}}"
     file: nvidia-container-toolkit
     baseurl: "{{ item.baseurl }}"
-    repo_gpgcheck: no
+    repo_gpgcheck: yes
+    gpgkey: "{{ repo.nvidia_container_toolkit_gpgkey }}"
     gpgcheck: no
     sslverify: yes
     sslcacert: "/etc/pki/tls/certs/ca-bundle.crt"
@@ -39,11 +48,22 @@
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: gpu_runtime
 
-- name: "Add nvidia-container-toolkit repository"
-  apt_repository:
-    repo: "{{ repo.nvidia_container_toolkit_ubuntu }}"
-    filename: nvidia-container-toolkit
-    state: present
+- name: "Add nvidia-container-toolkit apt repository"
+  block:
+    - name: "apt repository | add gpgkey"
+      get_url:
+        url: "{{ repo.nvidia_container_toolkit_gpgkey }}"
+        dest: "/tmp/nvidia-container-toolkit-keyring.gpg"
+        mode: 0644
+    - name: "apt repository | import gpgkey"
+      shell: "gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg /tmp/nvidia-container-toolkit-keyring.gpg"
+      args:
+        creates: "/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg"
+    - name: "apt repository | add repository"
+      apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] {{ repo.nvidia_container_toolkit_ubuntu }} /"
+        filename: nvidia-container-toolkit
+        state: present
   when:
     - gpu is defined and gpu == 'true'
     - ansible_os_family in ["Debian"]

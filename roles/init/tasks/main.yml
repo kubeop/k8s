@@ -195,7 +195,6 @@
   package:
     name:
       - nmap-ncat
-      - yum-utils
       - nfs-utils
       - iproute
       - policycoreutils-python-utils
@@ -211,6 +210,7 @@
       - nmap-common
       - nfs-common
       - iproute2
+      - gnupg
     state: present
   when:
     - ansible_os_family in ["Debian"]

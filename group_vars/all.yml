@@ -27,7 +27,8 @@ repo:
   # https://mirrors.ustc.edu.cn/libnvidia-container
   # 可使用国内源加速安装
   nvidia_container_toolkit_centos: "https://nvidia.github.io/libnvidia-container/stable/rpm/$basearch"
-  nvidia_container_toolkit_ubuntu: "deb https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /"
+  nvidia_container_toolkit_ubuntu: "https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH)"
+  nvidia_container_toolkit_gpgkey: "https://nvidia.github.io/libnvidia-container/gpgkey"
 
 security:
   # 关闭或开启selinux, true为开启, false为关闭
