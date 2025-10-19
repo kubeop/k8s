@@ -95,7 +95,8 @@ kubernetes:
   kubelet_max_pods: 110
   # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   kubelet_dir: "/var/lib/kubelet"
-  # kube-proxy模式, 支持 iptables, ipvs, nftables. RHEL10及衍生发行版建议使用nftables
+  # kube-proxy模式, 支持 iptables, ipvs, nftables.
+  # https://kubernetes.io/zh-cn/blog/2025/02/28/nftables-kube-proxy/
   kube_proxy_mode: ipvs
   # 配置kube-proxy的ipvs调度策略，支持rr(轮询),wrr(加权轮训),lc(最少连接数),wlc(加权最少连接数),sh(源地址哈希),dh(目标地址哈希),sed(最短预期延迟),nq(最少队列)
   scheduler: rr
@@ -129,8 +130,8 @@ runc:
   # runc 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/opencontainers/runc/releases/download
   # runc 版本，建议根据containerd版本对应
-  # https://github.com/containerd/containerd/blob/v1.7.24/script/setup/runc-version
-  version: v1.3.1
+  # https://github.com/containerd/containerd/blob/v1.7.28/script/setup/runc-version
+  version: v1.3.2
 
 # https://github.com/containerd/containerd
 containerd:
@@ -201,7 +202,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.18.1
+  version: v1.18.2
   # {{cilium.registry}}/operator:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -216,8 +217,8 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.27.3
-  plugin_version: v1.7.1-flannel1
+  version: v0.27.4
+  plugin_version: v1.8.0-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -236,7 +237,7 @@ calico:
   # calicoctl 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
-  version: v3.30.3
+  version: v3.30.4
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
@@ -254,7 +255,7 @@ calico:
 
 kuberouter:
   # https://github.com/cloudnativelabs/kube-router
-  version: v2.6.0
+  version: v2.6.1
   # {{kube-router.registry}}/kube-router
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # Setups node CNI to allow hairpin mode, requires node reboots, see
