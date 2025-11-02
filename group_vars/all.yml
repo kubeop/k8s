@@ -288,7 +288,7 @@ metrics_server:
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 npd:
   enabled: false
-  version: v0.8.21
+  version: v1.34.0
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nvidia_device_plugin:

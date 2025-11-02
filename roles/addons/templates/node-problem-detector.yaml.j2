@@ -3,25 +3,36 @@ kind: ServiceAccount
 metadata:
   name: node-problem-detector
   namespace: kube-system
-  labels:
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: Reconcile
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: node-problem-detector-binding
-  labels:
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: Reconcile
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: system:node-problem-detector
 subjects:
-- kind: ServiceAccount
+  - kind: ServiceAccount
+    name: node-problem-detector
+    namespace: kube-system
+---
+apiVersion: v1
+kind: Service
+metadata:
   name: node-problem-detector
   namespace: kube-system
+  labels:
+    app.kubernetes.io/name: node-problem-detector
+spec:
+  type: ClusterIP
+  ports:
+    - name: metrics
+      port: 20257
+      protocol: TCP
+      targetPort: metrics
+  selector:
+    app.kubernetes.io/name: node-problem-detector
 ---
 apiVersion: apps/v1
 kind: DaemonSet
@@ -30,8 +41,6 @@ metadata:
   namespace: kube-system
   labels:
     app.kubernetes.io/name: node-problem-detector
-    kubernetes.io/cluster-service: "true"
-    addonmanager.kubernetes.io/mode: Reconcile
 spec:
   selector:
     matchLabels:
@@ -40,24 +49,42 @@ spec:
     metadata:
       labels:
         app.kubernetes.io/name: node-problem-detector
-        kubernetes.io/cluster-service: "true"
     spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: kubernetes.io/os
+                    operator: In
+                    values:
+                      - linux
       containers:
       - name: node-problem-detector
-        image: {{npd.registry}}/node-problem-detector:{{npd.version}}
         command:
-        - "/bin/sh"
-        - "-c"
-        - "exec /node-problem-detector --logtostderr --config.system-log-monitor=/config/kernel-monitor.json,/config/systemd-monitor.json --config.custom-plugin-monitor=/config/kernel-monitor-counter.json,/config/systemd-monitor-counter.json --config.system-stats-monitor=/config/system-stats-monitor.json >>/var/log/node-problem-detector.log 2>&1"
-        securityContext:
-          privileged: true
+        - /node-problem-detector
+        - --logtostderr
+        - --config.system-log-monitor=/config/kernel-monitor.json,/config/readonly-monitor.json,/config/systemd-monitor.json
+        - --config.custom-plugin-monitor=/config/kernel-monitor-counter.json,/config/systemd-monitor-counter.json,/config/network-problem-monitor.json
+        - --config.system-stats-monitor=/config/system-stats-monitor.json
+        - --port=20256
+        - --prometheus-address=0.0.0.0
+        - --prometheus-port=20257
+        image: {{npd.registry}}/node-problem-detector:{{npd.version}}
+        imagePullPolicy: IfNotPresent
+        ports:
+          - name: metrics
+            containerPort: 20257
+            protocol: TCP
         resources:
           limits:
-            cpu: "200m"
-            memory: "256Mi"
+            cpu: 200m
+            memory: 512Mi
           requests:
-            cpu: "200m"
-            memory: "256Mi"
+            cpu: 200m
+            memory: 512Mi
+        securityContext:
+          privileged: true
         env:
         - name: NODE_NAME
           valueFrom:
@@ -66,17 +93,23 @@ spec:
         volumeMounts:
         - name: log
           mountPath: /var/log
+          readOnly: true
+        - name: kmsg
+          mountPath: /dev/kmsg
+          readOnly: true
+        # Make sure node problem detector is in the same timezone
+        # with the host.
         - name: localtime
           mountPath: /etc/localtime
           readOnly: true
-      volumes:
-      - name: log
-        hostPath:
-          path: /var/log/
-      - name: localtime
-        hostPath:
-          path: /etc/localtime
-          type: "FileOrCreate"
+        - mountPath: /etc/machine-id
+          name: machine-id
+          readOnly: true
+        - mountPath: /run/systemd/system
+          name: systemd
+        - mountPath: /var/run/dbus/
+          name: dbus
+          mountPropagation: Bidirectional
       serviceAccountName: node-problem-detector
       tolerations:
       - operator: "Exists"
@@ -85,3 +118,26 @@ spec:
         effect: "NoSchedule"
       - key: "CriticalAddonsOnly"
         operator: "Exists"
+      volumes:
+      - name: log
+        # Config `log` to your system log directory
+        hostPath:
+          path: /var/log/
+      - name: kmsg
+        hostPath:
+          path: /dev/kmsg
+      - name: localtime
+        hostPath:
+          path: /etc/localtime
+      - name: machine-id
+        hostPath:
+          path: /etc/machine-id
+          type: "File"
+      - name: systemd
+        hostPath:
+          path: /run/systemd/system/
+          type: ""
+      - name: dbus
+        hostPath:
+          path: /var/run/dbus/
+          type: ""
