@@ -4,6 +4,6 @@ metadata:
 spec:
   datastoreType: "etcdv3"
   etcdEndpoints: "{% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
-  etcdKeyFile: /etc/etcd/pki/etcd-healthcheck-client.key
-  etcdCertFile: /etc/etcd/pki/etcd-healthcheck-client.pem
-  etcdCACertFile: /etc/etcd/pki/etcd-ca.pem
+  etcdKeyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
+  etcdCertFile: /etc/kubernetes/pki/apiserver-etcd-client.pem
+  etcdCACertFile: /etc/kubernetes/pki/etcd-ca.pem

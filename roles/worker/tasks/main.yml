@@ -197,7 +197,7 @@
     mode: 0640
     dest: "{{ item.dest }}"
   with_items:
-    - {src: "bootstrap.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap.kubeconfig" }
+    - {src: "bootstrap-kubelet.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap-kubelet.kubeconfig" }
     - {src: "proxy.kubeconfig.j2",dest: "/etc/kubernetes/proxy.kubeconfig" }
   tags: dis_worker_kubeconfig
 
