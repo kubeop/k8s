@@ -35,6 +35,27 @@
     name: "{{ item }}"
     state: present
   with_items:
+    - "bridge"
+    - "overlay"
+    - "br_netfilter"
+  tags: worker_mod
+
+- name: "Enabled modlue for ipvs and iptables"
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "ip_tables"
+    - "iptable_filter"
+  when: 
+    - kubernetes.kube_proxy_mode != 'nftables'
+  tags: worker_mod
+
+- name: "Enabled modlue for ipvs"
+  modprobe:
+    name: "{{ item }}"
+    state: present
+  with_items:
     - "ip_vs"
     - "ip_vs_rr"
     - "ip_vs_wrr"
@@ -44,11 +65,8 @@
     - "ip_vs_dh"
     - "ip_vs_sed"
     - "ip_vs_nq"
-    - "bridge"
-    - "overlay"
-    - "ip_tables"
-    - "iptable_filter"
-    - "br_netfilter"
+  when:
+    - kubernetes.kube_proxy_mode == 'ipvs'
   tags: worker_mod
 
 - name: "Enabled conntrack modlue < 4.19.0"
@@ -74,6 +92,15 @@
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
     - kubernetes.kube_proxy_mode == 'ipvs'
+  tags:
+    - kube-proxy
+
+- name: "Install nftables"
+  package:
+    name: nftables
+    state: present
+  when:
+    - kubernetes.kube_proxy_mode == 'nftables'
   tags:
     - kube-proxy
 

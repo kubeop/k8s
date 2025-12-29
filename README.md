@@ -2,7 +2,7 @@
 ![](https://img.shields.io/github/watchers/kubeop/k8s?style=social )
 ![](https://img.shields.io/github/stars/kubeop/k8s?color=green&style=social)
 
-## 支持的发行版
+## 支持发行版
 
 - AlmaLinux 8，9，10
 - RockyLinux 8，9，10
@@ -22,7 +22,7 @@
 
 ## 支持kubernetes版本
 
-- 1.26.x ~ 1.34.x
+- 1.26.x ~ 1.35.x
 
 
 
@@ -52,6 +52,10 @@
 > 本脚本向前兼容，拉取最新代码，根据需求调整`group_vars/all.yml`和`inventory`中相关参数即可。
 >
 > 如需更新本地代码至最新，建议备份`group_vars/all.yml`和`inventory`并更新代码至最新，然后将原`group_vars/all.yml`和`inventory`中需要的配置添加到最新的`group_vars/all.yml`和`inventory`文件即可。
+>
+> 对于Kubernetes >=1.32.0版本，推荐使用4.19+以上内核，也支持5.x或6.x版本内核。对于cgroups v2支持，最低内核版本为4.15，推荐版本为5.8+。
+>
+> 从Kubernetes 1.35.0版本开始，移除 `cgroup v1` 支持，全面买入 `cgroup v2` 版本。**kube-proxy**的 `ipvs`模式标记废弃，推荐迁移至 nftables 模式。1.35.x是支持 `containerd v1.x` 系列的最后一个版本，在升级到下一个Kubernetes版本之前，必须切换到 `containerd 2.0` 或更高版本。
 
 
 
