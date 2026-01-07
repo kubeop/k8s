@@ -215,3 +215,36 @@
   when:
     - ansible_os_family in ["Debian"]
   tags: install_app
+
+- name: "NetworkManager | Ensure NetworkManager conf.d dir"
+  file:
+    path: "/etc/NetworkManager/conf.d"
+    state: directory
+    recurse: true
+  tags: 
+    - networkmanager
+
+- name: "NetworkManager | Prevent NetworkManager from managing Calico interfaces (cali*/tunl*/vxlan.calico)"
+  copy:
+    content: |
+      [keyfile]
+      unmanaged-devices+=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:vxlan-v6.calico
+    dest: /etc/NetworkManager/conf.d/calico.conf
+    mode: "0644"
+  when:
+    - network_plugin is defined
+    - network_plugin == "calico"
+  notify: restart NetworkManager
+  tags: 
+    - networkmanager
+
+- name: "NetworkManager | Prevent NetworkManager from managing K8S interfaces (kube-ipvs0/nodelocaldns)"
+  copy:
+    content: |
+      [keyfile]
+      unmanaged-devices+=interface-name:kube-ipvs0;interface-name:nodelocaldns
+    dest: /etc/NetworkManager/conf.d/k8s.conf
+    mode: "0644"
+  notify: restart NetworkManager
+  tags: 
+    - networkmanager

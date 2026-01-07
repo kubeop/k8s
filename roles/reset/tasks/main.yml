@@ -304,6 +304,8 @@
     - /var/lib/cni
     - /var/lib/kube-router
     - /var/lib/calico
+    - /etc/NetworkManager/conf.d/calico.conf
+    - /etc/NetworkManager/conf.d/k8s.conf
     - /etc/cilium
     - /run/calico
     - /etc/bash_completion.d/kubectl.sh
