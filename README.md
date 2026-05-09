@@ -6,7 +6,7 @@
 
 - AlmaLinux 8，9，10
 - RockyLinux 8，9，10
-- Ubuntu Server 20.04，22.04，24.04
+- Ubuntu Server 20.04，22.04，24.04，26.04
 - Debian 12，13
 - TencentOS Server 3
 - Kylin Server v11
@@ -361,7 +361,7 @@ ansible-playbook cluster.yml -i inventory -l ${IP} -t dis_master_config,dis_work
 - `-l`参数更换为具体节点IP。
 - 使用v7.x之前版本部署的集群，因v7.x之后调整节点名称，不建议执行
 
-清空节点
+节点排水，并设置为不可调度
 
 ```shell
 kubectl drain --ignore-daemonsets --force <节点名称>

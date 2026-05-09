@@ -52,7 +52,7 @@ etcd:
   # etcd 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.6.10
+  version: v3.6.11
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
   data_dir: "/var/lib/etcd"
 
@@ -76,7 +76,7 @@ kubernetes:
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
   # 从 v1.35.0 版本开始，移除了 cgroup v1 的支持，仅支持 cgroup v2 的系统安装部署
-  version: v1.35.3
+  version: v1.36.0
   # Configure IPv4 Stack networking
   ipv4_stack: true
   # Configure IPv6 Stack networking
@@ -111,7 +111,7 @@ helm:
   # helm 安装包下载地址
   download_url: https://files.m.daocloud.io/get.helm.sh
   # helm 版本
-  version: v4.1.3
+  version: v4.1.4
 
 # https://github.com/containernetworking/plugins
 cniplugins:
@@ -125,22 +125,22 @@ critools:
   # cri-tools 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
-  version: v1.35.0
+  version: v1.36.0
 
 # https://github.com/opencontainers/runc
 runc:
   # runc 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/opencontainers/runc/releases/download
   # runc 版本，建议根据containerd版本对应
-  # https://github.com/containerd/containerd/blob/v2.1.6/script/setup/runc-version
-  version: v1.3.4
+  # https://github.com/containerd/containerd/blob/v2.1.7/script/setup/runc-version
+  version: v1.3.5
 
 # https://github.com/containerd/containerd
 containerd:
   # containerd 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/containerd/containerd/releases/download
   # containerd 版本
-  version: 2.1.6
+  version: 2.1.7
   # containerd 配置文件目录
   cfg_dir: /etc/containerd
   # containerd 持久化数据目录，如使用多个目录映射同一块数据盘的方式，请保持默认目录
@@ -211,7 +211,7 @@ network_plugin: calico
 # cilium need linux kernel >= 4.9.17
 cilium:
   # https://github.com/cilium/cilium
-  version: v1.19.2
+  version: v1.19.3
   # {{cilium.registry}}/operator:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -226,8 +226,8 @@ cilium:
 
 flannel:
   # https://github.com/flannel-io/flannel
-  version: v0.28.2
-  plugin_version: v1.9.0-flannel1
+  version: v0.28.4
+  plugin_version: v1.9.1-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
@@ -246,7 +246,7 @@ calico:
   # calicoctl 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/projectcalico/calico/releases/download
   # https://github.com/projectcalico/calico
-  version: v3.31.4
+  version: v3.31.5
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
@@ -285,12 +285,12 @@ kuberouter:
 # Addons
 coredns:
   # https://github.com/coredns/coredns
-  version: 1.14.1
+  version: 1.14.3
   # {{coredns.registry}}/coredns:{{coredns.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
 nodelocaldns:
   enabled: true
-  version: 1.26.7
+  version: 1.26.8
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   ip: "169.254.20.10"
@@ -310,6 +310,6 @@ npd:
 nvidia_device_plugin:
   # https://github.com/NVIDIA/k8s-device-plugin
   enabled: false
-  version: v0.19.0
+  version: v0.19.1
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
