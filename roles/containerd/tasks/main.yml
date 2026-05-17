@@ -31,18 +31,13 @@
 
 - name: "Add nvidia-container-toolkit rpm repository"
   yum_repository:
-    name: "{{ item.name }}"
-    description: "{{ item.description}}"
+    name: nvidia-container-toolkit
     file: nvidia-container-toolkit
-    baseurl: "{{ item.baseurl }}"
-    repo_gpgcheck: yes
-    gpgkey: "{{ repo.nvidia_container_toolkit_gpgkey }}"
-    gpgcheck: no
-    sslverify: yes
-    sslcacert: "/etc/pki/tls/certs/ca-bundle.crt"
+    description: "nvidia-container-toolkit"
+    baseurl: "{{ repo.nvidia_container.rhel.baseurl }}"
+    gpgkey: "{{ repo.nvidia_container.rhel.gpgkey }}"
+    gpgcheck: "{{ repo.nvidia_container.rhel.gpgcheck }}"
     enabled: yes
-  with_items:
-    - { name: "nvidia-container-toolkit",description: "nvidia-container-toolkit",baseurl: "{{ repo.nvidia_container_toolkit_centos }}" }
   when:
     - gpu is defined and gpu == 'true'
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
@@ -52,7 +47,7 @@
   block:
     - name: "apt repository | add gpgkey"
       get_url:
-        url: "{{ repo.nvidia_container_toolkit_gpgkey }}"
+        url: "{{ repo.nvidia_container.ubuntu.gpgkey }}"
         dest: "/tmp/nvidia-container-toolkit-keyring.gpg"
         mode: 0644
     - name: "apt repository | import gpgkey"
@@ -61,7 +56,7 @@
         creates: "/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg"
     - name: "apt repository | add repository"
       apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] {{ repo.nvidia_container_toolkit_ubuntu }} /"
+        repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] {{ repo.nvidia_container.ubuntu.baseurl }} /"
         filename: nvidia-container-toolkit
         state: present
   when:
