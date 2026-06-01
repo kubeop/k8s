@@ -116,7 +116,7 @@ helm:
   # helm 安装包下载地址
   download_url: https://files.m.daocloud.io/get.helm.sh
   # helm 版本
-  version: v4.1.4
+  version: v4.2.0
 
 # https://github.com/containernetworking/plugins
 cniplugins:
@@ -169,7 +169,7 @@ containerd:
   cri:
     sandbox_image: 
       repo: "registry.aliyuncs.com/google_containers/pause"
-      tag: "3.10.1"
+      tag: "3.10.2"
     max_container_log_line_size: 16384
     enable_unprivileged_ports: false
     enable_unprivileged_icmp: false
@@ -269,7 +269,7 @@ calico:
 
 kuberouter:
   # https://github.com/cloudnativelabs/kube-router
-  version: v2.8.1
+  version: v2.10.0
   # {{kube-router.registry}}/kube-router
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # Setups node CNI to allow hairpin mode, requires node reboots, see
@@ -315,6 +315,6 @@ npd:
 nvidia_device_plugin:
   # https://github.com/NVIDIA/k8s-device-plugin
   enabled: false
-  version: v0.19.1
+  version: v0.19.2
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
