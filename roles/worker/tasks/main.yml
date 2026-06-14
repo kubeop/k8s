@@ -53,7 +53,7 @@
   copy:
     content: |
       [keyfile]
-      unmanaged-devices+=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:vxlan-v6.calico
+      unmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:vxlan-v6.calico;interface-name:wireguard.cali;interface-name:wg-v6.cali
     dest: /etc/NetworkManager/conf.d/calico.conf
     mode: "0644"
   when:

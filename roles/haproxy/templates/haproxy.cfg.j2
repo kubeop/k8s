@@ -1,56 +1,39 @@
 global
-  maxconn                 4000
-  log                     127.0.0.1 local0
-  chroot                  /var/lib/haproxy
-  pidfile                 /var/run/haproxy.pid
-  user                    haproxy
-  group                   haproxy
-  daemon
-  stats                   socket /var/lib/haproxy/stats
+    daemon
+    maxconn                 50000
+    log                     /dev/log local0 info
+    chroot                  /var/lib/haproxy
+    user                    haproxy
+    group                   haproxy
+    stats                   socket /var/lib/haproxy/stats
 
 defaults
-  mode                    http
-  log                     global
-  option                  httplog
-  option                  dontlognull
-  option                  http-server-close
-  option                  redispatch
-  retries                 5
-  timeout http-request    5m      # 默认http请求超时时间
-  timeout queue           5m      # 默认队列超时时间
-  timeout connect         30s     # 默认连接超时时间
-  timeout client          5m      # 默认客户端超时时间
-  timeout server          15m     # 默认服务器超时时间
-  timeout http-keep-alive 30s     # 默认持久连接超时时间
-  timeout check           30s     # 设置心跳检查超时时间
-  maxconn                 4000
+    mode tcp
+    timeout connect 5s
+    timeout client  10m
+    timeout server  10m
 
-frontend http_stats
-  {% if kubernetes.ipv4_stack -%}
-  bind *:58080
-  {% endif -%}
-  {% if kubernetes.ipv6_stack -%}
-  bind :::58080
-  {% endif -%}
-  mode http
-  option httplog
-  stats uri /haproxy?stats
+{% if haproxy_version is defined %}
+{% if haproxy_version is version('2.0', '>=') %}
+frontend stats
+    bind *:9101
+    mode http
+    http-request use-service prometheus-exporter if { path /metrics }
+    stats enable
+    stats uri /
+    stats refresh 10s
+{% endif %}
+{% endif %}
 
-frontend control-plane
-  {% if kubernetes.ipv4_stack -%}
-  bind *:{{loadbalance.port}}
-  {% endif -%}
-  {% if kubernetes.ipv6_stack -%}
-  bind :::{{loadbalance.port}}
-  {% endif -%}
-  mode tcp
-  option tcplog
-  default_backend kube-apiservers
-
-backend kube-apiservers
-  mode tcp
-  balance leastconn
-  default-server inter 15s downinter 15s rise 2 fall 2 slowstart 60s maxconn 1000 maxqueue 256 weight 100
-  {% for host in groups['master'] %}
-  server  {{hostvars[host].hostname}} {{host}}:6443 check
-  {% endfor %}
+listen kube-apiservers
+    {% if kubernetes.ipv4_stack -%}
+    bind *:{{loadbalance.port}}
+    {% endif -%}
+    {% if kubernetes.ipv6_stack -%}
+    bind :::{{loadbalance.port}}
+    {% endif -%}
+    balance roundrobin
+    default-server inter 5s rise 2 fall 3
+{% for host in groups['master'] %}
+    server {{hostvars[host].hostname}} {{host}}:6443 check
+{% endfor %}

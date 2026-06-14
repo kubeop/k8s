@@ -172,8 +172,8 @@ rules:
     verbs:
       - watch
       - list
-# Needed for policy name migrator.
-  - apiGroups: ["crd.projectcalico.org"]
+  # Needed for policy name migrator.
+  - apiGroups: ["projectcalico.org", "crd.projectcalico.org"]
     resources:
       - networkpolicies
       - stagednetworkpolicies
@@ -186,14 +186,15 @@ rules:
       - create
       - update
       - delete
-  # Needed for policy name migrator to check calico/node daemonset status.
+  # Needed for migration controller to watch calico-node and calico-typha status.
   - apiGroups: ["apps"]
     resources:
       - daemonsets
+      - deployments
     verbs:
       - get
-    resourceNames:
-      - calico-node
+      - list
+      - watch
 ---
 # Source: calico/templates/calico-node-rbac.yaml
 # Include a clusterrole for the calico-node DaemonSet,
@@ -532,11 +533,11 @@ spec:
             - name: CALICO_ROUTER_ID
               value: "hash"
 {% endif %}
-            # Enable IPIP
 {% if kubernetes.ipv6_stack %}
             - name: IP6
               value: autodetect
 {% endif %}
+            # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
 {% if calico.network_mode == 'bgp' %}
               value: "Never"
