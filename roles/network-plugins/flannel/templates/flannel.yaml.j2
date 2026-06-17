@@ -1,6 +1,17 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/name: flannel
+  name: flannel
+  namespace: kube-flannel
+---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  labels:
+    app.kubernetes.io/name: flannel
   name: flannel
 rules:
 - apiGroups:
@@ -23,17 +34,12 @@ rules:
   - nodes/status
   verbs:
   - patch
-- apiGroups:
-  - networking.k8s.io
-  resources:
-  - clustercidrs
-  verbs:
-  - list
-  - watch
 ---
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
+  labels:
+    app.kubernetes.io/name: flannel
   name: flannel
 roleRef:
   apiGroup: rbac.authorization.k8s.io
@@ -44,20 +50,13 @@ subjects:
   name: flannel
   namespace: kube-system
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: flannel
-  namespace: kube-system
----
 kind: ConfigMap
 apiVersion: v1
 metadata:
   name: kube-flannel-cfg
   namespace: kube-system
   labels:
-    tier: node
-    app: flannel
+    app.kubernetes.io/name: flannel
 data:
   cni-conf.json: |
     {
@@ -95,6 +94,7 @@ data:
       "EnableIPv6": true,
       "IPv6Network": "{{ kubernetes.pods_subnet_ipv6 }}",
 {% endif %}
+      "EnableNFTables": {{ flannel.EnableNFTables }},
       "Backend": {
 {% if flannel.network_mode == 'vxlan' %}
         "DirectRouting": {{ flannel.directRouting | lower}},
@@ -112,17 +112,15 @@ metadata:
   name: kube-flannel-ds
   namespace: kube-system
   labels:
-    tier: node
-    app: flannel
+    app.kubernetes.io/name: flannel
 spec:
   selector:
     matchLabels:
-      app: flannel
+      app.kubernetes.io/name: flannel
   template:
     metadata:
       labels:
-        tier: node
-        app: flannel
+        app.kubernetes.io/name: flannel
     spec:
       affinity:
         nodeAffinity:

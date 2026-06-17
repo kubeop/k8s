@@ -246,6 +246,8 @@ flannel:
   directRouting: false
   # 传出数据包的所需 MTU，如果未定义，则使用外部接口的 MTU。
   # mtu: 1500
+  # 开启nftables模式，需确保内核版本>=4.18，并且kube-proxy_mode设置为nftables
+  # EnableNFTables: true
 
 calico:
   # calicoctl 安装包下载地址
