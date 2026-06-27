@@ -7,15 +7,25 @@
     num: 1
   tasks:
     - name: set partation variable
-      set_fact:
+      ansible.builtin.set_fact:
         partation: "{{ disk }}{{ num }}"
-    - stat:
-        path: "/dev/{{ partation }}"
+      tags: fdisk
+    
+    - name: "检查/dev/{{ disk }}是否存在"
+      ansible.builtin.stat:
+        path: "/dev/{{ disk }}"
       register: disk_stat
       tags: fdisk
+    
+    - name: "检查/dev/{{ partation }}是否存在"
+      ansible.builtin.stat:
+        path: "/dev/{{ partation }}"
+      register: partation_stat
+      tags: fdisk
+    
     - name: "创建/dev/{{ disk }}分区"
-      when: not disk_stat.stat.exists
-      parted:
+      when: disk_stat.stat.exists and not partation_stat.stat.exists
+      community.general.parted:
         device: "/dev/{{ disk }}"
         number: 1
         part_type: primary
@@ -24,33 +34,41 @@
         label: gpt
         state: present
       tags: fdisk
+    
     - name: "disk"
-      debug:
+      when: disk_stat.stat.exists and not partation_stat.stat.exists
+      ansible.builtin.debug:
         msg: "即将格式化的磁盘分区是/dev/{{ partation }}"
       tags: fdisk
+    
     - name: "格式化/dev/{{ partation }}分区"
-      when: not disk_stat.stat.exists
-      filesystem:
+      when: disk_stat.stat.exists and not partation_stat.stat.exists
+      community.general.filesystem:
         dev: "/dev/{{ partation }}"
         force: yes
         fstype: xfs
       tags: fdisk
+    
     - name: 重新获取facter
+      when: disk_stat.stat.exists and not partation_stat.stat.exists
       setup:
         gather_subset:
           - '!all'
           - '!any'
           - hardware
       tags: fdisk
+    
     - name: 获取/dev/{{ partation }}的UUID
-      set_fact:
+      ansible.builtin.set_fact:
         device_uuid: "{{ item.value }}"
       with_dict:
         - "{{ ansible_device_links.uuids }}"
       when: item.key == (partation)
       tags: fdisk
+    
     - name: "挂载/dev/{{ partation }}分区到{{ dir }}目录"
-      mount:
+      when: disk_stat.stat.exists and not partation_stat.stat.exists
+      ansible.posix.mount:
         path: "{{ dir }}"
         src: "UUID={{device_uuid[0]}}"
         fstype: xfs
@@ -59,7 +77,7 @@
       tags: fdisk
 
     - name: "创建etcd目录"
-      file:
+      ansible.builtin.file:
         path: "{{ item.line }}"
         owner: root
         group: root
@@ -70,8 +88,9 @@
         - {line: "/var/lib/etcd"}
       when: inventory_hostname in groups['etcd']
       tags: bind_dir
+    
     - name: "绑定etcd数据目录到{{ dir }}目录"
-      mount:
+      ansible.posix.mount:
         path: "/var/lib/etcd"
         src: "{{ dir }}/containers/etcd"
         fstype: none
@@ -79,8 +98,9 @@
         state: mounted
       when: inventory_hostname in groups['etcd']
       tags: bind_dir
+    
     - name: "创建worker目录"
-      file:
+      ansible.builtin.file:
         path: "{{ item.line }}"
         owner: root
         group: root
@@ -95,8 +115,9 @@
         - {line: "/var/log/pods"}
       when: (inventory_hostname in groups['master'] or inventory_hostname in groups['worker'])
       tags: bind_dir
+    
     - name: "绑定worker数据目录到{{ dir }}目录"
-      mount:
+      ansible.posix.mount:
         path: "{{ item.path }}"
         src: "{{ item.src }}"
         fstype: none

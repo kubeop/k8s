@@ -1,0 +1,14 @@
+---
+- name: Addons | Install Helm
+  ansible.builtin.unarchive:
+    src: "{{ download.dest }}/helm/helm-{{helm.version}}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
+    dest: /usr/local/bin/
+    mode: 0750
+    remote_src: no
+    extra_opts:
+    - --strip-components=1
+    exclude:
+    - "LICENSE"
+    - "README.md"
+  when: inventory_hostname in groups['master']
+  tags: helm

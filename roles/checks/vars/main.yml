@@ -1,0 +1,3 @@
+---
+configured_nameservers: "{{ (resolvconf_slurp.content | b64decode | regex_findall('^nameserver\\s*(\\S*)', multiline=True) | ansible.utils.ipaddr)
+                            if resolvconf_stat.stat.exists else [] }}"

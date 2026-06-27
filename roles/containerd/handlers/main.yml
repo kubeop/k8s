@@ -1,12 +1,12 @@
 ---
 - name: restart containerd
-  command: /bin/true
+  ansible.builtin.command: /bin/true
   notify:
     - Containerd | restart containerd
     - Containerd | wait for containerd
 
 - name: Containerd | restart containerd
-  systemd:
+  ansible.builtin.systemd:
     name: containerd
     state: restarted
     enabled: yes
@@ -14,20 +14,20 @@
     daemon_reload: yes
 
 - name: Containerd | wait for containerd
-  command: "ctr images ls -q"
+  ansible.builtin.command: "ctr images ls -q"
   register: containerd_ready
   retries: 8
   delay: 4
   until: containerd_ready.rc == 0
 
 - name: Get crictl completion
-  command: "/usr/local/bin/crictl completion"
+  ansible.builtin.command: "/usr/local/bin/crictl completion"
   changed_when: False
   register: cri_completion
   check_mode: false
 
 - name: Install crictl completion
-  copy:
+  ansible.builtin.copy:
     dest: /etc/bash_completion.d/crictl
     content: "{{ cri_completion.stdout }}"
     mode: 0644

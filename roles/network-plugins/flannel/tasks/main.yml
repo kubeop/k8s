@@ -1,6 +1,6 @@
 ---
 - name: flannel | Create manifest
-  template:
+  ansible.builtin.template:
     src: "{{item.src}}"
     dest: "{{item.dest}}"
   with_items:
@@ -12,7 +12,7 @@
     - flannel_yaml
 
 - name: flannel | Apply manifest
-  shell: "kubectl apply -f /tmp/flannel.yaml"
+  ansible.builtin.shell: "kubectl apply -f /tmp/flannel.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags:

@@ -1,91 +1,125 @@
 ---
-- name: "Set hostname"
-  hostname:
+- name: Init | Set hostname
+  ansible.builtin.hostname:
     name: "{{ hostname|quote }}"
     use: systemd
   tags: hostname
 
-- name: "Set env"
-  copy:
+- name: Init | Set env
+  ansible.builtin.copy:
     src: "ipenv.sh"
     dest: "/etc/profile.d/"
+    owner: root
+    group: root
   tags: os_env
 
-- name: "Set timezone"
+- name: Init | Set timezone
   community.general.timezone:
-    name: Asia/Shanghai
+    name: "{{ system.timezone }}"
   tags: timezone
 
-- name: "Install chrony"
-  package:
-    name: chrony
-    state: present
+- name: Init | Disable systemd-timesyncd
+  ansible.builtin.systemd:
+    name: systemd-timesyncd.service
+    enabled: false
+    state: stopped
+  when:
+    - system.ntp_enabled
+    - ansible_os_family in ["Debian"]
   tags: ntp
 
-- name: "Generate NTP configuration file"
-  template:
+- name: Init | Install chrony
+  ansible.builtin.package:
+    name: chrony
+    state: present
+  when:
+    - system.ntp_enabled
+  tags: ntp
+
+- name: Init | Generate NTP configuration file
+  ansible.builtin.template:
     src: "chrony.conf.j2"
     dest: "/etc/chrony.conf"
   when:
-    - ntp.manage_config
+    - system.ntp_enabled
+  notify:
+    - restart chronyd
   tags: ntp
 
-- name: Ensure NTP service is started and enabled
-  systemd:
-    name: chronyd
-    state: restarted
-    enabled: yes
-    masked: false
-  tags: ntp
-
-- name: "Disable swap"
-  shell: swapoff -a
+- name: Init | Check if /etc/fstab exists
+  ansible.builtin.stat:
+    path: "/etc/fstab"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: fstab_file
   tags: swap
 
-- name: "Remove swapfile from /etc/fstab"
-  mount:
+- name: Init | Remove swapfile from /etc/fstab
+  ansible.posix.mount:
     name: "{{ item }}"
     fstype: swap
     state: absent
-  with_items:
+  loop:
     - swap
     - none
+  when: fstab_file.stat.exists
   tags: swap
 
-- name: "Disable selinux"
-  selinux:
-    policy: "{{ 'targeted' if security.selinux == true else omit }}"
-    state: "{{ 'enforcing' if security.selinux == true else 'disabled' }}"
+- name: Init | Mask swap.target (persist swapoff)
+  ansible.builtin.systemd:
+    name: swap.target
+    masked: true
+  tags: swap
+
+- name: Init | Disable swap
+  ansible.builtin.command: /sbin/swapoff -a
+  tags: swap
+
+- name: Init | Config selinux"
+  ansible.posix.selinux:
+    policy: "{{ 'targeted' if system.selinux_enabled == true else omit }}"
+    state: "{{ 'enforcing' if system.selinux_enabled == true else 'disabled' }}"
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
-  tags: selinux
+  tags: security
 
-- name: "Disable apparmor"
-  systemd:
+- name: Init | Config apparmor
+  ansible.builtin.systemd:
     name: apparmor
-    enabled: no
+    enabled: "{{ system.selinux_enabled }}"
     masked: false
-    state: stopped
+    state: "{{ 'started' if system.selinux_enabled == true else 'stopped' }}"
   when:
     - ansible_os_family in ["Debian"]
-  tags: apparmor
+  tags: security
 
-- name: "Get firewalld is installed"
-  command: whereis firewalld
+- name: Init | Check firewalld
+  ansible.builtin.command: whereis firewalld
   register: firewalld_state
   tags: firewalld
 
-- name: "Stop firewalld"
+- name: Init | Config firewalld
   when: "'/usr/sbin/firewalld' in firewalld_state.stdout"
-  systemd:
+  ansible.builtin.systemd:
     name: firewalld
-    enabled: no
+    enabled: "{{ system.firewalld_enabled }}"
     masked: false
-    state: stopped
+    state: "{{ 'started' if system.firewalld_enabled == true else 'stopped' }}"
   tags: firewalld
 
-- name: "Set ssh"
-  lineinfile:
+- name: Init | Sync authorized_key
+  ansible.posix.authorized_key:
+    user: root
+    state: present
+    key: "{{ lookup('file', system.ssh_key_path) }}"
+    manage_dir: yes
+  when:
+    - not system.allow_password_authentication
+  tags: sshd
+
+- name: Init | Set sshd_config
+  ansible.builtin.lineinfile:
     dest: "/etc/ssh/sshd_config"
     regexp: "^{{ item.regexp }}"
     line: "{{ item.line }}"
@@ -96,12 +130,13 @@
     - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }
     - { regexp: "PermitRootLogin", line: "PermitRootLogin yes" }
     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
+    - { regexp: "PasswordAuthentication", line: "PasswordAuthentication {{ 'yes' if system.allow_password_authentication else 'no' }}" }
   notify:
     - restart sshd
   tags: sshd
 
-- name: "Set limits"
-  pam_limits:
+- name: Init | Set limits.conf
+  community.general.pam_limits:
     dest: "/etc/security/limits.conf"
     domain: '{{ item.limit_domain }}'
     limit_type: "{{ item.limit_type }}"
@@ -116,7 +151,7 @@
     - { limit_domain: '*',limit_type: 'hard',limit_item: 'nofile', value: '655360' }
   tags: limits
 
-- name: "Set sysctl parameters"
+- name: Init | Set sysctl parameters
   ansible.posix.sysctl:
     sysctl_file: "/etc/sysctl.d/99-sysctl.conf"
     name: "{{ item.name }}"
@@ -143,7 +178,7 @@
     - sysctl
     - system_sysctl
 
-- name: "Set sysctl ipv6 parameters"
+- name: Init | Set sysctl ipv6 parameters
   ansible.posix.sysctl:
     sysctl_file: "/etc/sysctl.d/99-sysctl.conf"
     name: "{{ item.name }}"
@@ -161,8 +196,8 @@
     - sysctl
     - system_sysctl
 
-- name: "Config systemd-journald"
-  file:
+- name: Init | Config systemd-journald
+  ansible.builtin.file:
     path: "/var/log/journal"
     owner: root
     group: systemd-journal
@@ -174,8 +209,8 @@
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: journal
 
-- name: "Install base application"
-  package:
+- name: Init | Install base application
+  ansible.builtin.package:
     name:
       - vim
       - mtr
@@ -191,8 +226,9 @@
     state: present
   tags: install_app
 
-- name: "Install base application"
-  package:
+
+- name: Init | Install base application
+  ansible.builtin.package:
     name:
       - nmap-ncat
       - nfs-utils
@@ -203,8 +239,8 @@
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: install_app
 
-- name: "Install base application"
-  package:
+- name: Init | Install base application
+  ansible.builtin.package:
     name:
       - nmap
       - nmap-common

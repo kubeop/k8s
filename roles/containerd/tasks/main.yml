@@ -1,6 +1,6 @@
 ---
-- name: "Install dependency"
-  package:
+- name: Worker | Install dependency
+  ansible.builtin.package:
     name:
       - util-linux
       - libseccomp
@@ -10,8 +10,8 @@
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: containerd_app
 
-- name: "Install dependency"
-  package:
+- name: Worker | Install dependency
+  ansible.builtin.package:
     name:
       - util-linux
       - libseccomp2
@@ -20,43 +20,43 @@
     - ansible_os_family in ["Debian"]
   tags: containerd_app
 
-- name: "Install container-selinux"
-  package:
+- name: Worker | Install container-selinux
+  ansible.builtin.package:
     name: container-selinux
     state: present
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
-    - security.selinux == true
+    - system.selinux_enabled == true
   tags: containerd_app
 
-- name: "Add nvidia-container-toolkit rpm repository"
-  yum_repository:
+- name: Worker | Add nvidia-container-toolkit yum repository
+  ansible.builtin.yum_repository:
     name: nvidia-container-toolkit
     file: nvidia-container-toolkit
     description: "nvidia-container-toolkit"
-    baseurl: "{{ repo.nvidia_container.rhel.baseurl }}"
-    gpgkey: "{{ repo.nvidia_container.rhel.gpgkey }}"
-    gpgcheck: "{{ repo.nvidia_container.rhel.gpgcheck }}"
+    baseurl: "{{ mirrors.nvidia_container.rhel.baseurl }}"
+    gpgkey: "{{ mirrors.nvidia_container.rhel.gpgkey }}"
+    gpgcheck: "{{ mirrors.nvidia_container.rhel.gpgcheck }}"
     enabled: yes
   when:
     - gpu is defined and gpu == 'true'
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: gpu_runtime
 
-- name: "Add nvidia-container-toolkit apt repository"
+- name: Worker | Add nvidia-container-toolkit apt repository
   block:
     - name: "apt repository | add gpgkey"
-      get_url:
-        url: "{{ repo.nvidia_container.ubuntu.gpgkey }}"
+      ansible.builtin.get_url:
+        url: "{{ mirrors.nvidia_container.ubuntu.gpgkey }}"
         dest: "/tmp/nvidia-container-toolkit-keyring.gpg"
         mode: 0644
     - name: "apt repository | import gpgkey"
-      shell: "gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg /tmp/nvidia-container-toolkit-keyring.gpg"
+      ansible.builtin.shell: "gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg /tmp/nvidia-container-toolkit-keyring.gpg"
       args:
         creates: "/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg"
     - name: "apt repository | add repository"
-      apt_repository:
-        repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] {{ repo.nvidia_container.ubuntu.baseurl }} /"
+      ansible.builtin.apt_repository:
+        repo: "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] {{ mirrors.nvidia_container.ubuntu.baseurl }} /"
         filename: nvidia-container-toolkit
         state: present
   when:
@@ -64,8 +64,8 @@
     - ansible_os_family in ["Debian"]
   tags: gpu_runtime
 
-- name: "Install nvidia-container-runtime"
-  package:
+- name: Worker | Install nvidia-container-runtime
+  ansible.builtin.package:
     name: 
       - nvidia-container-runtime
       - nvidia-container-toolkit
@@ -73,17 +73,17 @@
   when: gpu is defined and gpu == 'true'
   tags: gpu_app
 
-- name: Install runc
-  copy:
-    src: "{{ download.dest }}/runc/{{ runc.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/runc.{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}"
+- name: Worker | Install runc
+  ansible.builtin.copy:
+    src: "{{ download.dest }}/runc/{{ runc.version }}/runc.{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}"
     dest: "/usr/local/sbin/runc"
     owner: root
     group: root
     mode: 0755
   tags: install_runc
 
-- name: Create cni directory
-  file:
+- name: Worker | Create cni directory
+  ansible.builtin.file:
     path: "/opt/cni/bin"
     owner: root
     group: root
@@ -91,16 +91,16 @@
     state: directory
   tags: cni_config
 
-- name: Install cni
-  unarchive:
-    src: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/cni-plugins-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}-{{ cniplugins.version }}.tgz"
+- name: Worker | Install cni
+  ansible.builtin.unarchive:
+    src: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}/cni-plugins-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}-{{ cniplugins.version }}.tgz"
     dest: "/opt/cni/bin/"
     remote_src: no
   tags: install_cni
 
-- name: Install containerd
-  unarchive:
-    src: "{{ download.dest }}/containerd/v{{ containerd.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/containerd-{{ containerd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
+- name: Worker | Install containerd
+  ansible.builtin.unarchive:
+    src: "{{ download.dest }}/containerd/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
     dest: "/usr/local/bin/"
     remote_src: no
     extra_opts:
@@ -109,8 +109,8 @@
   notify:
     - restart containerd
 
-- name: "Set containerd service"
-  template:
+- name: Worker | Set containerd service
+  ansible.builtin.template:
     src: "containerd.service.j2"
     dest: "/usr/lib/systemd/system/containerd.service"
     owner: root
@@ -118,8 +118,8 @@
     mode: 0644
   tags: containerd_config
 
-- name: "Create containerd data directory"
-  file:
+- name: Worker | Create containerd data directory
+  ansible.builtin.file:
     path: "{{ containerd.root }}"
     owner: root
     group: root
@@ -127,8 +127,8 @@
     state: directory
   tags: containerd_config
 
-- name: "Create containerd config directory"
-  file:
+- name: Worker | Create containerd config directory
+  ansible.builtin.file:
     path: "{{ containerd.cfg_dir }}"
     owner: root
     group: root
@@ -136,8 +136,8 @@
     state: directory
   tags: containerd_config
 
-- name: "Set containerd config"
-  template:
+- name: Worker | Set containerd config
+  ansible.builtin.template:
     src: "{{ 'config-v2.toml.j2' if containerd.version is version('2.0.0', '>=') else 'config-v1.toml.j2' }}"
     dest: "{{ containerd.cfg_dir }}/config.toml"
     owner: root
@@ -147,16 +147,16 @@
   notify:
     - restart containerd
 
-- name: Configure containerd registries
+- name: Worker | Configure containerd registries
   block:
     - name: Create registry directories
-      file:
+      ansible.builtin.file:
         path: "{{ containerd.cfg_dir }}/certs.d/{{ item.prefix }}"
         state: directory
         mode: "0755"
       loop: "{{ containerd.registry_mirrors }}"
     - name: Write hosts.toml file
-      template:
+      ansible.builtin.template:
         src: hosts.toml.j2
         dest: "{{ containerd.cfg_dir }}/certs.d/{{ item.prefix }}/hosts.toml"
         mode: "0640"
@@ -165,9 +165,9 @@
   notify:
     - restart containerd
 
-- name: Install cri-tools
-  unarchive:
-    src: "{{ download.dest }}/critools/{{ critools.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/crictl-{{ critools.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
+- name: Worker | Install cri-tools
+  ansible.builtin.unarchive:
+    src: "{{ download.dest }}/critools/{{ critools.version }}/crictl-{{ critools.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
     dest: "/usr/local/bin/"
     remote_src: no
   tags: install_critools
@@ -175,12 +175,11 @@
     - Get crictl completion
     - Install crictl completion
 
-- name: "Config cri-tools"
-  template:
+- name: Worker | Configure cri-tools
+  ansible.builtin.template:
     src: "crictl.yaml.j2"
     dest: "/etc/crictl.yaml"
     owner: root
     group: root
     mode: 0644
   tags: cri_tools
-  

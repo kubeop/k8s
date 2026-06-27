@@ -52,6 +52,7 @@ KUBE_API_ARGS="\
     --tls-private-key-file=/etc/kubernetes/pki/apiserver.key \
     --service-node-port-range={{ kubernetes.service_node_port_range }} \
     --anonymous-auth=false \
-    --default-not-ready-toleration-seconds=300 \
-    --default-unreachable-toleration-seconds=300 \
+{% for k, v in kubernetes.apiserver.extra_flags.items() %}
+    --{{ k }}={{ v }} \
+{% endfor %}
     --v=2"

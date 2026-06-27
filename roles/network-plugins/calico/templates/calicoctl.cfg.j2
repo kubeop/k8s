@@ -1,9 +1,0 @@
-apiVersion: projectcalico.org/v3
-kind: CalicoAPIConfig
-metadata:
-spec:
-  datastoreType: "etcdv3"
-  etcdEndpoints: "{% set pk = groups['etcd'] %}{% for host in pk %}https://{{ host }}:2379{% if not loop.last %},{% endif %}{% endfor %}"
-  etcdKeyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
-  etcdCertFile: /etc/kubernetes/pki/apiserver-etcd-client.pem
-  etcdCACertFile: /etc/kubernetes/pki/etcd-ca.pem

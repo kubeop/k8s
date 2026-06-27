@@ -39,13 +39,12 @@
   - [flanneld](https://github.com/flannel-io/flannel)
   - [kube-router](https://github.com/cloudnativelabs/kube-router)
 - Addons
+  - [helm](https://github.com/helm/helm)
+- Application
   - [coredns](https://github.com/coredns/coredns)
   - [node-local-dns](https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/dns/nodelocaldns)
   - [metrics-server](https://github.com/kubernetes-sigs/metrics-server)
   - [nvidia_device_plugin](https://github.com/NVIDIA/k8s-device-plugin)
-- Application
-  - [helm](https://github.com/helm/helm)
-  
 
 
 
@@ -225,13 +224,13 @@ ansible-playbook fdisk.yml -i inventory -l ${SCALE_MASTER_IP} -e "disk=sdb dir=/
 执行生成节点证书
 
 ```shell
-ansible-playbook cluster.yml -i inventory -t cert
+ansible-playbook cluster.yml -i inventory -t certificates
 ```
 
 执行节点初始化
 
 ```shell
-ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t verify,init
+ansible-playbook cluster.yml -i inventory -l ${SCALE_MASTER_IP} -t checks,init
 ```
 
 执行节点扩容
@@ -255,13 +254,13 @@ ansible-playbook fdisk.yml -i inventory -l ${SCALE_WORKER_IP} -e "disk=sdb dir=/
 执行生成节点证书
 
 ```shell
-ansible-playbook cluster.yml -i inventory -t cert
+ansible-playbook cluster.yml -i inventory -t certificates
 ```
 
 执行节点初始化
 
 ```shell
-ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t verify,init
+ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t checks,init
 ```
 
 执行节点扩容
@@ -274,10 +273,10 @@ ansible-playbook cluster.yml -i inventory -l ${SCALE_WORKER_IP} -t containerd,wo
 
 ## 替换集群证书
 
-先备份并删除证书目录{{cert.dir}}，重新创建{{cert.dir}}，并将token、sa.pub、sa.key文件拷贝至新创建的{{cert.dir}}（这三个文件务必保留，不能更改），然后执行以下步骤重新生成证书并分发证书。
+先备份并删除证书目录{{certificates.dir}}，重新创建{{certificates.dir}}，并将token、sa.pub、sa.key文件拷贝至新创建的{{certificates.dir}}（这三个文件务必保留，不能更改），然后执行以下步骤重新生成证书并分发证书。
 
 ```shell
-ansible-playbook cluster.yml -i inventory -t cert,dis_certs
+ansible-playbook cluster.yml -i inventory -t certificates,dis_certs
 ```
 
 然后依次重启每个节点。
@@ -295,7 +294,7 @@ etcdctl endpoint health \
         --cacert=/etc/etcd/pki/etcd-ca.pem \
         --cert=/etc/etcd/pki/etcd-healthcheck-client.pem \
         --key=/etc/etcd/pki/etcd-healthcheck-client.key \
-        --endpoints=https://10.43.75.201:2379,https://10.43.75.202:2379,https://10.43.75.203:2379
+        --endpoints=https://10.44.105.101:2379,https://10.44.105.102:2379,https://10.44.105.103:2379
 ```
 
 逐个删除旧的kubelet证书

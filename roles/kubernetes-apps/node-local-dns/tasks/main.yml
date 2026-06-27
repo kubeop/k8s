@@ -1,0 +1,14 @@
+---
+- name: Apps | Generate nodelocaldns manifest
+  ansible.builtin.template:
+    src: "{{item.src}}"
+    dest: "{{item.dest}}"
+  with_items:
+    - {src: "nodelocaldns.yaml.j2", dest: "/tmp/nodelocaldns.yaml"}
+  tags: nodelocaldns
+
+- name: Apps | Deploy nodelocaldns
+  ansible.builtin.shell: "kubectl apply -f /tmp/nodelocaldns.yaml"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  tags: nodelocaldns

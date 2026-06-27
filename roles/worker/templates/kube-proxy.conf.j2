@@ -30,7 +30,7 @@ healthzBindAddress: "0.0.0.0:10256"
 {% else %}
 healthzBindAddress: "[::]:10256"
 {% endif %}
-mode: {{ kubernetes.kube_proxy_mode }}
+mode: {{ kubernetes.proxy.mode }}
 iptables:
   syncPeriod: 30s
   masqueradeAll: false
@@ -38,8 +38,8 @@ iptables:
   minSyncPeriod: 0s
 ipvs:
   minSyncPeriod: 2s
-  scheduler: {{ kubernetes.scheduler | default("rr") }}
-  strictARP: {{ kubernetes.strict_arp }}
+  scheduler: {{ kubernetes.proxy.scheduler | default("rr") }}
+  strictARP: {{ kubernetes.proxy.strict_arp }}
   syncPeriod: 30s
 nftables:
   masqueradeAll: false
@@ -55,3 +55,6 @@ metricsBindAddress: "[::]:10249"
 {% endif %}
 nodePortAddresses: null
 oomScoreAdj: -999
+{% if kubernetes.proxy.extra_flags | length > 0 %}
+{{ kubernetes.proxy.extra_flags | to_nice_yaml(indent=2) }}
+{% endif %}

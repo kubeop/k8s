@@ -1,0 +1,20 @@
+---
+- name: Check | System
+  import_tasks: 001-system.yml
+  tags:
+    - system
+
+- name: Check | resolvconf
+  import_tasks: 002-resolvconf.yml
+  tags:
+    - resolvconf
+
+- name: Check | Kubernetes
+  import_tasks: 003-cluster.yml
+  tags:
+    - cluster
+
+- name: Check | Files
+  import_tasks: 004-files.yml
+  tags:
+    - files

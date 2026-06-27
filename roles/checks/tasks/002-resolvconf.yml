@@ -1,0 +1,45 @@
+---
+- name: Check resolvconf
+  ansible.builtin.command: which resolvconf
+  register: resolvconf
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Check existence of /etc/resolvconf/resolv.conf.d
+  ansible.builtin.stat:
+    path: /etc/resolvconf/resolv.conf.d
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  failed_when: false
+  register: resolvconfd_path
+
+- name: Check status of /etc/resolv.conf
+  ansible.builtin.stat:
+    path: /etc/resolv.conf
+    follow: false
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  failed_when: false
+  register: resolvconf_stat
+
+- name: Fetch resolv.conf
+  ansible.builtin.slurp:
+    src: /etc/resolv.conf
+  when: resolvconf_stat.stat.exists
+  register: resolvconf_slurp
+
+- name: Check systemd-resolved
+  # noqa command-instead-of-module - Should we use service_facts for this?
+  ansible.builtin.command: systemctl is-active systemd-resolved
+  register: systemd_resolved_enabled
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Stop if /etc/resolv.conf has no configured nameservers
+  ansible.builtin.assert:
+    that: configured_nameservers | length>0
+    fail_msg: "nameserver should not be empty in /etc/resolv.conf"

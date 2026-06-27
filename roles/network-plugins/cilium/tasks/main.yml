@@ -1,48 +1,40 @@
 ---
-- name: Cilium | Ensure BPFFS mounted
-  ansible.posix.mount:
-    fstype: bpf
-    path: /sys/fs/bpf
-    src: bpffs
-    state: mounted
-  tags:
-    - cilium
+- name: Cilium | Copy helm chart
+  ansible.builtin.unarchive:
+    src: "{{ download.dest }}/cilium/cilium-{{ cilium.version | replace('v', '') }}.tgz"
+    dest: /tmp/
+    remote_src: no
 
-- name: Cilium | Create Cilium node manifests
-  template:
-    src: "{{ item.name }}/{{ item.file }}.j2"
-    dest: "/tmp/{{ item.name }}-{{ item.file }}"
-    mode: "0644"
-  loop:
-    - {name: cilium, file: config.yml, type: cm}
-    - {name: cilium-operator, file: crb.yml, type: clusterrolebinding}
-    - {name: cilium-operator, file: cr.yml, type: clusterrole}
-    - {name: cilium, file: crb.yml, type: clusterrolebinding}
-    - {name: cilium, file: cr.yml, type: clusterrole}
-    - {name: cilium, file: ds.yml, type: ds}
-    - {name: cilium-operator, file: deploy.yml, type: deploy}
-    - {name: cilium-operator, file: sa.yml, type: sa}
-    - {name: cilium, file: sa.yml, type: sa}
-  register: cilium_node_manifests
+- name: Cilium | Build helm command
+  ansible.builtin.set_fact:
+    helm_set_command: >-
+      {% set parts = [] %}
+      {% for k, v in cilium.extra_flags.items() %}
+        {% if v is string %}
+          {% set _ = parts.append(k ~ '="' ~ v ~ '"') %}
+        {% else %}
+          {% set _ = parts.append(k ~ "=" ~ v) %}
+        {% endif %}
+      {% endfor %}
+      {{ parts | join(",") }}
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
-  tags:
-    - cilium
-    - cilium_yaml
 
-- name: Cilium | Enable portmap addon
-  template:
-    src: 000-cilium-portmap.conflist.j2
-    dest: /etc/cni/net.d/000-cilium-portmap.conflist
-    mode: "0644"
-  when: cilium.enable_portmap
-  tags:
-    - cilium
-
-- name: cilium | Apply cilium manifest
-  shell: "kubectl apply -f /tmp/{{ item.item.name }}-{{ item.item.file }}"
+- name: Cilium | Build helm command
+  ansible.builtin.set_fact:
+    cilium_helm_cmd: >-
+      helm upgrade --install cilium /tmp/cilium --namespace kube-system --set {{ helm_set_command | trim}}
   delegate_to: "{{ groups['master'][0] }}"
-  loop: "{{ cilium_node_manifests.results }}"
-  tags:
-    - cilium
-    - cilium_install
+  run_once: true
+
+- name: Debug helm command
+  ansible.builtin.debug:
+    msg: "{{ cilium_helm_cmd }}"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+
+- name: Cilium | install 
+  ansible.builtin.command:
+    cmd: "{{ cilium_helm_cmd }}"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true

@@ -11,4 +11,7 @@ KUBE_SCHEDULER_ARGS="\
     --authorization-kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
     --authentication-kubeconfig=/etc/kubernetes/scheduler.kubeconfig \
     --leader-elect=true \
+{% for k, v in kubernetes.scheduler.extra_flags.items() %}
+    --{{ k }}={{ v }} \
+{% endfor %}
     --v=2"

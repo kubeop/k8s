@@ -1,0 +1,764 @@
+---
+- name: Cert | Create directory
+  ansible.builtin.file:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}"
+    state: directory
+  with_items:
+    - "{{ groups['etcd'] }}"
+    - "{{ groups['master'] }}"
+    - "{{ groups['worker'] }}"
+
+# etcd-ca
+- name: Cert | Check if etcd-ca.key exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/etcd-ca.key"
+  register: etcd_ca_key
+
+- name: Cert | Generate etcd-ca.key
+  when: not etcd_ca_key.stat.exists
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/etcd-ca.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+
+- name: Cert | Check if etcd-ca.csr exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/etcd-ca.csr"
+  register: etcd_ca_csr
+
+- name: Cert | Generate etcd-ca.csr
+  when: not etcd_ca_csr.stat.exists
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/etcd-ca.csr"
+    privatekey_path: "{{ certificates.dir }}/etcd-ca.key"
+    use_common_name_for_san: no
+    common_name: etcd-ca
+    create_subject_key_identifier: yes
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+      - keyCertSign
+    subject_alt_name: "DNS:etcd-ca"
+
+- name: Cert | Check if etcd-ca.pem exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/etcd-ca.pem"
+  register: etcd_ca_pem
+
+- name: Cert | Generate etcd-ca.pem
+  when: not etcd_ca_pem.stat.exists
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/etcd-ca.pem"
+    provider: selfsigned
+    selfsigned_not_after: "+{{certificates.day}}"
+    selfsigned_create_subject_key_identifier: never_create
+    privatekey_path: "{{ certificates.dir }}/etcd-ca.key"
+    csr_path: "{{ certificates.dir }}/etcd-ca.csr"
+
+# etcd-server
+- name: Cert | Generate etcd-server.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: Cert | Generate etcd-server.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.key"
+    common_name: "{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}"
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+    subject_alt_name:
+      - DNS:localhost
+      - DNS:{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower  }}
+      - IP:127.0.0.1
+      - IP:::1
+      - IP:{{ item }}
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: Cert | Generate etcd-server.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.csr"
+    ownca_path: "{{ certificates.dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+# etcd-peer
+- name: Cert | Generate etcd-peer.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: Cert | Generate etcd-peer.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.key"
+    common_name: "{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower  }}"
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+      - clientAuth
+    subject_alt_name:
+      - DNS:localhost
+      - DNS:{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower  }}
+      - IP:127.0.0.1
+      - IP:::1
+      - IP:{{ item }}
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: Cert | Generate etcd-peer.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.csr"
+    ownca_path: "{{ certificates.dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+# etcd-healthcheck-client
+- name: Cert | Generate etcd-healthcheck-client.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: Cert | Generate etcd-healthcheck-client.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.key"
+    common_name: kube-etcd-healthcheck-client
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    use_common_name_for_san: no
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+- name: Cert | Generate etcd-healthcheck-client.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.csr"
+    ownca_path: "{{ certificates.dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['etcd'] }}"
+
+# apiserver-etcd-client
+- name: Cert | Generate apiserver-etcd-client.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate apiserver-etcd-client.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.key"
+    common_name: kube-apiserver-etcd-client
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    use_common_name_for_san: no
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate apiserver-etcd-client.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.csr"
+    ownca_path: "{{ certificates.dir }}/etcd-ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/etcd-ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# ca
+- name: Cert | Check if ca.key exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/ca.key"
+  register: ca_key
+
+- name: Cert | Generate ca.key
+  when: not ca_key.stat.exists
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/ca.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+
+- name: Cert | Check if ca.csr exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/ca.csr"
+  register: ca_csr
+
+- name: Cert | Generate ca.csr
+  when: not ca_csr.stat.exists
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/ca.csr"
+    privatekey_path: "{{ certificates.dir }}/ca.key"
+    use_common_name_for_san: no
+    common_name: kubernetes
+    create_subject_key_identifier: yes
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+      - keyCertSign
+    subject_alt_name: "DNS:kubernetes"
+
+- name: Cert | Check if ca.pem exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/ca.pem"
+  register: ca_pem
+
+- name: Cert | Generate ca.pem
+  when: not ca_pem.stat.exists
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/ca.pem"
+    provider: selfsigned
+    selfsigned_not_after: "+{{certificates.day}}"
+    selfsigned_create_subject_key_identifier: never_create
+    privatekey_path: "{{ certificates.dir }}/ca.key"
+    csr_path: "{{ certificates.dir }}/ca.csr"
+
+# apiserver
+- name: Cert | Generate apiserver.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Aggregate all SANs
+  ansible.builtin.set_fact:
+    apiserver_sans: >-
+      {{
+        (
+          sans_base
+          + ips
+          + hostnames
+          + sans_lb
+          + sans_lb_ip
+          + sans_svc_ip
+          + sans_svc_ip6
+          + sans_access_ip
+          + sans_access_domain
+        ) | unique
+      }}
+  vars:
+    sans_base:
+      - "::1"
+      - "127.0.0.1"
+      - "localhost"
+      - "kubernetes"
+      - "kubernetes.default"
+      - "kubernetes.default.svc"
+      - "kubernetes.default.svc.cluster"
+      - "kubernetes.default.svc.cluster.local"
+
+    ips: "{{ groups['master'] }}"
+
+    hostnames: >-
+      {{
+        groups['master']
+        | map('extract', hostvars, 'hostname')
+        | select('defined')
+        | list
+      }}
+
+    sans_lb: "{{ [loadbalance.domain_name] if loadbalance.domain_name is defined else [] }}"
+    sans_lb_ip: "{{ [loadbalance.ip] if loadbalance.ip is defined else [] }}"
+    sans_svc_ip: >-
+      {{
+        [kubernetes.service_addresses
+         | ansible.utils.ipaddr('net')
+         | ansible.utils.ipaddr(1)
+         | ansible.utils.ipaddr('address')]
+        if kubernetes.ipv4_stack
+        else []
+      }}
+    
+    sans_svc_ip6: >-
+      {{
+        [kubernetes.service_addresses_ipv6
+         | ansible.utils.ipaddr('net')
+         | ansible.utils.ipaddr(1)
+         | ansible.utils.ipaddr('address')]
+        if kubernetes.ipv6_stack
+        else []
+      }}
+    
+    sans_access_ip: >-
+      {{ loadbalance.access_ip | list if loadbalance.access_ip is defined else [] }}
+    
+    sans_access_domain: >-
+      {{ loadbalance.access_domain | list if loadbalance.access_domain is defined else [] }}
+  tags: facts
+
+- name: Cert | Debug apiserver_sans
+  ansible.builtin.debug:
+    msg: "{{ apiserver_ips | map('regex_replace', '^(.*)$', 'IP:\\1') | list  +  apiserver_hosts | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
+  vars:
+    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
+    apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
+
+- name: Cert | Generate apiserver.csr
+  vars:
+    apiserver_ips: "{{ apiserver_sans | map('ansible.utils.ipaddr') | reject('equalto', False) | list }}"
+    apiserver_hosts: "{{ apiserver_sans | difference(apiserver_ips) }}"
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver.key"
+    common_name: kube-apiserver
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - serverAuth
+    subject_alt_name: "{{ apiserver_ips | map('regex_replace', '^(.*)$', 'IP:\\1') | list  +  apiserver_hosts | map('regex_replace', '^(.*)$', 'DNS:\\1') | list }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate apiserver.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver.csr"
+    ownca_path: "{{ certificates.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# apiserver-kubelet-client
+- name: Cert | Generate apiserver-kubelet-client.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate apiserver-kubelet-client.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.key"
+    organization_name: system:masters
+    common_name: kube-apiserver-kubelet-client
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate apiserver-kubelet-client.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.csr"
+    ownca_path: "{{ certificates.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# admin
+- name: Cert | Generate admin.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/admin.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate admin.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/admin.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/admin.key"
+    organization_name: system:masters
+    common_name: kubernetes-admin
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    use_common_name_for_san: no
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate admin.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/admin.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/admin.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/admin.csr"
+    ownca_path: "{{ certificates.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# controller-manager
+- name: Cert | Generate controller-manager.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate controller-manager.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.key"
+    common_name: system:kube-controller-manager
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate controller-manager.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.csr"
+    ownca_path: "{{ certificates.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# scheduler
+- name: Cert | Generate scheduler.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/scheduler.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate scheduler.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/scheduler.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/scheduler.key"
+    common_name: system:kube-scheduler
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate scheduler.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/scheduler.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/scheduler.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/scheduler.csr"
+    ownca_path: "{{ certificates.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+# kube-proxy
+- name: Cert | Generate kube-proxy.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['worker'] }}"
+
+- name: Cert | Generate kube-proxy.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.key"
+    common_name: system:kube-proxy
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['worker'] }}"
+
+- name: Cert | Generate kube-proxy.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.csr"
+    ownca_path: "{{ certificates.dir }}/ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+    - "{{ groups['worker'] }}"
+
+#front-proxy-ca
+- name: Cert | Check if front-proxy-ca.key exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/front-proxy-ca.key"
+  register: front_proxy_ca_key
+
+- name: Cert | Generate front-proxy-ca.key
+  when: not front_proxy_ca_key.stat.exists
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/front-proxy-ca.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+
+- name: Cert | Check if front-proxy-ca.csr exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/front-proxy-ca.csr"
+  register: front_proxy_ca_csr
+
+- name: Cert | Generate front-proxy-ca.csr
+  when: not front_proxy_ca_csr.stat.exists
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/front-proxy-ca.csr"
+    privatekey_path: "{{ certificates.dir }}/front-proxy-ca.key"
+    use_common_name_for_san: no
+    common_name: front-proxy-ca
+    create_subject_key_identifier: yes
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:TRUE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+      - keyCertSign
+    subject_alt_name: "DNS:front-proxy-ca"
+
+- name: Cert | Check if front-proxy-ca.pem exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/front-proxy-ca.pem"
+  register: front_proxy_ca_pem
+
+- name: Cert | Generate front-proxy-ca.pem
+  when: not front_proxy_ca_pem.stat.exists
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/front-proxy-ca.pem"
+    provider: selfsigned
+    selfsigned_not_after: "+{{certificates.day}}"
+    selfsigned_create_subject_key_identifier: never_create
+    privatekey_path: "{{ certificates.dir }}/front-proxy-ca.key"
+    csr_path: "{{ certificates.dir }}/front-proxy-ca.csr"
+
+# front-proxy-client
+- name: Cert | Generate front-proxy-client.key
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate front-proxy-client.csr
+  community.crypto.openssl_csr:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.csr"
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.key"
+    common_name: front-proxy-client
+    use_common_name_for_san: no
+    basic_constraints_critical: yes
+    basic_constraints:
+      - CA:FALSE
+    key_usage_critical: yes
+    key_usage:
+      - digitalSignature
+      - keyEncipherment
+    extended_key_usage:
+      - clientAuth
+  with_items:
+    - "{{ groups['master'] }}"
+
+- name: Cert | Generate front-proxy-client.pem
+  community.crypto.x509_certificate:
+    path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.pem"
+    provider: ownca
+    ownca_not_after: "+{{certificates.day}}"
+    ownca_create_subject_key_identifier: never_create
+    ownca_create_authority_key_identifier: yes
+    privatekey_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.key"
+    csr_path: "{{ certificates.dir }}/{{ hostvars[item].hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.csr"
+    ownca_path: "{{ certificates.dir }}/front-proxy-ca.pem"
+    ownca_privatekey_path: "{{ certificates.dir }}/front-proxy-ca.key"
+  with_items:
+    - "{{ groups['master'] }}"
+
+#sa
+- name: Cert | Check if sa.key exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/sa.key"
+  register: sa_key
+
+- name: Cert | Generate sa.key
+  when: not sa_key.stat.exists
+  community.crypto.openssl_privatekey:
+    path: "{{ certificates.dir }}/sa.key"
+    type: "{{ certificates.type }}"
+    size: "{{ certificates.size }}"
+    curve: "{{ 'secp256r1' if certificates.type == 'ECC' else omit }}"
+
+- name: Cert | Check if sa.pub exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/sa.pub"
+  register: sa_pub
+
+- name: Cert | Generate sa.pub
+  when: not sa_pub.stat.exists
+  community.crypto.openssl_publickey:
+    path: "{{ certificates.dir }}/sa.pub"
+    privatekey_path: "{{ certificates.dir }}/sa.key"
+
+# token
+- name: Cert | Check if token exists
+  ansible.builtin.stat:
+    path: "{{ certificates.dir }}/token"
+  register: token
+
+- name: Cert | Generate bootstrap token
+  when: not token.stat.exists
+  set_fact:
+    bootstrap_token: "{{ lookup('password', '/dev/null length=6 chars=ascii_lowercase,digits') }}.{{ lookup('password', '/dev/null length=16 chars=ascii_lowercase,digits') }}"
+
+- name: Cert | Generate bootstrap-token file
+  when: not token.stat.exists
+  blockinfile:
+    path: "{{ certificates.dir }}/token"
+    block: "{{ bootstrap_token }}"
+    create: true

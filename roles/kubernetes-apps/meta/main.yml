@@ -1,0 +1,25 @@
+---
+dependencies:
+  - role: kubernetes-apps/coredns
+    tags:
+      - coredns
+
+  - role: kubernetes-apps/node-local-dns
+    when: nodelocaldns.enabled
+    tags:
+      - nodelocaldns
+
+  - role: kubernetes-apps/metrics-server
+    when: metrics_server.enabled
+    tags:
+      - metrics_server
+
+  - role: kubernetes-apps/node-problem-detector
+    when: npd.enabled
+    tags:
+      - npd
+
+  - role: kubernetes-apps/nvidia-device-plugin
+    when: nvidia_device_plugin.enabled
+    tags:
+      - nvidia_device_plugin

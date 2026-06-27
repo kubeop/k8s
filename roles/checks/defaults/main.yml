@@ -1,0 +1,7 @@
+---
+supported_os_distributions:
+  - 'RedHat'
+  - 'Debian'
+  - 'AlmaLinux'
+  - 'Rocky'
+  - 'TencentOS'

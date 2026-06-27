@@ -1,24 +1,25 @@
-# 本组内填写etcd服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
+# 本分组内填写etcd服务器及主机名, 可与master服务器重叠部署
 [etcd]
-10.43.75.201 hostname=etcd-001
-10.43.75.202 hostname=etcd-002
-10.43.75.203 hostname=etcd-003
+10.44.105.101 hostname=etcd-001
+10.44.105.102 hostname=etcd-002
+10.44.105.103 hostname=etcd-003
 
 # 使用云负载均衡时，可以注释以下haproxy内容
 [haproxy]
-10.43.75.198 hostname=haproxy-001 type=MASTER priority=100
-10.43.75.199 hostname=haproxy-002 type=BACKUP priority=90
+10.43.75.197 hostname=haproxy-001 type=MASTER priority=100
+10.43.75.198 hostname=haproxy-002 type=BACKUP priority=90
+10.43.75.199 hostname=haproxy-003 type=BACKUP priority=80
 
-# 本组内填写master服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
+# 本分组内填写控制面节点及主机名
 [master]
-10.43.75.210 hostname=master-001
-10.43.75.211 hostname=master-002
-10.43.75.212 hostname=master-003
+10.44.105.111 hostname=master-001
+10.44.105.112 hostname=master-002
+10.44.105.113 hostname=master-003
 
-# 本组内填写worker服务器及主机名(会校验是否以横杠分割),集群节点名称会截取主机名以横杠分割后两段
-# 最后面添加gpu=true 表示节点为GPU节点，运行时会配置使用GPU并且添加nvidia.com/gpu=true标签
-# 启用GPU时，请先参考README自行在节点安装GPU驱动
+# 本分组内填写工作节点及主机名
+# 添加gpu=true 表示节点为GPU节点，运行时会配置使用GPU并且添加nvidia.com/gpu=true标签
+# 启用GPU时，请先参考README先行在节点安装GPU驱动
 [worker]
-10.43.75.220 hostname=worker-001 gpu=false
-10.43.75.221 hostname=worker-002 gpu=false
-10.43.75.222 hostname=worker-003 gpu=false
+10.44.105.121 hostname=worker-001 gpu=false
+10.44.105.122 hostname=worker-002 gpu=false
+10.44.105.123 hostname=worker-003 gpu=false

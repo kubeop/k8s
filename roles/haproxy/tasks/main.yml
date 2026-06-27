@@ -1,16 +1,16 @@
 ---
-- name: "Install HAProxy"
-  package:
+- name: Loadbalance | Install HAProxy
+  ansible.builtin.package:
     name: haproxy
     state: present
   tags: install_haproxy
 
-- name: "Get package facts"
+- name: Loadbalance | Get package facts
   package_facts:
     manager: auto
   tags: generate_haproxy_cfg
 
-- name: "Get HAProxy version"
+- name: Loadbalance | Get HAProxy version
   set_fact:
     haproxy_version: "{{ ansible_facts.packages['haproxy'][0].version }}"
   when:
@@ -19,8 +19,19 @@
     - ansible_facts.packages['haproxy'][0].version is version('2.0', '>=')
   tags: generate_haproxy_cfg
 
-- name: "Set selinux for loadbalance port"
-  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and security.selinux == true
+- name: Loadbalance | Set selinux for metrics port
+  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and system.selinux_enabled == true
+  community.general.seport:
+    ports: "9101"
+    proto: tcp
+    setype: http_port_t
+    state: present
+  tags: 
+    - set_haproxy_selinux
+    - generate_haproxy_cfg
+
+- name: Loadbalance | Set selinux for loadbalance port
+  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and system.selinux_enabled == true
   community.general.seport:
     ports: "{{ loadbalance.port }}"
     proto: tcp
@@ -30,23 +41,23 @@
     - set_haproxy_selinux
     - generate_haproxy_cfg
 
-- name: "Generate HAProxy configuration"
-  template:
+- name: Loadbalance | Generate HAProxy configuration
+  ansible.builtin.template:
     src: "haproxy.cfg.j2"
     dest: "/etc/haproxy/haproxy.cfg"
   tags: generate_haproxy_cfg
   notify:
     - restart haproxy
 
-- name: "Ensure HAProxy systemd override directory exists"
-  file:
+- name: Loadbalance | Ensure HAProxy systemd override directory exists
+  ansible.builtin.file:
     path: /usr/lib/systemd/system/haproxy.service.d
     state: directory
     mode: '0755'
   tags: generate_haproxy_cfg
 
-- name: "Set HAProxy systemd resource limits"
-  ini_file:
+- name: Loadbalance | Set HAProxy systemd resource limits
+  community.general.ini_file:
     path: /usr/lib/systemd/system/haproxy.service.d/limits.conf
     section: Service
     option: "{{ item.key }}"

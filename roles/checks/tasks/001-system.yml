@@ -1,0 +1,37 @@
+---
+- name: Stop if non systemd OS type
+  ansible.builtin.assert:
+    that: ansible_facts['service_mgr'] == "systemd"
+
+- name: Stop if the os does not support
+  ansible.builtin.assert:
+    that: ansible_facts['os_family'] in supported_os_distributions
+    msg: "{{ ansible_facts['distribution'] }} is not a known OS"
+
+# This command will fail if cgroups are not enabled on the node.
+# For reference: https://kubernetes.io/docs/concepts/architecture/cgroups/#check-cgroup-version
+- name: Stop if cgroups are not enabled on nodes
+  ansible.builtin.command: stat -fc %T /sys/fs/cgroup/
+  changed_when: false
+
+- name: Stop if kernel version is too low for cilium
+  ansible.builtin.assert:
+    that: ansible_facts['kernel'].split('-')[0] is version('4.9.17', '>=')
+  when:
+    - network_plugin == 'cilium'
+
+- name: Stop if kernel version is too low for nftables
+  ansible.builtin.assert:
+    that: ansible_facts['kernel'].split('-')[0] is version('5.13', '>=')
+  when:
+    - kubernetes.proxy.mode == 'nftables'
+
+- name: Stop when hostname is not specified
+  ansible.builtin.assert:
+    that: hostname is defined
+    msg: "inventory hostname not specified"
+
+- name: Stop if bad hostname
+  ansible.builtin.assert:
+    that: hostname is match("[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$")
+    msg: "Hostname must consist of lower case alphanumeric characters, '.' or '-', and must start and end with an alphanumeric character"

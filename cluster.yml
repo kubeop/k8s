@@ -1,28 +1,28 @@
 ---
-- name: "Check ansible version"
+- name: Check ansible version
   import_playbook: ansible_version.yml
 
-- name: "Check Configs"
-  hosts: haproxy etcd master worker
-  any_errors_fatal: true
+- name: Pre-installation preparation
+  hosts: etcd master worker
   roles:
-    - role: verify
-      tags: verify
+    - role: checks
+      tags: checks
 
-- name: "Generate Certs"
+- name: Generate certificates
   hosts: localhost
   connection: local
+  gather_facts: false
   roles:
-    - role: cert
-      tags: cert
+    - role: certificates
+      tags: certificates
 
-- name: "Set System Init"
-  hosts: haproxy etcd master worker
+- name: System initialization
+  hosts: etcd master worker
   roles:
     - role: init
       tags: init
 
-- name: "Set Haproxy + Keepalived"
+- name: Configure Haproxy + Keepalived
   hosts: haproxy
   roles:
     - role: haproxy
@@ -30,38 +30,40 @@
     - role: keepalived
       tags: keepalived
 
-- name: "Set Etcd Cluster"
+- name: Configure Kubernetes Etcd
   hosts: etcd
   roles:
     - role: etcd
       tags: etcd
 
-- name: "Set Control Plane Nodes"
+- name: Configure Kubernetes Master
   hosts: master
   roles:
     - role: master
       tags: master
 
-- name: "Set Container Runtime"
+- name: Configure Kubernetes Worker
   hosts: master worker
   roles:
     - role: containerd
       tags: containerd
-
-- name: "Set Worker Nodes"
-  hosts: master worker
-  roles:
     - role: worker
       tags: worker
 
-- name: "Set Container Networking Plugins"
+- name: Configure Kubernetes Addons
   hosts: master worker
+  roles:
+    - role: kubernetes-addons
+      tags: kubernetes-addons
+
+- name: Configure Network Plugins
+  hosts: master
   roles:
     - role: network-plugins
       tags: network-plugins
 
-- name: "Set Kubernetes Addons"
-  hosts: master[0]
+- name: Configure Kubernetes Apps
+  hosts: master
   roles:
-    - role: addons
-      tags: addons
+    - role: kubernetes-apps
+      tags: kubernetes-apps

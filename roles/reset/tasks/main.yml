@@ -1,122 +1,167 @@
 ---
-- name: stop service
-  systemd:
+- name: Reset | stop etcd service
+  ansible.builtin.systemd:
     name: "{{ item }}"
     state: stopped
   with_items:
     - etcd.service
+  failed_when: false
+  when: inventory_hostname in groups['etcd']
+  tags: 
+    - stop_service
+  
+- name: Reset | stop master service
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+  with_items:
     - kube-apiserver.service
     - kube-controller-manager.service
     - kube-scheduler.service
-    - kubelet.service
-    - kube-proxy.service
   failed_when: false
+  when: inventory_hostname in groups['master']
   tags: 
     - stop_service
 
-- name: remove services
-  file:
+- name: Reset | stop worker service
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: stopped
+  with_items:
+    - kubelet.service
+    - kube-proxy.service
+  failed_when: false
+  when: inventory_hostname in groups['master'] or inventory_hostname in groups['worker']
+  tags: 
+    - stop_service
+
+- name: Reset | remove etcd services
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:
     - /usr/lib/systemd/system/etcd.service
+  when: inventory_hostname in groups['etcd']
+  register: etcd_services_removed
+  tags:
+    - services
+
+- name: Reset | remove master services
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
     - /usr/lib/systemd/system/kube-apiserver.service
     - /usr/lib/systemd/system/kube-controller-manager.service
     - /usr/lib/systemd/system/kube-scheduler.service
+  when: inventory_hostname in groups['master']
+  register: master_services_removed
+  tags:
+    - services
+
+- name: Reset | remove worker services
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
     - /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
     - /etc/sysconfig/kubelet
     - /usr/lib/systemd/system/kubelet.service
     - /usr/lib/systemd/system/kube-proxy.service
-  register: services_removed
+  when: inventory_hostname in groups['master'] or inventory_hostname in groups['worker']
+  register: worker_services_removed
   tags:
     - services
 
-- name: systemctl daemon-reload  # noqa no-handler
-  systemd:
+- name: Reset | systemctl daemon-reload  # noqa no-handler
+  ansible.builtin.systemd:
     daemon_reload: true
-  when: services_removed.changed
+  when: master_services_removed.changed or worker_services_removed.changed or worker_services_removed.changed
 
-- name: check if crictl is present
-  stat:
+- name: Reset | check if crictl is present
+  ansible.builtin.stat:
     path: "/usr/local/bin/crictl"
     get_attributes: no
     get_checksum: no
     get_mime: no
   register: crictl
+  tags:
+    - containerd
 
-- name: stop all cri containers
-  shell: "set -o pipefail && /usr/local/bin/crictl ps -q | xargs -r /usr/local/bin/crictl -t 60s stop"
+- name: Reset | stop all cri containers
+  ansible.builtin.shell: "set -o pipefail && /usr/local/bin/crictl ps -q | xargs -r /usr/local/bin/crictl -t 60s stop"
   args:
     executable: /bin/bash
   register: remove_all_cri_containers
   retries: 5
   until: remove_all_cri_containers.rc == 0
   delay: 5
-  tags:
-    - containerd
   when:
     - crictl.stat.exists
-    - ansible_facts.services['containerd.service'] is defined
-  ignore_errors: true  # noqa ignore-errors
+  ignore_errors: true
+  tags:
+    - containerd
 
-- name: force remove all cri containers
-  command: "/usr/local/bin/crictl rm -a -f"
+- name: Reset | force remove all cri containers
+  ansible.builtin.command: "/usr/local/bin/crictl rm -a -f"
   register: remove_all_cri_containers
   retries: 5
   until: remove_all_cri_containers.rc == 0
   delay: 5
-  tags:
-    - containerd
   when:
     - crictl.stat.exists
-    - ansible_facts.services['containerd.service'] is defined
-  ignore_errors: true  # noqa ignore-errors
+  ignore_errors: true
+  tags:
+    - containerd
 
-- name: stop all cri pods
-  shell: "set -o pipefail && /usr/local/bin/crictl pods -q | xargs -r /usr/local/bin/crictl -t 60s stopp"
+- name: Reset | stop all cri pods
+  ansible.builtin.shell: "set -o pipefail && /usr/local/bin/crictl pods -q | xargs -r /usr/local/bin/crictl -t 60s stopp"
   args:
     executable: /bin/bash
   register: remove_all_cri_containers
   retries: 5
   until: remove_all_cri_containers.rc == 0
   delay: 5
-  tags: [ containerd ]
   when:
     - crictl.stat.exists
-    - ansible_facts.services['containerd.service'] is defined
-  ignore_errors: true  # noqa ignore-errors
+  ignore_errors: true
+  tags:
+    - containerd
 
 - name: force remove all cri pods
   block:
     - name: force remove all cri pods
-      command: "/usr/local/bin/crictl rmp -a -f"
+      ansible.builtin.command: "/usr/local/bin/crictl rmp -a -f"
       register: remove_all_cri_containers
       retries: 5
       until: remove_all_cri_containers.rc == 0
       delay: 5
-      tags: [ containerd ]
       when:
         - crictl.stat.exists
         - ansible_facts.services['containerd.service'] is defined
+      tags:
+        - containerd
 
   rescue:
     - name: force remove all cri pods (rescue)
-      shell: "ip netns list | cut -d' ' -f 1 | xargs -n1 ip netns delete && /usr/local/bin/crictl rmp -a -f"
+      ansible.builtin.shell: "ip netns list | cut -d' ' -f 1 | xargs -n1 ip netns delete && /usr/local/bin/crictl rmp -a -f"
       ignore_errors: true  # noqa ignore-errors
       changed_when: true
+      tags:
+        - containerd
 
-- name: stop containerd
-  systemd:
+- name: Reset | stop containerd
+  ansible.builtin.systemd:
     name: "{{ item }}"
     state: stopped
   with_items:
     - containerd.service
   failed_when: false
   tags: 
-    - stop_containerd
+    - containerd
 
-- name: remove containerd
-  file:
+- name: Reset | remove containerd
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:
@@ -126,15 +171,17 @@
     - /usr/local/bin/crictl
   register: containerd_removed
   tags:
-    - remove_containerd
+    - containerd
 
-- name: Reset | systemctl daemon-reload  # noqa no-handler
-  systemd_service:
+- name: Reset | systemctl daemon-reload
+  ansible.builtin.systemd:
     daemon_reload: true
   when: containerd_removed.changed
+  tags:
+    - containerd
 
-- name: gather mounted kubelet dirs
-  shell: set -o pipefail && mount | grep /var/lib/kubelet/ | awk '{print $3}' | tac
+- name: Reset | gather mounted kubelet dirs
+  ansible.builtin.shell: set -o pipefail && mount | grep /var/lib/kubelet/ | awk '{print $3}' | tac
   args:
     executable: /bin/bash
   check_mode: no
@@ -144,8 +191,8 @@
   tags:
     - mounts
 
-- name: unmount kubelet dirs
-  command: umount -f {{ item }}
+- name: Reset | unmount kubelet dirs
+  ansible.builtin.command: umount -f {{ item }}
   with_items: "{{ mounted_dirs.stdout_lines }}"
   register: umount_dir
   when: mounted_dirs
@@ -155,8 +202,8 @@
   tags:
     - mounts
 
-- name: Set IPv4 iptables default policies to ACCEPT
-  iptables:
+- name: Reset | Set IPv4 iptables default policies to ACCEPT
+  ansible.builtin.iptables:
     chain: "{{ item }}"
     policy: ACCEPT
   with_items:
@@ -167,8 +214,8 @@
   tags:
     - iptables
 
-- name: Flush iptables
-  iptables:
+- name: Reset | Flush iptables
+  ansible.builtin.iptables:
     table: "{{ item }}"
     flush: true
   with_items:
@@ -180,14 +227,14 @@
   tags:
     - iptables
 
-- name: Delete IPv4 user-defined chains # noqa command-instead-of-module
-  command: iptables -X
+- name: Reset | Delete IPv4 user-defined chains
+  ansible.builtin.command: iptables -X
   when: flush_iptables | bool and kubernetes.ipv4_stack
   tags:
     - iptables
 
-- name: Set IPv6 ip6tables default policies to ACCEPT
-  iptables:
+- name: Reset | Set IPv6 ip6tables default policies to ACCEPT
+  ansible.builtin.iptables:
     chain: "{{ item }}"
     policy: ACCEPT
     ip_version: ipv6
@@ -199,8 +246,8 @@
   tags:
     - ip6tables
 
-- name: Flush ip6tables
-  iptables:
+- name: Reset | Flush ip6tables
+  ansible.builtin.iptables:
     table: "{{ item }}"
     flush: true
     ip_version: ipv6
@@ -213,64 +260,64 @@
   tags:
     - ip6tables
 
-- name: Delete IPv6 user-defined chains # noqa command-instead-of-module
-  command: ip6tables -X
+- name: Reset | Delete IPv6 user-defined chains
+  ansible.builtin.command: ip6tables -X
   when: flush_iptables | bool and kubernetes.ipv6_stack
   tags:
     - ip6tables
 
-- name: Clear IPVS virtual server table
-  command: "ipvsadm -C"
-  ignore_errors: true  # noqa ignore-errors
+- name: Reset | Clear IPVS virtual server table
+  ansible.builtin.command: "ipvsadm -C"
+  ignore_errors: true
   when:
-    - kubernetes.kube_proxy_mode == 'ipvs'
+    - kubernetes.proxy.mode == 'ipvs'
 
-- name: check kube-ipvs0 network device
-  stat:
+- name: Reset | check kube-ipvs0 network device
+  ansible.builtin.stat:
     path: /sys/class/net/kube-ipvs0
     get_attributes: false
     get_checksum: false
     get_mime: false
   register: kube_ipvs0
 
-- name: Remove kube-ipvs0
-  command: "ip link del kube-ipvs0"
+- name: Reset | Remove kube-ipvs0
+  ansible.builtin.command: "ip link del kube-ipvs0"
   when:
-    - kubernetes.kube_proxy_mode == 'ipvs'
+    - kubernetes.proxy.mode == 'ipvs'
     - kube_ipvs0.stat.exists
 
-- name: check nodelocaldns network device
-  stat:
+- name: Reset | check nodelocaldns network device
+  ansible.builtin.stat:
     path: /sys/class/net/nodelocaldns
     get_attributes: false
     get_checksum: false
     get_mime: false
   register: nodelocaldns_device
 
-- name: Remove nodelocaldns
-  command: "ip link del nodelocaldns"
+- name: Reset | Remove nodelocaldns
+  ansible.builtin.command: "ip link del nodelocaldns"
   when:
     - nodelocaldns.enabled | default(false) | bool
     - nodelocaldns_device.stat.exists
 
-- name: Check whether /var/lib/kubelet directory exists
-  stat:
+- name: Reset | Check whether /var/lib/kubelet directory exists
+  ansible.builtin.stat:
     path: /var/lib/kubelet
     get_attributes: false
     get_checksum: false
     get_mime: false
   register: var_lib_kubelet_directory
 
-- name: Find files/dirs with immutable flag in /var/lib/kubelet
-  command: lsattr -laR /var/lib/kubelet
+- name: Reset | Find files/dirs with immutable flag in /var/lib/kubelet
+  ansible.builtin.command: lsattr -laR /var/lib/kubelet
   become: true
   register: var_lib_kubelet_files_dirs_w_attrs
   changed_when: false
   no_log: true
   when: var_lib_kubelet_directory.stat.exists
 
-- name: Remove immutable flag from files/dirs in /var/lib/kubelet
-  file:
+- name: Reset | Remove immutable flag from files/dirs in /var/lib/kubelet
+  ansible.builtin.file:
     path: "{{ filedir_path }}"
     state: touch
     attributes: "-i"
@@ -283,18 +330,31 @@
     filedir_path: "{{ file_dir_line.split(' ')[0] }}"
   when: var_lib_kubelet_directory.stat.exists
 
-- name: delete some files and directories
-  file:
+- name: Reset | delete etcd files and directories
+  ansible.builtin.file:
     path: "{{ item }}"
     state: absent
   with_items:
-    - "{{ kubernetes.kubelet_dir }}"
+    - /etc/etcd
+    - /var/lib/etcd
+    - /usr/bin/etcd
+    - /usr/bin/etcdctl
+    - /usr/bin/etcdutl
+  ignore_errors: true  # noqa ignore-errors
+  when: inventory_hostname in groups['etcd']
+  tags:
+    - files
+
+- name: Reset | delete master/worker files and directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "{{ kubernetes.kubelet.data_dir }}"
     - "{{ containerd.root }}"
     - "{{ ansible_env.HOME | default('/root') }}/.kube"
     - "{{ ansible_env.HOME | default('/root') }}/.helm"
-    - /var/lib/etcd
     - /etc/kubernetes
-    - /etc/etcd
     - /var/log/kubernetes
     - /etc/cni
     - /opt/cni
@@ -311,21 +371,30 @@
     - /etc/bash_completion.d/kubectl.sh
     - /etc/bash_completion.d/crictl
     - /usr/libexec/kubernetes
-    - /usr/bin/etcd
-    - /usr/bin/etcdctl
-    - /usr/bin/etcdutl
+    - /etc/containerd/certs.d
+  ignore_errors: true  # noqa ignore-errors
+  when: inventory_hostname in groups['master'] or inventory_hostname in groups['worker']
+  tags:
+    - files
+
+- name: Reset | remove kubernetes binary files
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
     - /usr/bin/kube-apiserver
     - /usr/bin/kube-controller-manager
     - /usr/bin/kube-scheduler
     - /usr/bin/kubelet
     - /usr/bin/kube-proxy
     - /usr/bin/kubectl
+    - /usr/bin/kubeadm
   ignore_errors: true  # noqa ignore-errors
   tags:
     - files
 
-- name: remove containerd binary files
-  file:
+- name: Reset | remove containerd binary files
+  ansible.builtin.file:
     path: "/usr/local/bin/{{ item }}"
     state: absent
   with_items:
@@ -342,3 +411,86 @@
   ignore_errors: true  # noqa ignore-errors
   tags:
     - files
+
+- name: Reset | check vxlan.calico network device
+  ansible.builtin.stat:
+    path: /sys/class/net/vxlan.calico
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: vxlan
+  tags:
+    - reset_calico
+
+- name: Reset | remove the network vxlan.calico device created by calico
+  ansible.builtin.command: ip link del vxlan.calico
+  when: vxlan.stat.exists
+  tags:
+    - reset_calico
+
+- name: Reset | check dummy0 network device
+  ansible.builtin.stat:
+    path: /sys/class/net/dummy0
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: dummy0
+  tags:
+    - reset_calico
+
+- name: Reset | remove the network device created by calico
+  ansible.builtin.command: ip link del dummy0
+  when: dummy0.stat.exists
+  tags:
+    - reset_calico
+
+- name: Reset | get and remove remaining routes set by bird
+  ansible.builtin.shell: set -o pipefail && ip route show proto bird | xargs -i bash -c "ip route del {} proto bird "
+  args:
+    executable: /bin/bash
+  changed_when: false
+  tags:
+    - reset_calico
+
+- name: Reset | check and remove devices if still present
+  include_tasks: reset_iface.yml
+  vars:
+    iface: "{{ item }}"
+  loop:
+    - cilium_host
+    - cilium_net
+    - cilium_vxlan
+  tags:
+    - reset_cilium
+
+- name: Reset | check cni network device
+  stat:
+    path: /sys/class/net/cni0
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: cni
+  tags:
+    - reset_flannel
+
+- name: Reset | remove the network device created by the flannel
+  command: ip link del cni0
+  when: cni.stat.exists
+  tags:
+    - reset_flannel
+
+- name: Reset | check flannel network device
+  stat:
+    path: /sys/class/net/flannel.1
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: flannel
+  tags:
+    - reset_flannel
+
+- name: Reset | remove the network device created by the flannel
+  command: ip link del flannel.1
+  when: flannel.stat.exists
+  tags:
+    - reset_flannel

@@ -43,13 +43,7 @@ clusterDNS:
 cpuManagerReconcilePeriod: 10s
 containerLogMaxSize: 200Mi
 containerLogMaxFiles: 10
-maxPods: {{ kubernetes.kubelet_max_pods | default(110) }}
-evictionHard:
-  imagefs.available: 10%
-  memory.available: 500Mi
-  nodefs.available: 10%
-  nodefs.inodesFree: 5%
-evictionPressureTransitionPeriod: 5m0s
+maxPods: {{ kubernetes.kubelet.max_pods | default(110) }}
 fileCheckFrequency: 20s
 httpCheckFrequency: 20s
 {% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
@@ -75,4 +69,7 @@ imageServiceEndpoint: unix://{{containerd.state}}/containerd.sock
 {% endif %}
 {% if ansible_os_family in ['Debian'] %}
 resolvConf: /run/systemd/resolve/resolv.conf
+{% endif %}
+{% if kubernetes.kubelet.extra_flags | length > 0 %}
+{{ kubernetes.kubelet.extra_flags | to_nice_yaml(indent=2) }}
 {% endif %}

@@ -1,0 +1,16 @@
+---
+- name: Reset | check if network device {{ iface }} is present
+  stat:
+    path: "/sys/class/net/{{ iface }}"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: device_remains
+  tags:
+    - reset_cilium
+
+- name: Reset | remove network device {{ iface }}
+  command: "ip link del {{ iface }}"
+  when: device_remains.stat.exists
+  tags:
+    - reset_cilium

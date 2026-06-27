@@ -5,7 +5,7 @@ metadata:
   labels:
     app.kubernetes.io/name: flannel
   name: flannel
-  namespace: kube-flannel
+  namespace: kube-system
 ---
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
@@ -94,7 +94,11 @@ data:
       "EnableIPv6": true,
       "IPv6Network": "{{ kubernetes.pods_subnet_ipv6 }}",
 {% endif %}
-      "EnableNFTables": {{ flannel.EnableNFTables }},
+{% if flannel.nftables_enabled %}
+      "EnableNFTables": true,
+{% else %}
+      "EnableNFTables": false,
+{% endif %}
       "Backend": {
 {% if flannel.network_mode == 'vxlan' %}
         "DirectRouting": {{ flannel.directRouting | lower}},

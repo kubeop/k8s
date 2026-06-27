@@ -35,7 +35,6 @@ KUBE_CONTROLLER_MANAGER_ARGS="\
     --cluster-signing-cert-file=/etc/kubernetes/pki/ca.pem \
     --cluster-signing-key-file=/etc/kubernetes/pki/ca.key \
     --controllers=*,bootstrapsigner,tokencleaner \
-    --horizontal-pod-autoscaler-sync-period=30s \
     --kubeconfig=/etc/kubernetes/controller-manager.kubeconfig \
     --leader-elect=true \
     --requestheader-client-ca-file=/etc/kubernetes/pki/front-proxy-ca.pem \
@@ -43,4 +42,7 @@ KUBE_CONTROLLER_MANAGER_ARGS="\
     --service-account-private-key-file=/etc/kubernetes/pki/sa.key \
     --use-service-account-credentials=true \
     --feature-gates=RotateKubeletServerCertificate=true \
+{% for k, v in kubernetes.controller_manager.extra_flags.items() %}
+    --{{ k }}={{ v }} \
+{% endfor %}
     --v=2"

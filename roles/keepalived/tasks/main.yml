@@ -1,28 +1,28 @@
 ---
-- name: "Install keepalived"
-  package:
+- name: Loadbalance | Install keepalived
+  ansible.builtin.package:
     name: keepalived
     state: present
   tags: install_keepalived
 
-- name: "Set SELinux context for keepalived"
-  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and security.selinux == true
+- name: Loadbalance | Set SELinux context for keepalived
+  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and system.selinux_enabled == true
   community.general.sefcontext:
     target: "/usr/libexec/keepalived(/.*)?"
     setype: keepalived_unconfined_script_exec_t
     state: present
   tags: set_keepalived_selinux
 
-- name: "Create keepalived directory"
+- name: Loadbalance | Create keepalived directory
   when: ansible_os_family in ["Debian"]
-  file:
+  ansible.builtin.file:
     path: "/usr/libexec/keepalived"
     state: directory
     mode: 0755
   tags: create_keepalived_script_dir
 
-- name: "Generate check_haproxy.sh"
-  template:
+- name: Loadbalance | Generate check_haproxy.sh
+  ansible.builtin.template:
     src: "check_haproxy.sh.j2"
     dest: "/usr/libexec/keepalived/check_haproxy.sh"
     mode: 0755
@@ -30,13 +30,13 @@
   notify:
     - restart keepalived
 
-- name: "Set selinux for keepalived"
-  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and security.selinux == true
-  command: restorecon -irv /usr/libexec/keepalived
+- name: Loadbalance | Set selinux for keepalived
+  when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and system.selinux_enabled == true
+  ansible.builtin.command: restorecon -irv /usr/libexec/keepalived
   tags: set_keepalived_selinux
 
-- name: "Generate keepalived.conf"
-  template:
+- name: Loadbalance | Generate keepalived.conf
+  ansible.builtin.template:
     src: "keepalived.conf.j2"
     dest: "/etc/keepalived/keepalived.conf"
   tags: generate_keepalived_conf

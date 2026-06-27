@@ -1,6 +1,6 @@
 ---
-- name: "Install dependency"
-  package:
+- name: Worker | Install dependency
+  ansible.builtin.package:
     name:
       - libnetfilter_cthelper
       - libnetfilter_cttimeout
@@ -14,8 +14,8 @@
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
   tags: worker_app
 
-- name: "Install dependency"
-  package:
+- name: Worker | Install dependency
+  ansible.builtin.package:
     name:
       - libnetfilter-cthelper0
       - libnetfilter-cttimeout1
@@ -30,8 +30,8 @@
     - ansible_os_family in ["Debian"]
   tags: worker_app
 
-- name: NetworkManager | Check if host has NetworkManager
-  command: systemctl is-active --quiet NetworkManager.service
+- name: Worker | Check if host has NetworkManager
+  ansible.builtin.command: systemctl is-active --quiet NetworkManager.service
   register: networkmanager_enabled
   failed_when: false
   changed_when: false
@@ -39,8 +39,8 @@
   tags: 
     - networkmanager
 
-- name: "NetworkManager | Ensure NetworkManager conf.d dir"
-  file:
+- name: Worker | Ensure NetworkManager conf.d dir exists
+  ansible.builtin.file:
     path: "/etc/NetworkManager/conf.d"
     state: directory
     recurse: true
@@ -49,8 +49,8 @@
   tags: 
     - networkmanager
 
-- name: "NetworkManager | Prevent NetworkManager from managing Calico interfaces (cali*/tunl*/vxlan.calico)"
-  copy:
+- name: Worker | Prevent NetworkManager from managing Calico interfaces (cali*/tunl*/vxlan.calico)
+  ansible.builtin.copy:
     content: |
       [keyfile]
       unmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:vxlan-v6.calico;interface-name:wireguard.cali;interface-name:wg-v6.cali
@@ -64,10 +64,10 @@
   tags: 
     - networkmanager
 
-- name: "NetworkManager | Prevent NetworkManager from managing K8S interfaces (kube-ipvs0/nodelocaldns)"
+- name: Worker | Prevent NetworkManager from managing K8S interfaces (kube-ipvs0/nodelocaldns)
   when:
     - networkmanager_enabled.rc == 0
-  copy:
+  ansible.builtin.copy:
     content: |
       [keyfile]
       unmanaged-devices+=interface-name:kube-ipvs0;interface-name:nodelocaldns
@@ -77,8 +77,8 @@
   tags: 
     - networkmanager
 
-- name: "Enabled modlue"
-  modprobe:
+- name: Worker | Enable mod
+  community.general.modprobe:
     name: "{{ item }}"
     state: present
   with_items:
@@ -87,19 +87,19 @@
     - "br_netfilter"
   tags: worker_mod
 
-- name: "Enabled modlue for ipvs and iptables"
-  modprobe:
+- name: Worker | Enable mod for ipvs and iptables
+  community.general.modprobe:
     name: "{{ item }}"
     state: present
   with_items:
     - "ip_tables"
     - "iptable_filter"
   when: 
-    - kubernetes.kube_proxy_mode != 'nftables'
+    - kubernetes.proxy.mode != 'nftables'
   tags: worker_mod
 
-- name: "Enabled modlue for ipvs"
-  modprobe:
+- name: Worker | Enable mod for ipvs
+  community.general.modprobe:
     name: "{{ item }}"
     state: present
   with_items:
@@ -113,54 +113,58 @@
     - "ip_vs_sed"
     - "ip_vs_nq"
   when:
-    - kubernetes.kube_proxy_mode == 'ipvs'
+    - kubernetes.proxy.mode == 'ipvs'
   tags: worker_mod
 
-- name: "Enabled conntrack modlue < 4.19.0"
-  modprobe:
+- name: Worker | Enable conntrack mod < 4.19.0
+  community.general.modprobe:
     name: "nf_conntrack_ipv4"
     state: present
   when: ((ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version | int != 8) or ansible_os_family in ['Debian']) and
         ansible_kernel.split('-')[0] is version('4.19.0', '<')
   tags: worker_mod
 
-- name: "Enabled conntrack modlue > 4.19.0"
-  modprobe:
+- name: Worker | Enable conntrack mod > 4.19.0
+  community.general.modprobe:
     name: "nf_conntrack"
     state: present
   when: (ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky'] and ansible_distribution_major_version | int == 8) or
         ansible_kernel.split('-')[0] is version('4.19.0', '>=')
   tags: worker_mod
 
-- name: "Install iptables-nft"
-  package:
+- name: Worker | Install iptables-nft
+  ansible.builtin.package:
     name: iptables-nft
     state: present
   when:
     - ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS']
-    - kubernetes.kube_proxy_mode == 'ipvs'
+    - kubernetes.proxy.mode == 'ipvs'
+    - not (kubernetes.proxy.replacement | default(false))
   tags:
-    - kube-proxy
+    - kube_proxy
 
-- name: "Install nftables"
-  package:
+- name: Worker | Install nftables
+  ansible.builtin.package:
     name: nftables
     state: present
   when:
-    - kubernetes.kube_proxy_mode == 'nftables'
+    - kubernetes.proxy.mode == 'nftables'
+    - not (kubernetes.proxy.replacement | default(false))
   tags:
-    - kube-proxy
+    - kube_proxy
 
-- name: "Modprobe Kernel Module for nftables"
-  modprobe:
+- name: Worker | Modprobe Kernel Module for nftables
+  community.general.modprobe:
     name: "nf_tables"
     state: present
     persistent: present
-  when: kubernetes.kube_proxy_mode == 'nftables'
+  when: 
+    - kubernetes.proxy.mode == 'nftables'
+    - not (kubernetes.proxy.replacement | default(false))
   tags:
-    - kube-proxy
+    - kube_proxy
 
-- name: "Set sysctl k8s parameters"
+- name: Worker | Set sysctl k8s parameters
   ansible.posix.sysctl:
     sysctl_file: "/etc/sysctl.d/99-k8s.conf"
     name: "{{ item.name }}"
@@ -196,8 +200,8 @@
     - k8s_sysctl
     - worker_sysctl
 
-- name: "Create kubernetes directory"
-  file:
+- name: Worker | Create kubernetes directory
+  ansible.builtin.file:
     path: "{{ item.line }}"
     owner: root
     group: root
@@ -206,11 +210,11 @@
   with_items:
     - {line: '/etc/kubernetes/pki'}
     - {line: '/etc/kubernetes/manifests'}
-    - {line: "{{ kubernetes.kubelet_dir }}"}
+    - {line: "{{ kubernetes.kubelet.data_dir }}"}
   tags: dir
 
-- name: "Create kubelet directory"
-  file:
+- name: Worker | Create kubelet directory
+  ansible.builtin.file:
     path: "/etc/sysconfig"
     owner: root
     group: root
@@ -220,63 +224,101 @@
     - ansible_os_family in ["Debian"]
   tags: dir
 
-- name: "Install worker"
-  copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/{{ item }}"
+- name: Worker | Install kubelet
+  ansible.builtin.copy:
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/kubelet"
     dest: "/usr/bin/"
     owner: root
     group: root
     mode: 0750
-  with_items:
+  tags: 
     - kubelet
-    - kube-proxy
-  tags: install_worker
+    - install_worker
 
-- name: "Distribution worker certs"
-  copy:
+- name: Worker | Install kube-proxy
+  ansible.builtin.copy:
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/kube-proxy"
+    dest: "/usr/bin/"
+    owner: root
+    group: root
+    mode: 0750
+  when:
+    - not (kubernetes.proxy.replacement | default(false))
+  tags: 
+    - kube_proxy
+    - install_worker
+
+- name: Worker | Distribution kubelet certs
+  ansible.builtin.copy:
+    src: "{{ certificates.dir }}/ca.pem"
+    dest: "/etc/kubernetes/pki/"
+    owner: root
+    group: root
+    mode: 0644
+  tags:
+    - dis_worker_certs
+    - dis_certs
+    - kubelet
+
+- name: Worker | Distribution kube-proxy certs
+  when:
+    - not (kubernetes.proxy.replacement | default(false))
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "/etc/kubernetes/pki/"
     owner: root
     group: root
     mode: 0644
   with_items:
-    - "{{ cert.dir }}/ca.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/kube-proxy.key"
   tags:
     - dis_worker_certs
     - dis_certs
+    - kube_proxy
 
-- name: "Get bootstrap-token-id"
-  shell: "cat {{ cert.dir }}/token | grep -v '^#' | awk -F '.' '{print $1}'"
+- name: Worker | Get bootstrap-token-id
+  ansible.builtin.shell: "cat {{ certificates.dir }}/token | grep -v '^#' | awk -F '.' '{print $1}'"
   register: token_id
   connection: local
   tags:
     - get_token_id
     - bootstrap_token
 
-- name: "Get bootstrap-token-secret"
-  shell: "cat {{ cert.dir }}/token | grep -v '^#' | awk -F '.' '{print $2}'"
+- name: Worker | Get bootstrap-token-secret
+  ansible.builtin.shell: "cat {{ certificates.dir }}/token | grep -v '^#' | awk -F '.' '{print $2}'"
   register: token_secret
   connection: local
   tags:
     - get_token_secret
     - bootstrap_token
 
-- name: "Distribution worker kubeconfig"
-  template:
-    src: "{{ item.src }}"
+- name: Worker | Distribution kubelet kubeconfig
+  ansible.builtin.template:
+    src: "bootstrap-kubelet.kubeconfig.j2"
     owner: root
     group: root
     mode: 0640
-    dest: "{{ item.dest }}"
-  with_items:
-    - {src: "bootstrap-kubelet.kubeconfig.j2",dest: "/etc/kubernetes/bootstrap-kubelet.kubeconfig" }
-    - {src: "proxy.kubeconfig.j2",dest: "/etc/kubernetes/proxy.kubeconfig" }
-  tags: dis_worker_kubeconfig
+    dest: "/etc/kubernetes/bootstrap-kubelet.kubeconfig"
+  tags:
+    - kubelet
+    - dis_worker_kubeconfig
 
-- name: "Distribution worker config"
-  template:
+- name: Worker | Distribution kube-proxy kubeconfig
+  ansible.builtin.template:
+    src: "proxy.kubeconfig.j2"
+    owner: root
+    group: root
+    mode: 0640
+    dest: "/etc/kubernetes/proxy.kubeconfig"
+  when:
+    - not (kubernetes.proxy.replacement | default(false))
+  tags:
+    - kube_proxy
+    - dis_worker_kubeconfig
+
+- name: Worker | Distribution kubelet config
+  ansible.builtin.template:
     src: "{{ item.src }}"
     owner: root
     group: root
@@ -285,100 +327,130 @@
   with_items:
     - {src: "kubelet.conf.j2",dest: "/etc/kubernetes/kubelet.conf" }
     - {src: "10-kubelet.conf.j2",dest: "/etc/sysconfig/kubelet" }
-    - {src: "kube-proxy.conf.j2",dest: "/etc/kubernetes/kube-proxy.conf" }
-  tags: dis_worker_config
+  tags:
+    - kubelet
+    - dis_worker_config
 
-- name: "Distribution worker system unit"
-  template:
-    src: "{{ item.src }}"
+- name: Worker | Distribution kube-proxy config
+  ansible.builtin.template:
+    src: "kube-proxy.conf.j2"
+    owner: root
+    group: root
+    mode: 0640
+    dest: "/etc/kubernetes/kube-proxy.conf"
+  when:
+    - not (kubernetes.proxy.replacement | default(false))
+  tags:
+    - kube_proxy
+    - dis_worker_config
+
+- name: Worker | Distribution kubelet system unit
+  ansible.builtin.template:
+    src: "kubelet.service.j2"
     owner: root
     group: root
     mode: 0644
-    dest: "{{ item.dest }}"
-  with_items:
-    - {src: "kubelet.service.j2",dest: "/usr/lib/systemd/system/kubelet.service" }
-    - {src: "kube-proxy.service.j2",dest: "/usr/lib/systemd/system/kube-proxy.service" }
-  tags: dis_worker_systemd
+    dest: "/usr/lib/systemd/system/kubelet.service"
+  tags:
+    - kubelet
+    - dis_worker_systemd
 
-- name: "Check if bootstrap-token exists"
-  shell: kubectl -n kube-system get secret bootstrap-token-{{ token_id.stdout }}
+- name: Worker | Distribution kube-proxy system unit
+  ansible.builtin.template:
+    src: "kube-proxy.service.j2"
+    owner: root
+    group: root
+    mode: 0644
+    dest: "/usr/lib/systemd/system/kube-proxy.service"
+  when:
+    - not (kubernetes.proxy.replacement | default(false))
+  tags:
+    - kube_proxy
+    - dis_worker_systemd
+
+- name: Worker | Check if bootstrap-token exists
+  ansible.builtin.shell: kubectl -n kube-system get secret bootstrap-token-{{ token_id.stdout }}
   ignore_errors: true
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: bootstrap_token_ready
   tags: bootstrap
 
-- name: "Create bootstrap-token secret"
+- name: Worker | Create bootstrap-token secret
   when: bootstrap_token_ready.rc != 0
-  shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true --from-literal auth-extra-groups="system:bootstrappers:default-node-token,system:bootstrappers:worker,system:bootstrappers:ingress"
+  ansible.builtin.shell: kubectl -n kube-system create secret generic bootstrap-token-{{ token_id.stdout }} --type 'bootstrap.kubernetes.io/token' --from-literal description="cluster bootstrap token" --from-literal token-id={{ token_id.stdout }} --from-literal token-secret={{ token_secret.stdout }} --from-literal usage-bootstrap-authentication=true --from-literal usage-bootstrap-signing=true --from-literal auth-extra-groups="system:bootstrappers:default-node-token,system:bootstrappers:worker,system:bootstrappers:ingress"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
 
-- name: "Check if clusterrolebinding kubelet-bootstrap exists"
-  shell: kubectl get clusterrolebinding kubelet-bootstrap
+- name: Worker | Check if clusterrolebinding kubelet-bootstrap exists
+  ansible.builtin.shell: kubectl get clusterrolebinding kubelet-bootstrap
   ignore_errors: true
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: kubelet_bootstrap_ready
   tags: bootstrap
 
-- name: "Create clusterrolebinding kubelet-bootstrap"
+- name: Worker | Create clusterrolebinding kubelet-bootstrap
   when: kubelet_bootstrap_ready.rc != 0
-  shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers:default-node-token
+  ansible.builtin.shell: kubectl create clusterrolebinding kubelet-bootstrap --clusterrole=system:node-bootstrapper --group=system:bootstrappers:default-node-token
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
 
-- name: "Check if node-autoapprove-bootstrap exists"
-  shell: kubectl get clusterrolebinding node-autoapprove-bootstrap
+- name: Worker | Check if node-autoapprove-bootstrap exists
+  ansible.builtin.shell: kubectl get clusterrolebinding node-autoapprove-bootstrap
   ignore_errors: true
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: node_autoapprove_bootstrap_ready
   tags: bootstrap
 
-- name: "Create clusterrolebinding node-autoapprove-bootstrap"
+- name: Worker | Create clusterrolebinding node-autoapprove-bootstrap
   when: node_autoapprove_bootstrap_ready.rc != 0
-  shell: kubectl create clusterrolebinding node-autoapprove-bootstrap --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers:default-node-token
+  ansible.builtin.shell: kubectl create clusterrolebinding node-autoapprove-bootstrap --clusterrole=system:certificates.k8s.io:certificatesigningrequests:nodeclient --group=system:bootstrappers:default-node-token
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
 
-- name: "Check if clusterrolebinding node-autoapprove-certificate-rotation exists"
-  shell: kubectl get clusterrolebinding node-autoapprove-certificate-rotation
+- name: Worker | Check if clusterrolebinding node-autoapprove-certificate-rotation exists
+  ansible.builtin.shell: kubectl get clusterrolebinding node-autoapprove-certificate-rotation
   ignore_errors: true
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   register: node_autoapprove_certificate_rotation_ready
   tags: bootstrap
 
-- name: "Create clusterrolebinding node-autoapprove-certificate-rotation"
+- name: Worker | Create clusterrolebinding node-autoapprove-certificate-rotation
   when: node_autoapprove_certificate_rotation_ready.rc != 0
-  shell: kubectl create clusterrolebinding node-autoapprove-certificate-rotation --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient --group=system:nodes
+  ansible.builtin.shell: kubectl create clusterrolebinding node-autoapprove-certificate-rotation --clusterrole=system:certificates.k8s.io:certificatesigningrequests:selfnodeclient --group=system:nodes
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
   tags: bootstrap
 
-- name: "Restart kubelet"
-  systemd:
+- name: Worker | Restart kubelet
+  ansible.builtin.systemd:
     name: kubelet
     state: restarted
     daemon_reload: yes
     enabled: yes
     masked: false
-  tags: restart_kubelet
+  tags:
+    - kubelet
+    - restart_kubelet
 
-- name: "Waiting kubelet starting"
-  wait_for:
+- name: Worker | Waiting kubelet starting
+  ansible.builtin.wait_for:
     host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 10250
     delay: 5
     sleep: 2
-  tags: healthcheck
+  tags:
+    - kubelet
+    - healthcheck
 
-- name: "kubelet health check"
-  uri:
+- name: Worker | kubelet health check
+  ansible.builtin.uri:
     url: "http://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:10248/healthz"
     return_content: yes
     validate_certs: no
@@ -386,34 +458,67 @@
   failed_when: "'ok' not in kubelet.content"
   tags: healthcheck
 
-- name: "Restart kube-proxy"
-  systemd:
+- name: Worker | Restart kube-proxy
+  ansible.builtin.systemd:
     name: kube-proxy
     state: restarted
     daemon_reload: yes
     enabled: yes
     masked: false
-  tags: restart_proxy
+  when:
+    - not (kubernetes.proxy.replacement | default(false))
+  tags:
+    - kube_proxy
+    - restart_proxy
 
-- name: "Waiting kube-proxy starting"
-  wait_for:
+- name: Worker | Waiting kube-proxy starting
+  ansible.builtin.wait_for:
     host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 10256
     delay: 5
     sleep: 2
-  tags: healthcheck
+  when:
+    - not (kubernetes.proxy.replacement | default(false))
+  tags:
+    - kube_proxy
+    - healthcheck
 
-- name: "kube-proxy health check"
-  uri:
+- name: Worker | kube-proxy health check
+  ansible.builtin.uri:
     url: "http://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:10256/healthz"
     return_content: yes
     validate_certs: no
     status_code: 200
   register: proxy
-  tags: healthcheck
+  when:
+    - not (kubernetes.proxy.replacement | default(false))
+  tags:
+    - kube_proxy
+    - healthcheck
 
-- name: "Check whether the control-plane is ready?"
-  shell: "kubectl get node {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }}"
+- name: Worker | Check kube-proxy status
+  ansible.builtin.command: systemctl is-active kube-proxy
+  register: proxy_enabled
+  failed_when: false
+  changed_when: false
+  check_mode: false
+
+- name: Worker | Stop kube-proxy if kubernetes.proxy.replacement enabled
+  ansible.builtin.systemd:
+    name: kube-proxy
+    state: stopped
+    daemon_reload: yes
+    enabled: no
+    masked: false
+  when:
+    - kubernetes.proxy.replacement | default(false)
+    - proxy_enabled.rc == 0
+  tags:
+    - kube_proxy
+    - stop_proxy
+
+- name: Worker | Check whether the control-plane is ready?
+  ansible.builtin.shell: "kubectl get node {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }}"
   register: master_status
   until: '"Ready" in master_status.stdout'
   retries: 5
@@ -425,8 +530,8 @@
     - create_master_taint
     - create_label
 
-- name: "Create taint for control-plane"
-  shell: "kubectl taint nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
+- name: Worker | Create taint for control-plane
+  ansible.builtin.shell: "kubectl taint nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   when: inventory_hostname in groups['master']
   tags:
@@ -434,16 +539,16 @@
     - create_master_taint
     - create_label
 
-- name: "Create label for control-plane"
-  shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane= --overwrite"
+- name: Worker | Create label for control-plane
+  ansible.builtin.shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/control-plane= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   when: inventory_hostname in groups['master']
   tags:
     - create_master_label
     - create_label
 
-- name: "Check whether the worker is ready?"
-  shell: "kubectl get node {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }}"
+- name: Worker | Check whether the worker is ready?
+  ansible.builtin.shell: "kubectl get node {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }}"
   register: worker_status
   until: '"Ready" in worker_status.stdout'
   retries: 5
@@ -454,25 +559,25 @@
     - create_worker_label
     - create_label
 
-- name: "Create label for worker"
-  shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/worker= --overwrite"
+- name: Worker | Create label for worker
+  ansible.builtin.shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} node-role.kubernetes.io/worker= --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   when: inventory_hostname in groups['worker']
   tags:
     - create_worker_label
     - create_label
 
-- name: "Create taint for gpu worker"
+- name: Worker | Create taint for gpu worker
   when: gpu is defined and gpu == 'true'
-  shell: "kubectl taint nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=:NoSchedule --overwrite"
+  ansible.builtin.shell: "kubectl taint nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=:NoSchedule --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   tags:
     - create_gpu_taint
     - create_gpu
 
-- name: "Create label for gpu worker"
+- name: Worker | Create label for gpu worker
   when: gpu is defined and gpu == 'true'
-  shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=true --overwrite"
+  ansible.builtin.shell: "kubectl label nodes {{ hostvars[inventory_hostname]['hostname'].split('-')[-2:] | join('-') | lower }} nvidia.com/gpu=true --overwrite"
   delegate_to: "{{ groups['master'][0] }}"
   tags:
     - create_gpu_label

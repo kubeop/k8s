@@ -1,0 +1,130 @@
+---
+- name: Stop if etcd group is empty
+  ansible.builtin.assert:
+    that: groups.get( 'etcd' ) != []
+  run_once: true
+
+- name: Stop if master group is empty
+  ansible.builtin.assert:
+    that: groups.get( 'master' ) != []
+  run_once: true
+
+- name: Stop if worker group is empty
+  ansible.builtin.assert:
+    that: groups.get( 'worker' ) != []
+  run_once: true
+
+- name: Warn if `network_plugin` is `none`
+  ansible.builtin.debug:
+    msg: |
+      "WARNING! => `network_plugin` is set to `none`. The network configuration will be skipped.
+      The cluster won't be ready to use, we recommend to select one of the available plugins"
+  when:
+    - network_plugin == 'none'
+
+- name: Stop if even number of etcd hosts
+  ansible.builtin.assert:
+    that: groups.get('etcd', groups.etcd) | length is not divisibleby 2
+  run_once: true
+
+- name: Guarantee that enough network address space is available for all pods
+  ansible.builtin.assert:
+    that: "{{ (kubernetes.kubelet.max_pods | default(110)) | int <= (2 ** (32 - kubernetes.node_prefix | int)) - 2 }}"
+    msg: "Do not schedule more pods on a node than inet addresses are available."
+  when:
+    - ('etcd' in group_names or 'master' in group_names or 'worker' in group_names)
+    - network_plugin not in ['calico', 'none']
+    - kubernetes.ipv4_stack | bool
+
+- name: "Check that kubernetes.service_addresses is a network range"
+  ansible.builtin.assert:
+    that:
+      - kubernetes.service_addresses | ansible.utils.ipaddr('net') is not false
+    msg: "kubernetes.service_addresses = '{{ kubernetes.service_addresses }}' is not a valid network range"
+  run_once: true
+  when: kubernetes.ipv4_stack | bool
+
+- name: "Check that kubernetes.pods_subnet is a network range"
+  ansible.builtin.assert:
+    that:
+      - kubernetes.pods_subnet | ansible.utils.ipaddr('net') is not false
+    msg: "kubernetes.pods_subnet = '{{ kubernetes.pods_subnet }}' is not a valid network range"
+  run_once: true
+  when: kubernetes.ipv4_stack | bool
+
+- name: "Check that kubernetes.pods_subnet does not collide with kubernetes.service_addresses"
+  ansible.builtin.assert:
+    that:
+      - kubernetes.pods_subnet | ansible.utils.ipaddr(kubernetes.service_addresses) | string == 'None'
+    msg: "kubernetes.pods_subnet cannot be the same network segment as kubernetes.service_addresses"
+  run_once: true
+  when: kubernetes.ipv4_stack | bool
+
+- name: "Check that ipv4 IP range is enough for the nodes"
+  ansible.builtin.assert:
+    that:
+      - 2 ** (kubernetes.node_prefix - kubernetes.pods_subnet | ansible.utils.ipaddr('prefix')) >= (groups['master'] | length + groups['worker'] | length)
+    msg: "Not enough ipv4 IPs are available for the desired node count."
+  when:
+    - kubernetes.ipv4_stack | bool
+    - network_plugin != 'calico'
+  run_once: true
+
+- name: "Check that kubernetes.service_addresses_ipv6 is a network range"
+  ansible.builtin.assert:
+    that:
+      - kubernetes.service_addresses_ipv6 | ansible.utils.ipaddr('net')
+    msg: "kubernetes.service_addresses_ipv6 = '{{ kubernetes.service_addresses_ipv6 }}' is not a valid network range"
+  run_once: true
+  when: kubernetes.ipv6_stack | bool
+
+- name: "Check that kubernetes.pods_subnet_ipv6 is a network range"
+  ansible.builtin.assert:
+    that:
+      - kubernetes.pods_subnet_ipv6 | ansible.utils.ipaddr('net')
+    msg: "kubernetes.pods_subnet_ipv6 = '{{ kubernetes.pods_subnet_ipv6 }}' is not a valid network range"
+  run_once: true
+  when: kubernetes.ipv6_stack | bool
+
+- name: "Check that kubernetes.pods_subnet_ipv6 does not collide with kubernetes.service_addresses_ipv6"
+  ansible.builtin.assert:
+    that:
+      - kubernetes.pods_subnet_ipv6 | ansible.utils.ipaddr(kubernetes.service_addresses_ipv6) | string == 'None'
+    msg: "kubernetes.pods_subnet_ipv6 cannot be the same network segment as kubernetes.service_addresses_ipv6"
+  run_once: true
+  when: kubernetes.ipv6_stack | bool
+
+- name: "Check that ipv6 IP range is enough for the nodes"
+  ansible.builtin.assert:
+    that:
+      - 2 ** (kubernetes.network_node_prefix_ipv6 - kubernetes.pods_subnet_ipv6 | ansible.utils.ipaddr('prefix')) >= (groups['master'] | length + groups['worker'] | length)
+    msg: "Not enough ipv6 IPs are available for the desired node count."
+  when:
+    - kubernetes.ipv6_stack | bool
+    - network_plugin != 'calico'
+  run_once: true
+
+- name: Stop if unsupported options selected
+  ansible.builtin.assert:
+    that:
+      - network_plugin in ['flannel', 'calico', 'cilium', 'kube-router', 'none']
+      - kubernetes.proxy.mode in ['iptables', 'ipvs', 'nftables']
+    msg: The selected choice is not supported
+  run_once: true
+
+- name: Ensure minimum containerd version
+  ansible.builtin.assert:
+    that: containerd.version is version("1.3.7", '>=')
+    msg: "containerd.version is too low. Minimum version 1.3.7"
+  run_once: true
+
+- name: Warn if kube-proxy ipvs is used with Kubernetes >= 1.35.0
+  ansible.builtin.debug:
+    msg: |
+      "WARNING! => Kubernetes {{ kubernetes.version }} with kube-proxy ipvs mode is not recommended.
+      Consider switching to nftables or eBPF-based proxy."
+  when:
+    - kubernetes.version is defined
+    - kubernetes.proxy.mode == 'ipvs'
+    - kubernetes.version | regex_replace('v') is version('1.35.0', '>=')
+  run_once: true

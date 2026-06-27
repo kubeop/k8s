@@ -1,28 +1,19 @@
 # Download offline package
 download:
-  # 离线包系统架构, 支持amd64和arm64
+  # 离线包系统架构, 支持 amd64 和 arm64
   arch: amd64
   # 离线包保存目录，节点安装包从该目录拷贝
   dest: /data/mirrors/k8s
-  # 下载超时时间
+  # 下载超时时间（单位：秒）
   timeout: 60
   # 重试次数
   retries: 4
-  # 重试的时间间隔
+  # 重试间隔（单位：秒）
   retry_stagger: 5
 
-# NTP Settings
-ntp:
-  # 需要自定义NTP服务器时需设置为true
-  manage_config: false
-  servers:
-    - "ntp1.aliyun.com iburst"
-    - "ntp2.aliyun.com iburst"
-    - "ntp3.aliyun.com iburst"
-    - "ntp4.aliyun.com iburst"
-
-# Repository 软件源
-repo:
+# Mirrors Settings
+mirrors:
+  # NVIDIA Container Toolkit 镜像源配置
   # https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html
   # 官方源
   # https://nvidia.github.io/libnvidia-container
@@ -37,54 +28,85 @@ repo:
       baseurl: "https://mirrors.ustc.edu.cn/libnvidia-container/stable/deb/$(ARCH)"
       gpgkey: "https://mirrors.ustc.edu.cn/libnvidia-container/gpgkey"
 
-security:
-  # 关闭或开启selinux, true为开启, false为关闭
-  selinux: false
 
-# Kubernetes Cert
-cert:
-  # 签发集群证书保存目录，默认签发10年有限期证书
+# System Settings
+system:
+  # 系统时区, 可选值请参考 https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+  timezone: Asia/Shanghai
+  # 强烈建议在生产环境中禁用密码认证, 使用 SSH 密钥认证来提升安全性
+  allow_password_authentication: true
+  # ssh key path, 当禁用密码认证时, 会自动从该路径读取公钥并添加到目标节点 authorized_keys 文件中
+  ssh_key_path: /root/.ssh/id_rsa.pub
+  # Kubernetes 通常要求禁用防火墙
+  firewalld_enabled: false
+  # 仅当集群节点需要进行 SELinux 加固时启用
+  selinux_enabled: false
+  # ntp_enabled 如果设置为 false, 则节点 NTP 配置将保持不变 (通常由 chronyd 或 systemd-timesyncd 管理)
+  ntp_enabled: false
+  ntp_servers:
+    - "ntp1.aliyun.com iburst"
+    - "ntp2.aliyun.com iburst"
+    - "ntp3.aliyun.com iburst"
+    - "ntp4.aliyun.com iburst"
+
+
+# Kubernetes Certificates
+certificates:
+  # 签发集群证书保存目录
   dir: /opt/certs
-  # 签发证书大小
+  # RSA 密钥长度, 2048 or 4096, 当使用 ECC 算法时, 该参数无效
   size: 2048
-  # 签发证书的时间
+  # 签发证书的时间, 默认签发10年有限期证书
   day: 3650d
   # 证书加密算法 RSA or ECC
   type: RSA
+
+
+# High Availability
+loadbalance:
+  # 负载均衡器IP或VIP
+  ip: 10.44.105.100
+  # 使用域名访问, 该域名需要在 DNS 中解析到负载均衡器IP或VIP
+  # domain_name: apiserver.example.com
+  # Kubernetes API Server 负载均衡器监听端口
+  port: 6443
+  # 需要额外IP访问 API Server 时开启
+  # access_domain:
+  #   - apiserver.example.com
+  # access_ip:
+  #   - 101.133.238.222
+
 
 # https://github.com/etcd-io/etcd
 etcd:
   # etcd 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/etcd-io/etcd/releases/download
   # etcd 版本
-  version: v3.6.12
+  # 应与 kubernetes 中的 SupportedEtcdVersion 保持一致:
+  #   https://github.com/kubernetes/kubernetes/blob/v1.36.2/cmd/kubeadm/app/constants/constants.go
+  version: v3.6.8
   # etcd 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
-  data_dir: "/var/lib/etcd"
-
-# High Availability
-# kube-apiserver负载均衡的信息
-# 如使用haproxy + keepalived请填写VIP及端口
-# 如使用公有云负载均衡请填写负载均衡IP及端口（需再安装之前自行配置）
-# 如使用域名，需提前配置解析。不使用域名时，请注释掉
-# 如使用haproxy + keepalived ，并且跟master节点部署在一起时，请修改port以避免端口冲突
-loadbalance:
-  ip: 10.43.75.200
-  port: 6443
-  # domain_name: apiserver.kubeop.com
-  # access_ip:
-  #   - 10.43.75.200
+  data_dir: /var/lib/etcd
+  # 额外参数
+  extra_flags:
+    # 设置后端数据库可使用最大大小, 最大推荐8G
+    quota-backend-bytes: 8589934592
+    # Follower 多久没收到心跳就开始选举, 一般为heartbeat-interval × (5～10), 同机房或低延迟建议设置为 1000ms, 跨可用区或网络偶发抖动建议设置为 3000ms
+    election-timeout: 3000
+    # Leader 向 Follower 发心跳的频率, 同机房或低延迟建议设置为 100ms, 跨可用区或网络偶发抖动建议设置为 200ms
+    heartbeat-interval: 200
+    # 每 N 次写事务触发一次 MVCC snapshot + compact, 默认 10000 一般够用, 极高频写（大量 Pod / ConfigMap / Lease）, 建议设置为 50000
+    snapshot-count: 50000
 
 # https://github.com/kubernetes/kubernetes
 kubernetes:
-  # kubernetes 二进制安装包下载地址
-  # 因官方下载源调整，调整后下载较慢，默认使用DaoCloud二进制加速下载
+   # kubernetes 二进制安装包下载地址
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
-  # 从 v1.35.0 版本开始，移除了 cgroup v1 的支持，仅支持 cgroup v2 的系统安装部署
   version: v1.36.2
-  # Configure IPv4 Stack networking
+  # 配置 IPv4 协议栈网络
   ipv4_stack: true
-  # Configure IPv6 Stack networking
+  # 配置 IPv6 协议栈网络
   ipv6_stack: false
   # 集群Pod网段
   pods_subnet: 172.16.0.0/12
@@ -97,26 +119,50 @@ kubernetes:
   # 节点Pod网段掩码大小
   node_prefix: 25
   node_prefix_ipv6: 120
-  # 节点最大Pod数量
-  kubelet_max_pods: 110
-  # kubelet 数据目录，如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
-  kubelet_dir: "/var/lib/kubelet"
-  # kube-proxy模式, 支持 iptables, ipvs, nftables.
-  # https://kubernetes.io/zh-cn/blog/2025/02/28/nftables-kube-proxy/
-  # 从 v1.35.0 开始 ipvs 模式标记废弃，推荐迁移至 nftables 模式
-  kube_proxy_mode: nftables
-  # 配置kube-proxy的ipvs调度策略，支持rr(轮询),wrr(加权轮训),lc(最少连接数),wlc(加权最少连接数),sh(源地址哈希),dh(目标地址哈希),sed(最短预期延迟),nq(最少队列)
-  scheduler: rr
-  # 使用 MetalLB, kube-vip 必须设置为 true 才能正常工作
-  strict_arp: false
+  # kube-apiserver 组件
+  apiserver:
+    # 额外参数
+    extra_flags:
+      default-not-ready-toleration-seconds: 300
+      default-unreachable-toleration-seconds: 300
+  # kube-controller-manager 组件
+  controller_manager:
+    # 额外参数
+    extra_flags:
+      horizontal-pod-autoscaler-sync-period: 30s
+  # kube-scheduler 组件
+  scheduler:
+    # 额外参数
+    extra_flags: {}
+  # kubelet 组件
+  kubelet:
+    # 节点最大Pod数量
+    max_pods: 110
+    # kubelet 数据目录, 如使用多个目录映射同一块数据盘的方式，请勿修改默认目录
+    data_dir: /var/lib/kubelet
+    # 额外参数
+    extra_flags:
+      evictionPressureTransitionPeriod: 5m0s
+      evictionHard:
+        imagefs.available: 10%
+        memory.available: 500Mi
+        nodefs.available: 10%
+        nodefs.inodesFree: 5%
+  # kube-proxy 组件
+  proxy:
+    # kube-proxy 模式, 支持 iptables, ipvs, nftables.
+    # 从 v1.35.0 开始 ipvs 模式标记废弃，推荐迁移至 nftables 模式
+    # https://kubernetes.io/zh-cn/blog/2025/02/28/nftables-kube-proxy/
+    mode: nftables
+    # 配置kube-proxy的ipvs调度策略
+    scheduler: rr
+    # 使用 MetalLB, kube-vip 必须设置为 true 才能正常工作
+    strict_arp: false
+    # kube-proxy 替换为网络插件的代理模式
+    replacement: false
+    # 额外参数
+    extra_flags: {}
 
-# https://github.com/helm/helm
-helm:
-  enabled: true
-  # helm 安装包下载地址
-  download_url: https://files.m.daocloud.io/get.helm.sh
-  # helm 版本
-  version: v4.2.1
 
 # https://github.com/containernetworking/plugins
 cniplugins:
@@ -125,12 +171,14 @@ cniplugins:
   # cni-plugins 版本
   version: v1.9.1
 
+
 # https://github.com/kubernetes-sigs/cri-tools
 critools:
   # cri-tools 安装包下载地址
   download_url: https://files.m.daocloud.io/github.com/kubernetes-sigs/cri-tools/releases/download
   # cri-tools 版本
   version: v1.36.0
+
 
 # https://github.com/opencontainers/runc
 runc:
@@ -139,6 +187,7 @@ runc:
   # runc 版本，建议根据containerd版本对应
   # https://github.com/containerd/containerd/blob/v2.3.1/script/setup/runc-version
   version: v1.4.2
+
 
 # https://github.com/containerd/containerd
 containerd:
@@ -167,7 +216,7 @@ containerd:
     address: ""
     grpc_histogram: false
   cri:
-    sandbox_image: 
+    sandbox_image:
       repo: "registry.aliyuncs.com/google_containers/pause"
       tag: "3.10.2"
     max_container_log_line_size: 16384
@@ -211,26 +260,24 @@ containerd:
     sampling_ratio: 1.0
     service_name: "containerd"
 
-# Network Plugin
-network_plugin: calico
-# cilium need linux kernel >= 4.9.17
-cilium:
-  # https://github.com/cilium/cilium
-  version: v1.19.4
-  # {{cilium.registry}}/operator:{{cilium.version}}
-  # {{cilium.registry}}/cilium:{{cilium.version}}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
-  # "disabled" or "vxlan" or "geneve"
-  network_mode: vxlan
-  # Enable if you want to make use of hostPort mappings
-  enable_portmap: false
-  # Set mtu
-  mtu: ""
-  # Set extra vars
-  config_extra_vars: {}
 
+# Kubernetes Addons
+# https://github.com/helm/helm
+helm:
+  enabled: true
+  # helm 安装包下载地址
+  download_url: https://files.m.daocloud.io/get.helm.sh
+  # helm 版本
+  version: v4.2.1
+
+
+# Network Plugin
+# 支持选项: flannel, calico, cilium, none
+network_plugin: calico
+
+# https://github.com/flannel-io/flannel
 flannel:
-  # https://github.com/flannel-io/flannel
+  # flannel 版本
   version: v0.28.5
   plugin_version: v1.9.1-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
@@ -246,21 +293,20 @@ flannel:
   directRouting: false
   # 传出数据包的所需 MTU，如果未定义，则使用外部接口的 MTU。
   # mtu: 1500
-  # 开启nftables模式，需确保内核版本>=4.18，并且kube-proxy_mode设置为nftables
-  # EnableNFTables: true
+  # 开启nftables模式支持，需确保内核版本>=4.18，并且kube-proxy mode设置为nftables
+  nftables_enabled: false
 
+# https://github.com/projectcalico/calico
 calico:
-  # calicoctl 安装包下载地址
-  download_url: https://files.m.daocloud.io/github.com/projectcalico/calico/releases/download
-  # https://github.com/projectcalico/calico
+  # calico 版本
   version: v3.32.0
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
+  # {{calico.registry}}/typha:{{ calico.version }}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
-  # Calico NFTable Mode Support (tech preview 3.29)
   # Valid option: Disabled (default), Enabled
   nftable_mode: Disabled
   # mtu 默认为0，表示自动自动检测
@@ -269,32 +315,61 @@ calico:
   # ip_autodetection_method: "interface=eth.*"
   # ipv6_autodetection_method: "interface=eth.*"
 
-kuberouter:
-  # https://github.com/cloudnativelabs/kube-router
-  version: v2.10.0
-  # {{kube-router.registry}}/kube-router
+cilium:
+  # cilium 安装包下载地址
+  download_url: https://files.m.daocloud.io/raw.githubusercontent.com/cilium/charts/master
+  # cilium 版本
+  version: v1.19.5
+  # {{cilium.registry}}/operator-generic:{{cilium.version}}
+  # {{cilium.registry}}/cilium:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
-  # Setups node CNI to allow hairpin mode, requires node reboots, see
-  # https://github.com/cloudnativelabs/kube-router/blob/master/docs/user-guide.md#hairpin-mode
-  # 即让Pod可以通过Service访问自己
-  hairpin_mode: false
-  # 启用Pod网络，通过iBGP通告和学习到Pod的路由
-  run_router: true
-  # 启用网络策略，设置iptables为Pod提供入口防火墙
-  run_firewall: true
-  # 启用服务代理，为Kubernetes服务设置IPVS
-  run_service_proxy: false
-  # 启用DSR模式，即直接路由模式
-  router_enable_dsr: false
-  # 添加额外参数
-  router_extra_args: []
+  # Set extra flags
+  extra_flags:
+    MTU: 1450
+    operator.replicas: 2
+    image.repository: "registry.cn-hangzhou.aliyuncs.com/devops-system/cilium"
+    image.useDigest: false
+    operator.image.repository: "registry.cn-hangzhou.aliyuncs.com/devops-system/operator"
+    operator.image.useDigest: false
+    routingMode: tunnel
+    autoDirectNodeRoutes: false
+    tunnelProtocol: vxlan
+    ipam.mode: cluster-pool
+    ipam.operator.clusterPoolIPv4PodCIDRList: "{ {{- kubernetes.pods_subnet -}} }"
+    ipam.operator.clusterPoolIPv4MaskSize: "{{kubernetes.node_prefix}}"
+    kubeProxyReplacement: true
+    k8sServiceHost: "{{ loadbalance.ip }}" # 负载均衡器IP或域名
+    k8sServicePort: "{{ loadbalance.port }}"
+    bpf.masquerade: true
+    bpf.hostRouting: true
+    bpf.ctTcpMax: 1048576
+    bpf.ctAnyMax: 524288
+    bpf.natMax: 1048576
+    bpf.lbMapMax: 131072
+    bandwidthManager.enabled: true
+    loadBalancer.mode: snat
+    loadBalancer.acceleration: best-effort
+    envoy.enabled: false
+    hubble.enabled: true
+    hubble.relay.enabled: false
+    hubble.metrics.enabled: "{dns,drop,tcp,flow}"
+    resources.requests.cpu: 500m
+    resources.requests.memory: 512Mi
+    resources.limits.cpu: 5000m 
+    resources.limits.memory: 2048Mi
+    operator.resources.requests.cpu: 200m
+    operator.resources.requests.memory: 256Mi
+    operator.resources.limits.cpu: 1000m
+    operator.resources.limits.memory: 1024Mi
 
-# Addons
+
+# Kubernetes Apps
 coredns:
   # https://github.com/coredns/coredns
   version: 1.14.4
   # {{coredns.registry}}/coredns:{{coredns.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+
 nodelocaldns:
   enabled: true
   version: 1.26.8
@@ -302,18 +377,21 @@ nodelocaldns:
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   ip: "169.254.20.10"
   ip6: "fd00::"
+
 metrics_server:
   # https://github.com/kubernetes-sigs/metrics-server
   enabled: true
   version: v0.8.1
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+
 npd:
   # https://github.com/kubernetes/node-problem-detector
   enabled: false
   version: v1.35.2
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+
 nvidia_device_plugin:
   # https://github.com/NVIDIA/k8s-device-plugin
   enabled: false

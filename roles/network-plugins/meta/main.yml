@@ -1,21 +1,16 @@
 ---
 dependencies:
-  - role: network-plugins/cilium
-    when: network_plugin == 'cilium'
+  - role: network-plugins/flannel
+    when: network_plugin == 'flannel'
     tags:
-      - cilium
+      - flannel
 
   - role: network-plugins/calico
     when: network_plugin == 'calico'
     tags:
       - calico
 
-  - role: network-plugins/flannel
-    when: network_plugin == 'flannel'
+  - role: network-plugins/cilium
+    when: network_plugin == 'cilium'
     tags:
-      - flannel
-
-  - role: network-plugins/kube-router
-    when: network_plugin == 'kuberouter'
-    tags:
-      - kuberouter
+      - cilium

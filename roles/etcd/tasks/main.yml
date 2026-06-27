@@ -1,6 +1,6 @@
 ---
-- name: "Create etcd user group"
-  group:
+- name: Etcd | Create etcd group
+  ansible.builtin.group:
     name: etcd
     gid: 201
     system: true
@@ -8,8 +8,8 @@
     - create_etcd_group
     - install_etcd
 
-- name: Create etcd user
-  user:
+- name: Etcd | Create etcd user
+  ansible.builtin.user:
     name: etcd
     uid: 201
     group: etcd
@@ -22,9 +22,9 @@
     - create_etcd_user
     - install_etcd
 
-- name: "Sync etcd"
-  unarchive:
-    src: "{{ download.dest }}/etcd/{{ etcd.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/etcd-{{ etcd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
+- name: Etcd | Unarchive etcd
+  ansible.builtin.unarchive:
+    src: "{{ download.dest }}/etcd/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}.tar.gz"
     dest: /tmp/
     remote_src: no
     extra_opts:
@@ -34,8 +34,8 @@
     - "Documentation"
   tags: install_etcd
 
-- name: "Install etcd"
-  copy:
+- name: Etcd | Install etcd
+  ansible.builtin.copy:
     src: "{{ item.src }}"
     dest: "/usr/bin/"
     owner: root
@@ -50,27 +50,27 @@
   notify:
     - restart etcd
 
-- name: "Distribution certs"
-  copy:
+- name: Etcd | Distribution certs
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "/etc/etcd/pki/"
     owner: root
     group: root
     mode: 0644
   with_items:
-    - "{{ cert.dir }}/etcd-ca.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.key"
+    - "{{ certificates.dir }}/etcd-ca.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-server.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-peer.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/etcd-healthcheck-client.key"
   tags:
     - dis_etcd_certs
     - dis_certs
 
-- name: "Create etcd data directory"
-  file:
+- name: Etcd | Create etcd data directory
+  ansible.builtin.file:
     path: "{{ etcd.data_dir }}"
     owner: etcd
     group: etcd
@@ -81,8 +81,16 @@
   notify:
     - restart etcd
 
-- name: "Generate etcd configure"
-  template:
+- name: Etcd | Generate etcd configure
+  ansible.builtin.template:
+    src: "etcd.conf.j2"
+    dest: "/etc/etcd/etcd.conf"
+  tags: dis_etcd_config
+  notify:
+    - restart etcd
+
+- name: Etcd | Generate etcd systemd unit
+  ansible.builtin.template:
     src: "etcd.service.j2"
     dest: "/usr/lib/systemd/system/etcd.service"
   tags: dis_etcd_config

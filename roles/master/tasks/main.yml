@@ -1,13 +1,13 @@
 ---
-- name: "Create kubernetes user group"
-  group:
+- name: Control Plane | Create kubernetes group"
+  ansible.builtin.group:
     name: kube
     gid: 200
     system: true
   tags: create_kube_group
 
-- name: Create kubernetes user
-  user:
+- name: Control Plane | Create kubernetes user
+  ansible.builtin.user:
     name: kube
     uid: 200
     group: kube
@@ -17,8 +17,8 @@
     system: true
   tags: create_kube_user
 
-- name: "Create kubernetes config directory"
-  file:
+- name: Control Plane | Create kubernetes config directory
+  ansible.builtin.file:
     path: "{{ item }}"
     owner: root
     group: root
@@ -29,8 +29,8 @@
     - "/etc/kubernetes/pki"
   tags: dir
 
-- name: "Create kubernetes log directory"
-  file:
+- name: Control Plane | Create kubernetes log directory"
+  ansible.builtin.file:
     path: "{{ item }}"
     owner: kube
     group: kube
@@ -41,18 +41,18 @@
     - "/usr/libexec/kubernetes"
   tags: dir
 
-- name: "Install kubectl"
-  copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/kubectl"
+- name: Control Plane | Install kubectl
+  ansible.builtin.copy:
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/kubectl"
     dest: "/usr/bin/"
     owner: root
     group: root
     mode: 0755
   tags: install_kubectl
 
-- name: "Install master"
-  copy:
-    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/{{ item }}"
+- name: Control Plane | Install master components
+  ansible.builtin.copy:
+    src: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{%- if ansible_architecture == 'x86_64' -%}amd64{%- else -%}arm64{%- endif -%}/{{ item }}"
     dest: "/usr/bin/"
     owner: root
     group: root
@@ -63,49 +63,49 @@
     - kube-scheduler
   tags: install_master
 
-- name: "Distribution master certs"
-  copy:
+- name: Control Plane | Distribution master certs
+  ansible.builtin.copy:
     src: "{{ item }}"
     dest: "/etc/kubernetes/pki/"
     owner: root
     group: root
     mode: 0644
   with_items:
-    - "{{ cert.dir }}/ca.key"
-    - "{{ cert.dir }}/ca.pem"
-    - "{{ cert.dir }}/sa.key"
-    - "{{ cert.dir }}/sa.pub"
-    - "{{ cert.dir }}/etcd-ca.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.pem"
-    - "{{ cert.dir }}/front-proxy-ca.key"
-    - "{{ cert.dir }}/front-proxy-ca.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/scheduler.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/scheduler.pem"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/admin.key"
-    - "{{ cert.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/admin.pem"
+    - "{{ certificates.dir }}/ca.key"
+    - "{{ certificates.dir }}/ca.pem"
+    - "{{ certificates.dir }}/sa.key"
+    - "{{ certificates.dir }}/sa.pub"
+    - "{{ certificates.dir }}/etcd-ca.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-etcd-client.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/apiserver-kubelet-client.pem"
+    - "{{ certificates.dir }}/front-proxy-ca.key"
+    - "{{ certificates.dir }}/front-proxy-ca.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/front-proxy-client.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/controller-manager.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/scheduler.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/scheduler.pem"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/admin.key"
+    - "{{ certificates.dir }}/{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}/admin.pem"
   tags:
     - dis_master_certs
     - dis_certs
 
-- name: "Get token-id"
-  shell: "cat {{ cert.dir }}/token | grep -v '^#' | awk -F '.' '{print $1}'"
+- name: Control Plane | Get bootstrap token id
+  ansible.builtin.shell: "cat {{ certificates.dir }}/token | grep -v '^#' | awk -F '.' '{print $1}'"
   register: token_id
   connection: local
   tags:
     - dis_kubectl_kubeconfig
     - dis_master_kubeconfig
 
-- name: "Distribution kubectl kubeconfig"
-  template:
+- name: Control Plane | Distribution kubectl kubeconfig
+  ansible.builtin.template:
     src: "admin.kubeconfig.j2"
     mode: 0600
     dest: "~/.kube/config"
@@ -113,8 +113,8 @@
     - dis_kubectl_kubeconfig
     - dis_master_kubeconfig
 
-- name: "Distribution master kubeconfig"
-  template:
+- name: Control Plane | Distribution master kubeconfig
+  ansible.builtin.template:
     src: "{{ item.src }}"
     owner: root
     group: root
@@ -125,8 +125,8 @@
     - {src: "scheduler.kubeconfig.j2",dest: "/etc/kubernetes/scheduler.kubeconfig" }
   tags: dis_master_kubeconfig
 
-- name: "Distribution master config"
-  template:
+- name: Control Plane | Distribution master config
+  ansible.builtin.template:
     src: "{{ item.src }}"
     owner: root
     group: root
@@ -139,8 +139,8 @@
     - {src: "audit-policy.yaml.j2",dest: "/etc/kubernetes/audit-policy.yaml" }
   tags: dis_master_config
 
-- name: "Distribution master systemd unit"
-  template:
+- name: Control Plane | Distribution master systemd unit
+  ansible.builtin.template:
     src: "{{ item.src }}"
     owner: root
     group: root
@@ -152,8 +152,8 @@
     - {src: "kube-scheduler.service.j2",dest: "/usr/lib/systemd/system/kube-scheduler.service" }
   tags: dis_master_systemd
 
-- name: "Restart kube-apiserver"
-  systemd:
+- name: Control Plane | Restart kube-apiserver
+  ansible.builtin.systemd:
     name: kube-apiserver
     state: restarted
     daemon_reload: yes
@@ -161,8 +161,8 @@
     masked: false
   tags: restart_apiserver
 
-- name: "Restart kube-controller-manager"
-  systemd:
+- name: Control Plane | Restart kube-controller-manager
+  ansible.builtin.systemd:
     name: kube-controller-manager
     state: restarted
     daemon_reload: yes
@@ -170,8 +170,8 @@
     masked: false
   tags: restart_controller
 
-- name: "Restart kube-scheduler"
-  systemd:
+- name: Control Plane | Restart kube-scheduler
+  ansible.builtin.systemd:
     name: kube-scheduler
     state: restarted
     daemon_reload: yes
@@ -179,38 +179,44 @@
     masked: false
   tags: restart_scheduler
 
-- name: "Add kubectl completion"
-  lineinfile:
-    dest: "/etc/profile"
-    line: "source <(kubectl completion bash)"
-    state: present
+- name: Control Plane | Add kubectl completion
+  ansible.builtin.shell: "kubectl completion bash >/etc/bash_completion.d/kubectl.sh"
+  tags: dis_kubectl_completion
 
-- name: "Waiting kube-apiserver starting"
-  wait_for:
+- name: Control Plane | kubectl bash completion file permissions
+  ansible.builtin.file:
+    path: "/etc/bash_completion.d/kubectl.sh"
+    mode: 0755
+    owner: root
+    group: root
+  tags: dis_kubectl_completion
+
+- name: Control Plane | Waiting for kube-apiserver starting
+  ansible.builtin.wait_for:
     host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 6443
     delay: 5
     sleep: 2
   tags: healthcheck
 
-- name: "Waiting kube-controller-manager starting"
-  wait_for:
+- name: Control Plane | Waiting for kube-controller-manager starting
+  ansible.builtin.wait_for:
     host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 10257
     delay: 5
     sleep: 2
   tags: healthcheck
 
-- name: "Waiting kube-scheduler starting"
-  wait_for:
+- name: Control Plane | Waiting for kube-scheduler starting
+  ansible.builtin.wait_for:
     host: "{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}{{ ansible_default_ipv6.address }}{%- endif -%}"
     port: 10259
     delay: 5
     sleep: 2
   tags: healthcheck
 
-- name: "Kube-apiserver health check"
-  uri:
+- name: Control Plane | Kube-apiserver healthcheck
+  ansible.builtin.uri:
     url: "https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:6443/healthz"
     return_content: yes
     validate_certs: no
@@ -220,8 +226,8 @@
   failed_when: "'ok' not in apiserver.content"
   tags: healthcheck
 
-- name: "Kube-controller-manager health check"
-  uri:
+- name: Control Plane | Kube-controller-manager healthcheck
+  ansible.builtin.uri:
     url: "https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:10257/healthz"
     return_content: yes
     validate_certs: no
@@ -229,8 +235,8 @@
   failed_when: "'ok' not in controller.content"
   tags: healthcheck
 
-- name: "Kube-scheduler health check"
-  uri:
+- name: Control Plane | Kube-scheduler healthcheck
+  ansible.builtin.uri:
     url: "https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:10259/healthz"
     return_content: yes
     validate_certs: no

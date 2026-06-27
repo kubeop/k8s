@@ -1,23 +1,23 @@
 ---
-- name: "Create download directory"
-  file:
-    path: "{{ download.dest }}/{{ item }}/{{ download.arch }}"
+- name: Download | Create download directory
+  ansible.builtin.file:
+    path: "{{ download.dest }}/{{ item }}"
     state: directory
   with_items:
     - etcd/{{ etcd.version }}
-    - kubernetes/{{ kubernetes.version }}
+    - kubernetes/{{ kubernetes.version }}/bin/linux/{{ download.arch }}
     - runc/{{ runc.version }}
     - cniplugins/{{ cniplugins.version }}
     - critools/{{ critools.version }}
     - containerd/v{{ containerd.version }}
-    - calico/{{ calico.version }}
-    - helm/{{ helm.version }}
+    - helm
+    - cilium
   tags: download_dir
 
-- name: "Download etcd"
-  get_url:
+- name: Download | Etcd
+  ansible.builtin.get_url:
     url: "{{ etcd.download_url }}/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-{{ download.arch }}.tar.gz"
-    dest: "{{ download.dest }}/etcd/{{ etcd.version }}/{{ download.arch }}"
+    dest: "{{ download.dest }}/etcd/{{ etcd.version }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -27,10 +27,10 @@
   delay: "{{ download.retry_stagger | default(5) }}"
   tags: download_etcd
 
-- name: "Download kubernetes"
-  get_url:
+- name: Download | Kubernetes
+  ansible.builtin.get_url:
     url: "{{ kubernetes.download_url }}/{{ kubernetes.version }}/bin/linux/{{ download.arch }}/{{ item }}"
-    dest: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/{{ download.arch }}"
+    dest: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{{ download.arch }}"
     timeout: "{{ download.timeout }}"
   with_items:
     - kube-apiserver
@@ -47,10 +47,10 @@
   delay: "{{ download.retry_stagger | default(5) }}"
   tags: download_kubernetes
 
-- name: "Download runc"
-  get_url:
+- name: Download | Runc
+  ansible.builtin.get_url:
     url: "{{ runc.download_url }}/{{ runc.version }}/runc.{{ download.arch }}"
-    dest: "{{ download.dest }}/runc/{{ runc.version }}/{{ download.arch }}"
+    dest: "{{ download.dest }}/runc/{{ runc.version }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -60,10 +60,10 @@
   delay: "{{ download.retry_stagger | default(5) }}"
   tags: download_runc
 
-- name: "Download cniplugins"
-  get_url:
+- name: Download | cniplugins
+  ansible.builtin.get_url:
     url: "{{ cniplugins.download_url }}/{{ cniplugins.version }}/cni-plugins-linux-{{ download.arch }}-{{ cniplugins.version }}.tgz"
-    dest: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}/{{ download.arch }}"
+    dest: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -73,10 +73,10 @@
   delay: "{{ download.retry_stagger | default(5) }}"
   tags: download_cniplugins
 
-- name: "Download critools"
-  get_url:
+- name: Download | critools
+  ansible.builtin.get_url:
     url: "{{ critools.download_url }}/{{ critools.version }}/crictl-{{ critools.version }}-linux-{{ download.arch }}.tar.gz"
-    dest: "{{ download.dest }}/critools/{{ critools.version }}/{{ download.arch }}"
+    dest: "{{ download.dest }}/critools/{{ critools.version }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -86,10 +86,10 @@
   delay: "{{ download.retry_stagger | default(5) }}"
   tags: download_critools
 
-- name: "Download containerd"
-  get_url:
+- name: Download | containerd
+  ansible.builtin.get_url:
     url: "{{ containerd.download_url }}/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-{{ download.arch }}.tar.gz"
-    dest: "{{ download.dest }}/containerd/v{{ containerd.version }}/{{ download.arch }}"
+    dest: "{{ download.dest }}/containerd/v{{ containerd.version }}"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -99,23 +99,10 @@
   delay: "{{ download.retry_stagger | default(5) }}"
   tags: download_containerd
 
-- name: "Download calicoctl"
-  get_url:
-    url: "{{ calico.download_url }}/{{ calico.version }}/calicoctl-linux-{{ download.arch }}"
-    dest: "{{ download.dest }}/calico/{{ calico.version }}/{{ download.arch }}"
-    timeout: "{{ download.timeout }}"
-  register: get_url_result
-  until: "'OK' in get_url_result.msg or
-      'file already exists' in get_url_result.msg or
-      get_url_result.status_code | default() == 304"
-  retries: "{{ download.retries }}"
-  delay: "{{ download.retry_stagger | default(5) }}"
-  tags: download_calicoctl
-
-- name: "Download helm"
-  get_url:
+- name: Download | helm
+  ansible.builtin.get_url:
     url: "{{ helm.download_url }}/helm-{{ helm.version }}-linux-{{ download.arch }}.tar.gz"
-    dest: "{{ download.dest }}/helm/{{ helm.version }}/{{ download.arch }}"
+    dest: "{{ download.dest }}/helm"
     timeout: "{{ download.timeout }}"
   register: get_url_result
   until: "'OK' in get_url_result.msg or
@@ -124,3 +111,16 @@
   retries: "{{ download.retries }}"
   delay: "{{ download.retry_stagger | default(5) }}"
   tags: download_helm
+
+- name: Download | cilium
+  ansible.builtin.get_url:
+    url: "{{ cilium.download_url }}/cilium-{{ cilium.version | replace('v', '') }}.tgz"
+    dest: "{{ download.dest }}/cilium"
+    timeout: "{{ download.timeout }}"
+  register: get_url_result
+  until: "'OK' in get_url_result.msg or
+      'file already exists' in get_url_result.msg or
+      get_url_result.status_code | default() == 304"
+  retries: "{{ download.retries }}"
+  delay: "{{ download.retry_stagger | default(5) }}"
+  tags: download_cilium

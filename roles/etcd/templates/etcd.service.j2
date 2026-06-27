@@ -6,42 +6,8 @@ Wants=network-online.target
 [Service]
 Type=notify
 User=etcd
-
-ExecStart=/usr/bin/etcd \
-         --name={{ ansible_hostname.split('-')[-2:] | join('-') | lower }} \
-         --data-dir={{ etcd.data_dir | default("/var/lib/etcd") }} \
-         --advertise-client-urls=https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2379 \
-         --initial-advertise-peer-urls=https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2380 \
-         --listen-peer-urls=https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2380 \
-         --listen-client-urls=https://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2379 \
-         --listen-metrics-urls=http://{%- if kubernetes.ipv4_stack and kubernetes.ipv6_stack -%}{{ ansible_default_ipv4.address }}{%- elif kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2381 \
-{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
-         --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname.split('-')[-2:] | join('-') | lower }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
-{% elif kubernetes.ipv4_stack %}
-         --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname.split('-')[-2:] | join('-') | lower }}=https://{{ host }}:2380{% if not loop.last %},{% endif %}{% endfor %} \
-{% else %}
-         --initial-cluster={% set pk = groups['etcd'] %}{% for host in pk %}{{ hostvars[host].hostname.split('-')[-2:] | join('-') | lower }}=https://[{{ host }}]:2380{% if not loop.last %},{% endif %}{% endfor %} \
-{% endif %}
-         --client-cert-auth=true \
-         --peer-client-cert-auth=true \
-         --cert-file=/etc/etcd/pki/etcd-server.pem \
-         --key-file=/etc/etcd/pki/etcd-server.key \
-         --peer-cert-file=/etc/etcd/pki/etcd-peer.pem \
-         --peer-key-file=/etc/etcd/pki/etcd-peer.key \
-         --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
-         --trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
-         --initial-cluster-state=new \
-         --initial-cluster-token=etcd-cluster \
-{% if etcd.version | regex_replace('v') is version("3.5.0","ge") %}
-         # ETCD 3.5.x issue
-         # https://groups.google.com/a/kubernetes.io/g/dev/c/B7gJs88XtQc/m/rSgNOzV2BwAJ?utm_medium=email&utm_source=footer
-         --feature-gates=InitialCorruptCheck=true \
-         --watch-progress-notify-interval=5s \
-{% endif %}
-         --election-timeout=3000 \
-         --heartbeat-interval=500 \
-         --snapshot-count=50000 \
-         --log-level=info
+EnvironmentFile=-/etc/etcd/etcd.conf
+ExecStart=/usr/bin/etcd $FLAG
 
 NotifyAccess=all
 Restart=always

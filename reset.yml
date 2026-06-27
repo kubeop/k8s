@@ -1,6 +1,6 @@
 ---
-- name: "Reset Cluster"
-  hosts: master worker
+- name: Reset Cluster
+  hosts: etcd master worker
   pre_tasks:
     - name: Reset Confirmation
       pause:

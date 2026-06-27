@@ -1,0 +1,216 @@
+---
+- name: Check if etcd binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/etcd/{{ etcd.version }}/etcd-{{ etcd.version }}-linux-{{ download.arch }}.tar.gz"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  delegate_to: localhost
+  register: etcd_binary_file
+  run_once: true
+
+- name: Assert etcd binary exists
+  ansible.builtin.assert:
+    that:
+      - etcd_binary_file.stat.exists
+    fail_msg: "Missing etcd binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if kubectl binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{{ download.arch }}/kubectl"
+  register: kubectl_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert kubectl binary exists
+  ansible.builtin.assert:
+    that:
+      - kubectl_binary_file.stat.exists
+    fail_msg: "Missing kubectl binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if kube-apiserver binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{{ download.arch }}/kube-apiserver"
+  register: apiserver_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert kube-apiserver binary exists
+  ansible.builtin.assert:
+    that:
+      - apiserver_binary_file.stat.exists
+    fail_msg: "Missing kube-apiserver binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if kube-controller-manager binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{{ download.arch }}/kube-controller-manager"
+  register: controller_manager_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert all kube-controller-manager binaries exist
+  ansible.builtin.assert:
+    that:
+      - controller_manager_binary_file.stat.exists
+    fail_msg: "Missing kube-controller-manager binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if kube-scheduler binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{{ download.arch }}/kube-scheduler"
+  register: scheduler_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert kube-scheduler binary exists
+  ansible.builtin.assert:
+    that:
+      - scheduler_binary_file.stat.exists
+    fail_msg: "Missing kube-scheduler binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if kubelet binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{{ download.arch }}/kubelet"
+  register: kubelet_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert kubelet binary exists
+  ansible.builtin.assert:
+    that:
+      - kubelet_binary_file.stat.exists
+    fail_msg: "Missing kubelet binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if kube-proxy binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/kubernetes/{{ kubernetes.version }}/bin/linux/{{ download.arch }}/kube-proxy"
+  register: proxy_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert kube-proxy binary exists
+  ansible.builtin.assert:
+    that:
+      - proxy_binary_file.stat.exists
+    fail_msg: "Missing kube-proxy binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if runc binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/runc/{{ runc.version }}/runc.{{ download.arch }}"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: runc_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert runc binary exists
+  ansible.builtin.assert:
+    that:
+      - runc_binary_file.stat.exists
+    fail_msg: "Missing runc binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if cniplugins binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/cniplugins/{{ cniplugins.version }}/cni-plugins-linux-{{ download.arch }}-{{ cniplugins.version }}.tgz"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: cniplugins_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert cniplugins binary exists
+  ansible.builtin.assert:
+    that:
+      - cniplugins_binary_file.stat.exists
+    fail_msg: "Missing cniplugins binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if critools binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/critools/{{ critools.version }}/crictl-{{ critools.version }}-linux-{{ download.arch }}.tar.gz"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: critools_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert critools binary exists
+  ansible.builtin.assert:
+    that:
+      - critools_binary_file.stat.exists
+    fail_msg: "Missing critools binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if containerd binary exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/containerd/v{{ containerd.version }}/containerd-{{ containerd.version }}-linux-{{ download.arch }}.tar.gz"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: containerd_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert containerd binary exists
+  ansible.builtin.assert:
+    that:
+      - containerd_binary_file.stat.exists
+    fail_msg: "Missing containerd binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if helm binary file exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/helm/helm-{{ helm.version }}-linux-{{ download.arch }}.tar.gz"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: helm_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert helm binary exists
+  ansible.builtin.assert:
+    that:
+      - helm_binary_file.stat.exists
+    fail_msg: "Missing helm binary"
+  delegate_to: localhost
+  run_once: true
+
+- name: Check if cilium binary file exists
+  ansible.builtin.stat:
+    path: "{{ download.dest }}/cilium/cilium-{{ cilium.version | replace('v', '') }}.tgz"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: cilium_binary_file
+  delegate_to: localhost
+  run_once: true
+
+- name: Assert cilium binary exists
+  ansible.builtin.assert:
+    that:
+      - cilium_binary_file.stat.exists
+    fail_msg: "Missing cilium binary"
+  delegate_to: localhost
+  run_once: true

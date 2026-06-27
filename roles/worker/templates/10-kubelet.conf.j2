@@ -12,5 +12,5 @@ KUBELET_ARGS="\
     --image-service-endpoint=unix://{{containerd.state}}/containerd.sock \
 {% endif %}
     --cert-dir=/etc/kubernetes/pki \
-    --root-dir={{ kubernetes.kubelet_dir | default("/var/lib/kubelet") }} \
+    --root-dir={{ kubernetes.kubelet.data_dir | default("/var/lib/kubelet") }} \
     --v=2"

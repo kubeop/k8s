@@ -10,12 +10,14 @@ acr_namespace = 'kubeop'
 
 images = {
     "quay.io/cilium/cilium": data['cilium']['version'],
-    "quay.io/cilium/operator": data['cilium']['version'],
+    "quay.io/cilium/operator-generic": data['cilium']['version'],
+    "quay.io/cilium/hubble-relay": data['cilium']['version'],
     "docker.io/flannel/flannel": data['flannel']['version'],
     "docker.io/flannel/flannel-cni-plugin": data['flannel']['plugin_version'],
     "docker.io/calico/kube-controllers": data['calico']['version'],
     "docker.io/calico/node": data['calico']['version'],
     "docker.io/calico/cni": data['calico']['version'],
+    "docker.io/calico/typha": data['calico']['version'],
     "docker.io/cloudnativelabs/kube-router": data['kuberouter']['version'],
     "docker.io/coredns/coredns": data['coredns']['version'],
     "registry.k8s.io/dns/k8s-dns-node-cache": data['nodelocaldns']['version'],
