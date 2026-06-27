@@ -299,7 +299,7 @@ flannel:
 # https://github.com/projectcalico/calico
 calico:
   # calico 版本
-  version: v3.32.0
+  version: v3.32.1
   # {{calico.registry}}/kube-controllers:{{calico.version}}
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
