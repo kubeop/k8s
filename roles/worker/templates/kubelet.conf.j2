@@ -41,8 +41,6 @@ clusterDNS:
 {% endif %}
 {% endif %}
 cpuManagerReconcilePeriod: 10s
-containerLogMaxSize: 200Mi
-containerLogMaxFiles: 10
 maxPods: {{ kubernetes.kubelet.max_pods | default(110) }}
 fileCheckFrequency: 20s
 httpCheckFrequency: 20s

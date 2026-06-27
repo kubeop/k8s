@@ -226,7 +226,6 @@
     state: present
   tags: install_app
 
-
 - name: Init | Install base application
   ansible.builtin.package:
     name:

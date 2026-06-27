@@ -142,6 +142,8 @@ kubernetes:
     data_dir: /var/lib/kubelet
     # 额外参数
     extra_flags:
+      containerLogMaxSize: 200Mi
+      containerLogMaxFiles: 10
       evictionPressureTransitionPeriod: 5m0s
       evictionHard:
         imagefs.available: 10%
@@ -331,15 +333,15 @@ cilium:
     image.useDigest: false
     operator.image.repository: "registry.cn-hangzhou.aliyuncs.com/devops-system/operator"
     operator.image.useDigest: false
-    routingMode: tunnel
+    routingMode: tunnel   # 路由模式，支持tunnel和native
     autoDirectNodeRoutes: false
-    tunnelProtocol: vxlan
+    tunnelProtocol: vxlan # 隧道协议，mode=tunnel时必填
     ipam.mode: cluster-pool
     ipam.operator.clusterPoolIPv4PodCIDRList: "{ {{- kubernetes.pods_subnet -}} }"
     ipam.operator.clusterPoolIPv4MaskSize: "{{kubernetes.node_prefix}}"
     kubeProxyReplacement: true
-    k8sServiceHost: "{{ loadbalance.ip }}" # 负载均衡器IP或域名
-    k8sServicePort: "{{ loadbalance.port }}"
+    k8sServiceHost: "{{ loadbalance.ip }}"   # 负载均衡器IP或域名
+    k8sServicePort: "{{ loadbalance.port }}" # 负载均衡器端口
     bpf.masquerade: true
     bpf.hostRouting: true
     bpf.ctTcpMax: 1048576
