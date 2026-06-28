@@ -351,10 +351,20 @@ cilium:
     bandwidthManager.enabled: true
     loadBalancer.mode: snat
     loadBalancer.acceleration: best-effort
+    prometheus.enabled: true
+    prometheus.metricsService: true
+    operator.prometheus.enabled: true
+    operator.prometheus.metricsService: true
     envoy.enabled: false
+    envoy.prometheus.enabled: false
     hubble.enabled: true
-    hubble.relay.enabled: false
+    hubble.relay.enabled: true
     hubble.metrics.enabled: "{dns,drop,tcp,flow}"
+    hubble.relay.prometheus.enabled: true
+    hubble.relay.resources.requests.cpu: 500m
+    hubble.relay.resources.requests.memory: 512Mi
+    hubble.relay.resources.limits.cpu: 2000m
+    hubble.relay.resources.limits.memory: 2Gi
     resources.requests.cpu: 500m
     resources.requests.memory: 512Mi
     resources.limits.cpu: 5000m 
