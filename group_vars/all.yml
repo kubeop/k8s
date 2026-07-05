@@ -324,6 +324,7 @@ cilium:
   version: v1.19.5
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
+  # {{cilium.registry}}/hubble-relay:{{cilium.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/kubeop
   # Set extra flags
   extra_flags:
@@ -333,13 +334,15 @@ cilium:
     image.useDigest: false
     operator.image.repository: "registry.cn-hangzhou.aliyuncs.com/devops-system/operator"
     operator.image.useDigest: false
+    hubble.relay.image.repository: "registry.cn-hangzhou.aliyuncs.com/devops-system/hubble-relay"
+    hubble.relay.image.useDigest: false
     routingMode: tunnel   # 路由模式，支持tunnel和native
     autoDirectNodeRoutes: false
     tunnelProtocol: vxlan # 隧道协议，mode=tunnel时必填
     ipam.mode: cluster-pool
     ipam.operator.clusterPoolIPv4PodCIDRList: "{ {{- kubernetes.pods_subnet -}} }"
     ipam.operator.clusterPoolIPv4MaskSize: "{{kubernetes.node_prefix}}"
-    kubeProxyReplacement: true
+    kubeProxyReplacement: "{{ kubernetes.proxy.replacement }}"
     k8sServiceHost: "{{ loadbalance.ip }}"   # 负载均衡器IP或域名
     k8sServicePort: "{{ loadbalance.port }}" # 负载均衡器端口
     bpf.masquerade: true
@@ -355,6 +358,7 @@ cilium:
     prometheus.metricsService: true
     operator.prometheus.enabled: true
     operator.prometheus.metricsService: true
+    l7Proxy: false
     envoy.enabled: false
     envoy.prometheus.enabled: false
     hubble.enabled: true
@@ -367,7 +371,7 @@ cilium:
     hubble.relay.resources.limits.memory: 2Gi
     resources.requests.cpu: 500m
     resources.requests.memory: 512Mi
-    resources.limits.cpu: 5000m 
+    resources.limits.cpu: 5000m
     resources.limits.memory: 2048Mi
     operator.resources.requests.cpu: 200m
     operator.resources.requests.memory: 256Mi
