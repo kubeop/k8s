@@ -16,7 +16,7 @@ defaults
 {% if haproxy_version is defined %}
 {% if haproxy_version is version('2.0', '>=') %}
 frontend stats
-    bind *:9101
+    bind *:9110
     mode http
     http-request use-service prometheus-exporter if { path /metrics }
     stats enable

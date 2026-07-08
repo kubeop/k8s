@@ -11,7 +11,7 @@
   tags: generate_haproxy_cfg
 
 - name: Loadbalance | Get HAProxy version
-  set_fact:
+  ansible.builtin.set_fact:
     haproxy_version: "{{ ansible_facts.packages['haproxy'][0].version }}"
   when:
     - ansible_facts.packages is defined

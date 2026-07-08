@@ -753,12 +753,12 @@
 
 - name: Cert | Generate bootstrap token
   when: not token.stat.exists
-  set_fact:
+  ansible.builtin.set_fact:
     bootstrap_token: "{{ lookup('password', '/dev/null length=6 chars=ascii_lowercase,digits') }}.{{ lookup('password', '/dev/null length=16 chars=ascii_lowercase,digits') }}"
 
 - name: Cert | Generate bootstrap-token file
   when: not token.stat.exists
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: "{{ certificates.dir }}/token"
     block: "{{ bootstrap_token }}"
     create: true
