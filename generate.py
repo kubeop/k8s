@@ -6,7 +6,7 @@ with open('group_vars/all.yml', 'r', encoding='utf-8') as file:
 
 # 阿里云 ACR 镜像仓库信息
 acr_repo = 'registry.cn-hangzhou.aliyuncs.com'
-acr_namespace = 'kubeop'
+acr_namespace = 'devops-system'
 
 images = {
     "quay.io/cilium/cilium": data['cilium']['version'],
@@ -18,6 +18,7 @@ images = {
     "docker.io/calico/node": data['calico']['version'],
     "docker.io/calico/cni": data['calico']['version'],
     "docker.io/calico/typha": data['calico']['version'],
+    "registry.k8s.io/pause": data['pause']['version'],
     "docker.io/coredns/coredns": data['coredns']['version'],
     "registry.k8s.io/dns/k8s-dns-node-cache": data['nodelocaldns']['version'],
     "registry.k8s.io/metrics-server/metrics-server": data['metrics_server']['version'],

@@ -100,7 +100,7 @@ etcd:
 
 # https://github.com/kubernetes/kubernetes
 kubernetes:
-   # kubernetes 二进制安装包下载地址
+  # kubernetes 二进制安装包下载地址
   download_url: https://files.m.daocloud.io/dl.k8s.io
   # kubernetes 版本
   version: v1.36.2
@@ -219,7 +219,7 @@ containerd:
     grpc_histogram: false
   cri:
     sandbox_image:
-      repo: "registry.aliyuncs.com/google_containers/pause"
+      repo: "registry.cn-hangzhou.aliyuncs.com/devops-system/pause"
       tag: "3.10.2"
     max_container_log_line_size: 16384
     enable_unprivileged_ports: false
@@ -284,7 +284,7 @@ flannel:
   plugin_version: v1.9.1-flannel1
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  registry: registry.cn-hangzhou.aliyuncs.com/devops-system
   # "vxlan" or "host-gw"
   network_mode: vxlan
   # 运行参数
@@ -306,7 +306,7 @@ calico:
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
   # {{calico.registry}}/typha:{{ calico.version }}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  registry: registry.cn-hangzhou.aliyuncs.com/devops-system
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
   # Valid option: Disabled (default), Enabled
@@ -325,7 +325,7 @@ cilium:
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   # {{cilium.registry}}/hubble-relay:{{cilium.version}}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  registry: registry.cn-hangzhou.aliyuncs.com/devops-system
   # Set extra flags
   extra_flags:
     MTU: 1450
@@ -384,13 +384,13 @@ coredns:
   # https://github.com/coredns/coredns
   version: 1.14.4
   # {{coredns.registry}}/coredns:{{coredns.version}}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  registry: registry.cn-hangzhou.aliyuncs.com/devops-system
 
 nodelocaldns:
   enabled: true
   version: 1.26.8
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  registry: registry.cn-hangzhou.aliyuncs.com/devops-system
   ip: "169.254.20.10"
   ip6: "fd00::"
 
@@ -399,18 +399,18 @@ metrics_server:
   enabled: true
   version: v0.8.1
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  registry: registry.cn-hangzhou.aliyuncs.com/devops-system
 
 npd:
   # https://github.com/kubernetes/node-problem-detector
   enabled: false
   version: v1.35.2
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  registry: registry.cn-hangzhou.aliyuncs.com/devops-system
 
 nvidia_device_plugin:
   # https://github.com/NVIDIA/k8s-device-plugin
   enabled: false
   version: v0.19.2
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
-  registry: registry.cn-hangzhou.aliyuncs.com/kubeop
+  registry: registry.cn-hangzhou.aliyuncs.com/devops-system
