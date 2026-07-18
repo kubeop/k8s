@@ -18,7 +18,7 @@ images = {
     "docker.io/calico/node": data['calico']['version'],
     "docker.io/calico/cni": data['calico']['version'],
     "docker.io/calico/typha": data['calico']['version'],
-    "registry.k8s.io/pause": data['pause']['version'],
+    "registry.aliyuncs.com/google_containers/pause": data['pause']['version'],
     "docker.io/coredns/coredns": data['coredns']['version'],
     "registry.k8s.io/dns/k8s-dns-node-cache": data['nodelocaldns']['version'],
     "registry.k8s.io/metrics-server/metrics-server": data['metrics_server']['version'],
