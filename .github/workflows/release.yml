@@ -6,12 +6,14 @@ on:
       - main
     paths:
       - 'group_vars/all.yml'
+      - 'generate.py'
 
   pull_request:
     branches:
       - main
     paths:
       - 'group_vars/all.yml'
+      - 'generate.py'
 
 jobs:
   build:
