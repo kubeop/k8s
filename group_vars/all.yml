@@ -142,9 +142,11 @@ kubernetes:
     data_dir: /var/lib/kubelet
     # 额外参数
     extra_flags:
+      # 配置容器日志大小
       containerLogMaxSize: 200Mi
       containerLogMaxFiles: 10
       evictionPressureTransitionPeriod: 5m0s
+      # 配置节点资源回收策略
       evictionHard:
         imagefs.available: 10%
         memory.available: 500Mi
