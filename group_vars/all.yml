@@ -270,7 +270,7 @@ helm:
   # helm 安装包下载地址
   download_url: https://files.m.daocloud.io/get.helm.sh
   # helm 版本
-  version: v4.2.1
+  version: v4.2.2
 
 
 # Network Plugin
@@ -280,8 +280,8 @@ network_plugin: calico
 # https://github.com/flannel-io/flannel
 flannel:
   # flannel 版本
-  version: v0.28.5
-  plugin_version: v1.9.1-flannel1
+  version: v0.28.7
+  plugin_version: v1.9.1-flannel2
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/devops-system
@@ -317,11 +317,12 @@ calico:
   # ip_autodetection_method: "interface=eth.*"
   # ipv6_autodetection_method: "interface=eth.*"
 
+# https://github.com/cilium/cilium
 cilium:
   # cilium 安装包下载地址
   download_url: https://files.m.daocloud.io/raw.githubusercontent.com/cilium/charts/master
   # cilium 版本
-  version: v1.19.5
+  version: v1.19.6
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   # {{cilium.registry}}/hubble-relay:{{cilium.version}}
@@ -382,7 +383,7 @@ cilium:
 # Kubernetes Apps
 coredns:
   # https://github.com/coredns/coredns
-  version: 1.14.4
+  version: 1.14.6
   # {{coredns.registry}}/coredns:{{coredns.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/devops-system
 
@@ -397,20 +398,20 @@ nodelocaldns:
 metrics_server:
   # https://github.com/kubernetes-sigs/metrics-server
   enabled: true
-  version: v0.8.1
+  version: v0.9.0
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/devops-system
 
 npd:
   # https://github.com/kubernetes/node-problem-detector
   enabled: false
-  version: v1.35.2
+  version: v1.36.0
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/devops-system
 
 nvidia_device_plugin:
   # https://github.com/NVIDIA/k8s-device-plugin
   enabled: false
-  version: v0.19.2
+  version: v0.19.3
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
   registry: registry.cn-hangzhou.aliyuncs.com/devops-system
