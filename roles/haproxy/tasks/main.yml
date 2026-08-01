@@ -22,7 +22,7 @@
 - name: Loadbalance | Set selinux for metrics port
   when: ansible_os_family in ['RedHat', 'AlmaLinux', 'Rocky', 'TencentOS'] and system.selinux_enabled == true
   community.general.seport:
-    ports: "9101"
+    ports: "9110"
     proto: tcp
     setype: http_port_t
     state: present
