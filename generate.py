@@ -4,9 +4,9 @@ import yaml
 with open('group_vars/all.yml', 'r', encoding='utf-8') as file:
     data = yaml.load(file, Loader=yaml.FullLoader)
 
-# 阿里云 ACR 镜像仓库信息
-acr_repo = 'registry.cn-hangzhou.aliyuncs.com'
-acr_namespace = 'devops-system'
+# 镜像仓库信息
+cr_repo = 'ccr.ccs.tencentyun.com'
+cr_namespace = 'infra-system'
 
 images = {
     "quay.io/cilium/cilium": data['cilium']['version'],
@@ -34,6 +34,10 @@ credentials = {
     "registry.cn-hangzhou.aliyuncs.com": {
         "username": "${ACR_USERNAME}",
         "password": "${ACR_PASSWORD}"
+    },
+    "ccr.ccs.tencentyun.com": {
+        "username": "${TCR_USERNAME}",
+        "password": "${TCR_PASSWORD}"
     }
 }
 
@@ -46,7 +50,7 @@ def generate_images_yaml():
     # 写入镜像信息
     for image, version in images.items():
         src_repo_url = f"{image}:{version}"
-        dst_repo_url = f"{acr_repo}/{acr_namespace}/{image.split('/')[-1]}:{version}"
+        dst_repo_url = f"{cr_repo}/{cr_namespace}/{image.split('/')[-1]}:{version}"
         print(f"Save {src_repo_url}: {dst_repo_url} to images.yaml")
         with open('images.yaml', 'a') as file:
             file.write(f"{src_repo_url}: {dst_repo_url}\n")

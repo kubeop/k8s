@@ -44,6 +44,8 @@ jobs:
         ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
         DKH_USERNAME: ${{ secrets.DKH_USERNAME }}
         DKH_PASSWORD: ${{ secrets.DKH_PASSWORD }}
+        TCR_USERNAME: ${{ secrets.TCR_USERNAME }}
+        TCR_PASSWORD: ${{ secrets.TCR_PASSWORD }}
       run: |
         target_tag=$(curl --silent "https://api.github.com/repos/AliyunContainerService/image-syncer/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         wget --quiet https://github.com/AliyunContainerService/image-syncer/releases/download/"${target_tag}"/image-syncer-"${target_tag}"-linux-amd64.tar.gz
