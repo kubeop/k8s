@@ -1,6 +1,8 @@
 [Unit]
 Description=Kubernetes Kubelet Server
 Documentation=https://github.com/kubernetes/kubernetes
+Wants=network-online.target
+After=network-online.target
 After=containerd.service
 Requires=containerd.service
 

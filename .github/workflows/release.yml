@@ -50,4 +50,4 @@ jobs:
         target_tag=$(curl --silent "https://api.github.com/repos/AliyunContainerService/image-syncer/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
         wget --quiet https://github.com/AliyunContainerService/image-syncer/releases/download/"${target_tag}"/image-syncer-"${target_tag}"-linux-amd64.tar.gz
         tar -xvf image-syncer-"${target_tag}"-linux-amd64.tar.gz
-        ./image-syncer --auth=./auth.yaml --images=./images.yaml --arch=amd64 --arch=arm64 --os=linux --proc=6 --retries=3
+        ./image-syncer --auth=./auth.yaml --images=./images.yaml --proc=6 --retries=3

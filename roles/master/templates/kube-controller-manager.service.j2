@@ -1,14 +1,18 @@
 [Unit]
 Description=Kubernetes Controller Manager
 Documentation=https://github.com/kubernetes/kubernetes
+Wants=network-online.target
+After=network-online.target
 After=kube-apiserver.service
 Requires=kube-apiserver.service
 
 [Service]
 EnvironmentFile=-/etc/kubernetes/kube-controller-manager.conf
 User=kube
+Group=kube
 ExecStart=/usr/bin/kube-controller-manager $KUBE_CONTROLLER_MANAGER_ARGS
 Restart=on-failure
+RestartSec=5
 LimitNOFILE=65536
 
 [Install]

@@ -1,14 +1,17 @@
 [Unit]
 Description=Kubernetes API Server
 Documentation=https://github.com/kubernetes/kubernetes
+Wants=network-online.target
 After=network-online.target
 After=etcd.service
 
 [Service]
 EnvironmentFile=-/etc/kubernetes/kube-apiserver.conf
 User=kube
+Group=kube
 ExecStart=/usr/bin/kube-apiserver $KUBE_API_ARGS
 Restart=on-failure
+RestartSec=5
 Type=notify
 LimitNOFILE=65536
 

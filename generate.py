@@ -5,8 +5,8 @@ with open('group_vars/all.yml', 'r', encoding='utf-8') as file:
     data = yaml.load(file, Loader=yaml.FullLoader)
 
 # 镜像仓库信息
-cr_repo = 'ccr.ccs.tencentyun.com'
-cr_namespace = 'infra-system'
+cr_repo = 'hkccr.ccs.tencentyun.com'
+cr_namespace = 'kube-platform'
 
 images = {
     "quay.io/cilium/cilium": data['cilium']['version'],
@@ -35,7 +35,7 @@ credentials = {
         "username": "${ACR_USERNAME}",
         "password": "${ACR_PASSWORD}"
     },
-    "ccr.ccs.tencentyun.com": {
+    "hkccr.ccs.tencentyun.com": {
         "username": "${TCR_USERNAME}",
         "password": "${TCR_PASSWORD}"
     }

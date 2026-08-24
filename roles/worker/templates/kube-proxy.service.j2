@@ -1,6 +1,7 @@
 [Unit]
 Description=Kubernetes Kube-Proxy Server
 Documentation=https://github.com/kubernetes/kubernetes
+Wants=network-online.target
 After=network-online.target
 
 [Service]

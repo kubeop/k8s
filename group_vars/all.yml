@@ -221,7 +221,7 @@ containerd:
     grpc_histogram: false
   cri:
     sandbox_image:
-      repo: "ccr.ccs.tencentyun.com/infra-system/pause"
+      repo: "hkccr.ccs.tencentyun.com/kube-platform/pause"
       tag: "3.10.2"
     max_container_log_line_size: 16384
     enable_unprivileged_ports: false
@@ -286,7 +286,7 @@ flannel:
   plugin_version: v1.9.1-flannel3
   # {{flannel.registry}}/flannel-cni-plugin:{{flannel.plugin_version}}
   # {{flannel.registry}}/flannel:{{flannel.version}}
-  registry: ccr.ccs.tencentyun.com/infra-system
+  registry: hkccr.ccs.tencentyun.com/kube-platform
   # "vxlan" or "host-gw"
   network_mode: vxlan
   # 运行参数
@@ -308,7 +308,7 @@ calico:
   # {{calico.registry}}/node:{{calico.version}}
   # {{calico.registry}}/cni:{{calico.version}}
   # {{calico.registry}}/typha:{{ calico.version }}
-  registry: ccr.ccs.tencentyun.com/infra-system
+  registry: hkccr.ccs.tencentyun.com/kube-platform
   # "ipip" or "bgp" or "mix"
   network_mode: ipip
   # Valid option: Disabled (default), Enabled
@@ -328,16 +328,16 @@ cilium:
   # {{cilium.registry}}/operator-generic:{{cilium.version}}
   # {{cilium.registry}}/cilium:{{cilium.version}}
   # {{cilium.registry}}/hubble-relay:{{cilium.version}}
-  registry: ccr.ccs.tencentyun.com/infra-system
+  registry: hkccr.ccs.tencentyun.com/kube-platform
   # Set extra flags
   extra_flags:
     MTU: 1450
     operator.replicas: 2
-    image.repository: "ccr.ccs.tencentyun.com/infra-system/cilium"
+    image.repository: "hkccr.ccs.tencentyun.com/kube-platform/cilium"
     image.useDigest: false
-    operator.image.repository: "ccr.ccs.tencentyun.com/infra-system/operator"
+    operator.image.repository: "hkccr.ccs.tencentyun.com/kube-platform/operator"
     operator.image.useDigest: false
-    hubble.relay.image.repository: "ccr.ccs.tencentyun.com/infra-system/hubble-relay"
+    hubble.relay.image.repository: "hkccr.ccs.tencentyun.com/kube-platform/hubble-relay"
     hubble.relay.image.useDigest: false
     routingMode: tunnel   # 路由模式，支持 tunnel 和 native
     autoDirectNodeRoutes: false
@@ -394,13 +394,13 @@ coredns:
   # https://github.com/coredns/coredns
   version: 1.14.6
   # {{coredns.registry}}/coredns:{{coredns.version}}
-  registry: ccr.ccs.tencentyun.com/infra-system
+  registry: hkccr.ccs.tencentyun.com/kube-platform
 
 nodelocaldns:
   enabled: true
   version: 1.26.8
   # {{nodelocaldns.registry}}/k8s-dns-node-cache:{{nodelocaldns.version}}
-  registry: ccr.ccs.tencentyun.com/infra-system
+  registry: hkccr.ccs.tencentyun.com/kube-platform
   ip: "169.254.20.10"
   ip6: "fd00::"
 
@@ -409,18 +409,18 @@ metrics_server:
   enabled: true
   version: v0.9.0
   # {{metrics_server.registry}}/metrics-server:{{metrics_server.version}}
-  registry: ccr.ccs.tencentyun.com/infra-system
+  registry: hkccr.ccs.tencentyun.com/kube-platform
 
 npd:
   # https://github.com/kubernetes/node-problem-detector
   enabled: false
   version: v1.36.0
   # {{npd.registry}}/node-problem-detector:{{npd.version}}
-  registry: ccr.ccs.tencentyun.com/infra-system
+  registry: hkccr.ccs.tencentyun.com/kube-platform
 
 nvidia_device_plugin:
   # https://github.com/NVIDIA/k8s-device-plugin
   enabled: false
   version: v0.20.0
   # {{nvidia_device_plugin.registry}}/k8s-device-plugin:{{nvidia_device_plugin.version}}
-  registry: ccr.ccs.tencentyun.com/infra-system
+  registry: hkccr.ccs.tencentyun.com/kube-platform
