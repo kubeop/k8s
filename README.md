@@ -211,6 +211,38 @@ ansible-playbook cluster.yml -i inventory --skip-tags=create_master_taint
 
 ## 扩容节点
 
+### 扩容etcd节点
+
+扩容时，在inventory文件etcd组中依次添加新增服务器信息（执行时请务必使用-l参数指定IP）。
+
+⚠️：只能一个节点一个节点的添加到inventory进行扩容，不能同时添加多台机器扩容etcd集群。
+
+格式化挂载数据盘
+
+```shell
+ansible-playbook fdisk.yml -i inventory -l ${SCALE_ETCD_IP} -e "disk=sdb dir=/data"
+```
+
+执行生成节点证书
+
+```shell
+ansible-playbook cluster.yml -i inventory -t certificates
+```
+
+执行节点初始化
+
+```shell
+ansible-playbook cluster.yml -i inventory -l ${SCALE_ETCD_IP} -t init
+```
+
+执行节点扩容
+
+```shell
+ansible-playbook cluster.yml -i inventory -l ${SCALE_ETCD_IP} -t etcd
+```
+
+
+
 ### 扩容master节点
 
 扩容时，在inventory文件master组中依次添加新增服务器信息（执行时请务必使用-l参数指定IP）。

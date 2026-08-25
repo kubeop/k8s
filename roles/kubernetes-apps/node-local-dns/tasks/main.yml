@@ -1,14 +1,43 @@
 ---
+- name: Apps | Determine nodelocaldns template
+  ansible.builtin.set_fact:
+    nodelocaldns_template: >-
+      {%- if network_plugin == 'cilium'
+             and kubernetes.proxy.replacement | default(false) | bool
+             and cilium.extra_flags.routingMode == 'native' -%}
+        node-local-dns.yaml.j2
+      {%- else -%}
+        nodelocaldns.yaml.j2
+      {%- endif -%}
+
 - name: Apps | Generate nodelocaldns manifest
   ansible.builtin.template:
-    src: "{{item.src}}"
-    dest: "{{item.dest}}"
-  with_items:
-    - {src: "nodelocaldns.yaml.j2", dest: "/tmp/nodelocaldns.yaml"}
+    src: "{{ nodelocaldns_template }}"
+    dest: "/tmp/nodelocaldns.yaml"
   tags: nodelocaldns
 
 - name: Apps | Deploy nodelocaldns
   ansible.builtin.shell: "kubectl apply -f /tmp/nodelocaldns.yaml"
   delegate_to: "{{ groups['master'][0] }}"
   run_once: true
+  tags: nodelocaldns
+
+- name: Apps | Set cilium local redirect policy
+  ansible.builtin.template:
+    src: "node-local-dns-lrp.yaml.j2"
+    dest: "/tmp/node-local-dns-lrp.yaml"
+  when:
+    - network_plugin == 'cilium'
+    - kubernetes.proxy.replacement | default(false) | bool
+    - cilium.extra_flags.routingMode == 'native'
+  tags: nodelocaldns
+
+- name: Apps | Deploy CiliumLocalRedirectPolicy
+  ansible.builtin.shell: "kubectl apply -f /tmp/node-local-dns-lrp.yaml"
+  delegate_to: "{{ groups['master'][0] }}"
+  run_once: true
+  when:
+    - network_plugin == 'cilium'
+    - kubernetes.proxy.replacement | default(false) | bool
+    - cilium.extra_flags.routingMode == 'native'
   tags: nodelocaldns

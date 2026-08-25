@@ -21,7 +21,7 @@ FLAG="\
     --peer-key-file=/etc/etcd/pki/etcd-peer.key \
     --peer-trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
     --trusted-ca-file=/etc/etcd/pki/etcd-ca.pem \
-    --initial-cluster-state=new \
+    --initial-cluster-state={{ etcd_initial_cluster_state | default('new') }} \
     --initial-cluster-token=etcd-cluster \
 {% if etcd.version | regex_replace('v') is version("3.5.0","ge") %}
     --feature-gates=InitialCorruptCheck=true \

@@ -69,6 +69,87 @@
     - dis_etcd_certs
     - dis_certs
 
+- name: Etcd | Check if etcd data directory has existing member
+  ansible.builtin.stat:
+    path: "{{ etcd.data_dir }}/member"
+    get_attributes: false
+    get_checksum: false
+    get_mime: false
+  register: etcd_data_dir_member
+  tags:
+    - dis_etcd_config
+    - etcd_scale
+
+- name: Etcd | Set etcd node name
+  ansible.builtin.set_fact:
+    etcd_node_name: "{{ ansible_hostname.split('-')[-2:] | join('-') | lower }}"
+  tags:
+    - dis_etcd_config
+    - etcd_scale
+
+# 扩容时新节点需追加到 inventory [etcd] 组末尾，确保 groups['etcd'][0] 仍为已存在的健康节点
+- name: Etcd | Probe existing cluster health (skip on first bootstrap)
+  ansible.builtin.command: >-
+    etcdctl endpoint health
+    --endpoints=https://{{ groups['etcd'][0] }}:2379
+    --cacert=/etc/etcd/pki/etcd-ca.pem
+    --cert=/etc/etcd/pki/etcd-healthcheck-client.pem
+    --key=/etc/etcd/pki/etcd-healthcheck-client.key
+  delegate_to: "{{ groups['etcd'][0] }}"
+  register: etcd_cluster_health
+  changed_when: false
+  failed_when: false
+  when: not etcd_data_dir_member.stat.exists
+  tags:
+    - dis_etcd_config
+    - etcd_scale
+
+- name: Etcd | Set initial-cluster-state
+  ansible.builtin.set_fact:
+    etcd_initial_cluster_state: >-
+      {{ 'existing' if (etcd_data_dir_member.stat.exists or (etcd_cluster_health.rc | default(1)) == 0) else 'new' }}
+  tags:
+    - dis_etcd_config
+    - etcd_scale
+
+- name: Etcd | List existing members (scale-out only)
+  ansible.builtin.command: >-
+    etcdctl member list -w json
+    --endpoints=https://{{ groups['etcd'][0] }}:2379
+    --cacert=/etc/etcd/pki/etcd-ca.pem
+    --cert=/etc/etcd/pki/etcd-healthcheck-client.pem
+    --key=/etc/etcd/pki/etcd-healthcheck-client.key
+  delegate_to: "{{ groups['etcd'][0] }}"
+  register: etcd_member_list
+  changed_when: false
+  failed_when: false
+  when:
+    - not etcd_data_dir_member.stat.exists
+    - (etcd_cluster_health.rc | default(1)) == 0
+  tags:
+    - dis_etcd_config
+    - etcd_scale
+
+- name: Etcd | Add new member to existing cluster (idempotent)
+  ansible.builtin.command: >-
+    etcdctl member add {{ etcd_node_name }}
+    --peer-urls=https://{%- if kubernetes.ipv4_stack -%}{{ ansible_default_ipv4.address }}{%- else -%}[{{ ansible_default_ipv6.address }}]{%- endif -%}:2380
+    --endpoints=https://{{ groups['etcd'][0] }}:2379
+    --cacert=/etc/etcd/pki/etcd-ca.pem
+    --cert=/etc/etcd/pki/etcd-healthcheck-client.pem
+    --key=/etc/etcd/pki/etcd-healthcheck-client.key
+  delegate_to: "{{ groups['etcd'][0] }}"
+  register: etcd_member_add
+  changed_when: "'Added member' in (etcd_member_add.stdout | default(''))"
+  failed_when: false
+  when:
+    - not etcd_data_dir_member.stat.exists
+    - (etcd_cluster_health.rc | default(1)) == 0
+    - etcd_node_name not in (etcd_member_list.stdout | default(''))
+  tags:
+    - dis_etcd_config
+    - etcd_scale
+
 - name: Etcd | Create etcd data directory
   ansible.builtin.file:
     path: "{{ etcd.data_dir }}"

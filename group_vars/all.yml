@@ -345,7 +345,8 @@ cilium:
     ipam.mode: cluster-pool
     ipam.operator.clusterPoolIPv4PodCIDRList: "{ {{- kubernetes.pods_subnet -}} }"
     ipam.operator.clusterPoolIPv4MaskSize: "{{kubernetes.node_prefix}}"
-    kubeProxyReplacement: "{{ kubernetes.proxy.replacement }}"
+    kubeProxyReplacement: "{{ kubernetes.proxy.replacement }}" # 是否替换kube-proxy
+    localRedirectPolicies.enabled: false # 是否开启本地重定向策略，默认开启
     k8sServiceHost: "{{ loadbalance.ip }}"   # 负载均衡器IP或域名
     k8sServicePort: "{{ loadbalance.port }}" # 负载均衡器端口
     bpf.masquerade: true

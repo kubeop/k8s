@@ -23,18 +23,25 @@ authorization:
     cacheUnauthorizedTTL: "30s"
 clusterDomain: "cluster.local"
 clusterDNS:
-{% if nodelocaldns.enabled %}
-{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
-  - "{{ nodelocaldns.ip }}"
-{% elif kubernetes.ipv4_stack %}
+{% set use_cilium_native = (
+      network_plugin | default('') == 'cilium'
+      and kubernetes.proxy.replacement | default(false) | bool
+      and cilium.extra_flags.routingMode | default('') == 'native'
+   )
+%}
+{% set use_nodelocaldns_ip = (
+      nodelocaldns.enabled | default(false) | bool
+      and not use_cilium_native
+   )
+%}
+{% if use_nodelocaldns_ip %}
+{% if kubernetes.ipv4_stack %}
   - "{{ nodelocaldns.ip }}"
 {% else %}
   - "{{ nodelocaldns.ip6 }}"
 {% endif %}
 {% else %}
-{% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
-  - "{{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }}"
-{% elif kubernetes.ipv4_stack %}
+{% if kubernetes.ipv4_stack %}
   - "{{ kubernetes.service_addresses | ansible.utils.next_nth_usable(10) }}"
 {% else %}
   - "{{ kubernetes.service_addresses_ipv6 | ansible.utils.next_nth_usable(10) }}"
