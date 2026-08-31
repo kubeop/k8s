@@ -248,7 +248,7 @@
     - kube_proxy
     - install_worker
 
-- name: Worker | Distribution kubelet certs
+- name: Worker | Distribution kubelet certificates
   ansible.builtin.copy:
     src: "{{ certificates.dir }}/ca.pem"
     dest: "/etc/kubernetes/pki/"
@@ -260,7 +260,7 @@
     - dis_certs
     - kubelet
 
-- name: Worker | Distribution kube-proxy certs
+- name: Worker | Distribution kube-proxy certificates
   when:
     - not (kubernetes.proxy.replacement | default(false))
   ansible.builtin.copy:

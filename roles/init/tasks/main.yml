@@ -76,7 +76,7 @@
   ansible.builtin.command: /sbin/swapoff -a
   tags: swap
 
-- name: Init | Config selinux"
+- name: Init | Config selinux
   ansible.posix.selinux:
     policy: "{{ 'targeted' if system.selinux_enabled == true else omit }}"
     state: "{{ 'enforcing' if system.selinux_enabled == true else 'disabled' }}"
@@ -87,9 +87,9 @@
 - name: Init | Config apparmor
   ansible.builtin.systemd:
     name: apparmor
-    enabled: "{{ system.selinux_enabled }}"
+    enabled: "{{ system.apparmor_enabled | default(true) }}"
     masked: false
-    state: "{{ 'started' if system.selinux_enabled == true else 'stopped' }}"
+    state: "{{ 'started' if (system.apparmor_enabled | default(true)) | bool else 'stopped' }}"
   when:
     - ansible_os_family in ["Debian"]
   tags: security
@@ -128,7 +128,7 @@
     - { regexp: "UseDNS", line: "UseDNS no" }
     - { regexp: "ClientAliveInterval", line: "ClientAliveInterval 600" }
     - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }
-    - { regexp: "PermitRootLogin", line: "PermitRootLogin yes" }
+    - { regexp: "PermitRootLogin", line: "PermitRootLogin {{ 'yes' if system.allow_root_login | default(true) else 'no' }}" }
     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
     - { regexp: "PasswordAuthentication", line: "PasswordAuthentication {{ 'yes' if system.allow_password_authentication else 'no' }}" }
   notify:

@@ -33,14 +33,18 @@ mirrors:
 system:
   # 系统时区, 可选值请参考 https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
   timezone: Asia/Shanghai
+  # 是否允许 root 用户登录, 默认开启, 关闭时请确保有其他sudo用户可以登录
+  allow_root_login: true
   # 强烈建议在生产环境中禁用密码认证, 使用 SSH 密钥认证来提升安全性
   allow_password_authentication: true
   # ssh key path, 当禁用密码认证时, 会自动从该路径读取公钥并添加到目标节点 authorized_keys 文件中
   ssh_key_path: /root/.ssh/id_rsa.pub
-  # Kubernetes 通常要求禁用防火墙
+  # 是否开启 firewalld, 默认关闭
   firewalld_enabled: false
-  # 仅当集群节点需要进行 SELinux 加固时启用
+  # 是否开启 SELinux, 默认关闭
   selinux_enabled: false
+  # 是否开启 appArmor, 默认关闭
+  apparmor_enabled: false
   # ntp_enabled 如果设置为 false, 则节点 NTP 配置将保持不变 (通常由 chronyd 或 systemd-timesyncd 管理)
   ntp_enabled: false
   ntp_servers:
@@ -366,7 +370,7 @@ cilium:
     envoy.enabled: false
     envoy.prometheus.enabled: false
     hubble.enabled: true
-    humeble.disableTLS: true
+    hubble.disableTLS: true
     hubble.tls.enabled: false
     hubble.tls.auto.enabled: false
     hubble.peerService.enabled: true

@@ -97,7 +97,7 @@
 - name: "Check that ipv6 IP range is enough for the nodes"
   ansible.builtin.assert:
     that:
-      - 2 ** (kubernetes.network_node_prefix_ipv6 - kubernetes.pods_subnet_ipv6 | ansible.utils.ipaddr('prefix')) >= (groups['master'] | length + groups['worker'] | length)
+      - 2 ** (kubernetes.node_prefix_ipv6 - kubernetes.pods_subnet_ipv6 | ansible.utils.ipaddr('prefix')) >= (groups['master'] | length + groups['worker'] | length)
     msg: "Not enough ipv6 IPs are available for the desired node count."
   when:
     - kubernetes.ipv6_stack | bool

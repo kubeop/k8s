@@ -56,7 +56,7 @@
 >
 > 对于Kubernetes >=1.32.0版本，推荐使用4.19+以上内核，也支持5.x或6.x版本内核。对于cgroups v2支持，最低内核版本为4.15，推荐版本为5.8+。
 >
-> 从Kubernetes 1.35.0版本开始，移除 `cgroup v1` 支持，全面买入 `cgroup v2` 版本。**kube-proxy**的 `ipvs`模式标记废弃，推荐迁移至 nftables 模式。1.35.x是支持 `containerd v1.x` 系列的最后一个版本，在升级到下一个Kubernetes版本之前，必须切换到 `containerd 2.0` 或更高版本。
+> 从Kubernetes 1.35.0版本开始，移除 `cgroup v1` 支持，仅支持 `cgroup v2` 版本。**kube-proxy** 的 `ipvs`模式标记废弃，推荐迁移至 nftables 模式。1.35.x是支持 `containerd v1.x` 系列的最后一个版本，在升级到下一个Kubernetes版本之前，必须切换到 `containerd 2.0` 或更高版本。
 
 
 
@@ -215,7 +215,7 @@ ansible-playbook cluster.yml -i inventory --skip-tags=create_master_taint
 
 扩容时，在inventory文件etcd组中依次添加新增服务器信息（执行时请务必使用-l参数指定IP）。
 
-⚠️：只能一个节点一个节点的添加到inventory进行扩容，不能同时添加多台机器扩容etcd集群。
+⚠️：只能一个节点一个节点的添加到inventory进行扩容，不能同时增加多台机器执行扩容。
 
 格式化挂载数据盘
 

@@ -50,7 +50,7 @@
   notify:
     - restart etcd
 
-- name: Etcd | Distribution certs
+- name: Etcd | Distribution etcd certificates
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "/etc/etcd/pki/"
@@ -141,7 +141,9 @@
   delegate_to: "{{ groups['etcd'][0] }}"
   register: etcd_member_add
   changed_when: "'Added member' in (etcd_member_add.stdout | default(''))"
-  failed_when: false
+  failed_when:
+    - etcd_member_add.rc != 0
+    - "'already added' not in (etcd_member_add.stderr | default(''))"
   when:
     - not etcd_data_dir_member.stat.exists
     - (etcd_cluster_health.rc | default(1)) == 0

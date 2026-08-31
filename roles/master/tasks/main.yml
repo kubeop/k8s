@@ -63,7 +63,7 @@
     - kube-scheduler
   tags: install_master
 
-- name: Control Plane | Distribution master certs
+- name: Control Plane | Distribution master certificates
   ansible.builtin.copy:
     src: "{{ item }}"
     dest: "/etc/kubernetes/pki/"
