@@ -108,16 +108,6 @@
     state: "{{ 'started' if system.firewalld_enabled == true else 'stopped' }}"
   tags: firewalld
 
-- name: Init | Sync authorized_key
-  ansible.posix.authorized_key:
-    user: root
-    state: present
-    key: "{{ lookup('file', system.ssh_key_path) }}"
-    manage_dir: yes
-  when:
-    - not system.allow_password_authentication
-  tags: sshd
-
 - name: Init | Set sshd_config
   ansible.builtin.lineinfile:
     dest: "/etc/ssh/sshd_config"
@@ -128,9 +118,7 @@
     - { regexp: "UseDNS", line: "UseDNS no" }
     - { regexp: "ClientAliveInterval", line: "ClientAliveInterval 600" }
     - { regexp: "ClientAliveCountMax", line: "ClientAliveCountMax 2" }
-    - { regexp: "PermitRootLogin", line: "PermitRootLogin {{ 'yes' if system.allow_root_login | default(true) else 'no' }}" }
     - { regexp: "PermitEmptyPasswords", line: "PermitEmptyPasswords no" }
-    - { regexp: "PasswordAuthentication", line: "PasswordAuthentication {{ 'yes' if system.allow_password_authentication else 'no' }}" }
   notify:
     - restart sshd
   tags: sshd
