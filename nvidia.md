@@ -177,21 +177,21 @@ nvidia-smi topo -m
 cat  >  /etc/yum.repos.d/nvidia-container-toolkit.repo  << EOF
 [nvidia-container-toolkit]
 name=nvidia-container-toolkit
-baseurl=https://nvidia.github.io/libnvidia-container/stable/rpm/\$basearch
+baseurl=https://mirrors.ustc.edu.cn/libnvidia-container/stable/rpm/\$basearch
 repo_gpgcheck=1
 gpgcheck=0
 enabled=1
-gpgkey=https://nvidia.github.io/libnvidia-container/gpgkey
+gpgkey=https://mirrors.ustc.edu.cn/libnvidia-container/gpgkey
 sslverify=1
 sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 EOF
 
 # Ubuntu
 # 导入gpg
-curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg 
+curl -fsSL https://mirrors.ustc.edu.cn/libnvidia-container/gpgkey | gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg 
 
 # 配置apt源
-echo "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://nvidia.github.io/libnvidia-container/stable/deb/\$(ARCH) /" > /etc/apt/sources.list.d/nvidia-container-toolkit.list
+echo "deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://mirrors.ustc.edu.cn/libnvidia-container/stable/deb/\$(ARCH) /" > /etc/apt/sources.list.d/nvidia-container-toolkit.list
 ```
 
 
@@ -217,14 +217,18 @@ apt -y install nvidia-container-runtime nvidia-container-toolkit
 /etc/containerd/config.toml
 
 ```toml
-...
-    [plugins."io.containerd.grpc.v1.cri".containerd]
+    [plugins."io.containerd.cri.v1.runtime".containerd]
       default_runtime_name = "nvidia"
-...
-          [plugins."io.containerd.grpc.v1.cri".containerd.runtimes.nvidia.options]
+      [plugins."io.containerd.cri.v1.runtime".containerd.runtimes]
+        [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.nvidia]
+          privileged_without_host_devices = false
+          runtime_engine = ""
+          runtime_root = ""
+          runtime_type = "io.containerd.runc.v2"
+
+          [plugins."io.containerd.cri.v1.runtime".containerd.runtimes.nvidia.options]
             BinaryName = "/usr/bin/nvidia-container-runtime"
             SystemdCgroup = true
-...
 ```
 
 
