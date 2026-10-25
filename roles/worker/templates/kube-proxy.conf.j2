@@ -43,7 +43,6 @@ ipvs:
   syncPeriod: 30s
 nftables:
   masqueradeAll: false
-  masqueradeBit: null
   minSyncPeriod: 0s
   syncPeriod: 30s
 {% if kubernetes.ipv4_stack and kubernetes.ipv6_stack %}
@@ -53,7 +52,6 @@ metricsBindAddress: "0.0.0.0:10249"
 {% else %}
 metricsBindAddress: "[::]:10249"
 {% endif %}
-nodePortAddresses: null
 oomScoreAdj: -999
 {% if kubernetes.proxy.extra_flags | length > 0 %}
 {{ kubernetes.proxy.extra_flags | to_nice_yaml(indent=2) }}
